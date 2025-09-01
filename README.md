@@ -10,6 +10,8 @@ DoctorLink is a smart healthcare platform designed to connect patients, doctors,
 
 -Mohamed safwat
 
+-taher magdy 
+
 -Hamza Hesham
 
 -Yousef Ahmed
