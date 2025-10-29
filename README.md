@@ -17,3 +17,8 @@ capsule is a smart healthcare platform designed to connect patients, doctors, an
 -Yousef Ahmed
 
 -Mohamed Hany
+
+
+## Work history
+
+hamza hesham updated gradle build
