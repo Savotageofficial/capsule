@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -76,7 +77,12 @@ fun HomePage(modifier: Modifier = Modifier) {
             )
         }
         Row {
-            SearchBar {  }
+            SearchBar (
+                onClick = {
+                    // TODO: u know what to do dimwit!
+                }
+            )
+
         }
     }
 
@@ -102,41 +108,45 @@ fun ProfileIcon(
 @Composable
 fun SearchBar(
     modifier: Modifier = Modifier,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit
 ) {
     Box(
         modifier = modifier
             .fillMaxWidth()
+            .height(44.dp)
             .padding(horizontal = 12.dp)
-            .background(
-                color = Color(0xFF4CAF50), // soft green
-                shape = RoundedCornerShape(12.dp)
-            )
-            .shadow(
-                elevation = 2.dp,
-                shape = RoundedCornerShape(12.dp)
-            )
-            .clickable { onClick() }
-            .padding(vertical = 10.dp, horizontal = 16.dp)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
+        // Shadow Layer
+        //deleted because its causing issues
+        // Actual Green Bar
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .background(
+                    color = Color(0xFF4CAF50), // soft green
+                    shape = RoundedCornerShape(12.dp)
+                )
+                .clickable { onClick() }
+                .padding(vertical = 10.dp, horizontal = 16.dp)
         ) {
-            Icon(
-                imageVector = Icons.Default.Search,
-                contentDescription = "Search",
-                tint = Color.White,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "Search for a Doctor",
-                color = Color.White.copy(alpha = 0.9f),
-                fontSize = 16.sp
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Search",
+                    tint = Color.White,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Search for a Doctor",
+                    color = Color.White.copy(alpha = 0.9f),
+                    fontSize = 16.sp
+                )
+            }
         }
     }
 }
+
 
 
 @Preview(showBackground = true)
