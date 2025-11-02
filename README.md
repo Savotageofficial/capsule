@@ -22,3 +22,5 @@ Capsule is a smart healthcare platform designed to connect patients and doctors 
 ## Work history
 
 hamza hesham updated gradle build
+hamza hesham created Patient Side home
+hamza hesham merged branches successfully
