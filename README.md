@@ -1,6 +1,6 @@
 # Capsule
 
-capsule is a smart healthcare platform designed to connect patients, doctors, and clinics in one seamless experience. Users can easily book appointments, consult with licensed medical professionals via video or chat, and receive electronic prescriptions that are barcode-enabled for instant pharmacy access. Whether you're a general practitioner, a veterinary clinic, or a hospital looking to promote services, Capsule offers tailored accounts to meet your needs. Fast, secure, and accessible—healthcare has never been this convenient.
+Capsule is a smart healthcare platform designed to connect patients and doctors in one seamless experience. Users can easily book appointments, consult with licensed medical professionals via chat, and receive electronic prescriptions that are barcode-enabled for instant pharmacy access. Fast, secure, and accessible—healthcare has never been this convenient.
 
 
 [Open in Google Drive] ---> (https://drive.google.com/drive/folders/12W6IqiuVX6UYnNunSWuwz5N-7RT2OoNY?usp=sharing)
@@ -8,9 +8,9 @@ capsule is a smart healthcare platform designed to connect patients, doctors, an
 
 -Team Members
 
--Mohamed safwat
+-Mohamed Safwat
 
--taher magdy 
+-Taher Magdy 
 
 -Hamza Hesham
 
