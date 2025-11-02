@@ -14,24 +14,25 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SearchBarColors
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -76,6 +77,7 @@ fun HomePage(modifier: Modifier = Modifier) {
                 }
             )
         }
+
         Row {
             SearchBar (
                 onClick = {
@@ -83,6 +85,19 @@ fun HomePage(modifier: Modifier = Modifier) {
                 }
             )
 
+        }
+        Spacer(modifier = Modifier.height(6.dp))
+        Row {
+            NavBox(
+                icon = Icons.Default.DateRange,
+                label = "Appointments",
+                onClick = {
+                    //TODO : weeeeeee
+                }
+            )
+            NavBox(
+                icon = Icons.Default.Chat
+            )
         }
     }
 
@@ -144,6 +159,54 @@ fun SearchBar(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun NavBox(
+    icon: ImageVector,
+    label: String,
+    modifier: Modifier = Modifier.padding(12.dp),
+    onClick: () -> Unit = {}
+) {
+    Column(
+        modifier = modifier
+            .width(120.dp)
+            .height(120.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.White)
+            .clickable { onClick() }
+            .padding(vertical = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        // Icon Circle
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .background(
+                    color = Color(0xFF4CAF50).copy(alpha = 0.15f),
+                    shape = CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                tint = Color(0xFF4CAF50),
+                modifier = Modifier.size(24.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Label
+        Text(
+            text = label,
+            color = Color.Black.copy(alpha = 0.8f),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium
+        )
     }
 }
 
