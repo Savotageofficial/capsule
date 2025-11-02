@@ -17,3 +17,8 @@ Capsule is a smart healthcare platform designed to connect patients and doctors 
 -Yousef Ahmed
 
 -Mohamed Hany
+
+
+## Work history
+
+hamza hesham updated gradle build
