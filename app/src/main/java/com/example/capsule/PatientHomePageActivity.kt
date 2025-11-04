@@ -95,9 +95,9 @@ fun HomePage(modifier: Modifier = Modifier) {
                     //TODO : weeeeeee
                 }
             )
-            NavBox(
-                icon = Icons.Default.Chat
-            )
+            //NavBox(
+                //icon = Icons.Default.Chat
+            //)
         }
     }
 
