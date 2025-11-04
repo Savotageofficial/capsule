@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
@@ -33,6 +34,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -59,7 +62,7 @@ class ChatActivity : ComponentActivity() {
                         TopNavBar(
                             doctorName = "Dr name goes here",
                             statusText = "online", //Online - typing - offline - dead
-                            avatarPainter = painterResource(id = R.drawable.unloaded_image), // replace
+                            avatarPainter = null, // replace
                             onBack = { finish() }, //previous activity, or just finish and it goes back automatically
                             //if u had a bug with onBack, then previous activity is set to terminate
                             onSettings = { /* TODO: open settings */ } //intent = intent blah blah blah
@@ -101,16 +104,17 @@ class ChatActivity : ComponentActivity() {
 fun TopNavBar(
     doctorName: String,
     statusText: String,
-    avatarPainter: Painter?,
-    onBack: () -> Unit,
+    avatarPainter: Painter?, onBack: () -> Unit, //the arrow onclick
     onSettings: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Surface(
-        modifier = modifier.fillMaxWidth().statusBarsPadding(), //MAGIC, THIS SHIT IS AMAZING
+        modifier = modifier
+            .fillMaxWidth()
+            .statusBarsPadding(), //MAGIC, THIS SHIT IS AMAZING
         color = MaterialTheme.colorScheme.surface.copy(alpha = 0.0f),
         tonalElevation = 0.dp, //useless line, kinda funny! ha!
-        shadowElevation = 2.dp //its not useless, its just broken
+        shadowElevation = 0.dp //its not useless, its just broken
     ) {
         Row(
             modifier = Modifier
@@ -121,9 +125,7 @@ fun TopNavBar(
             // Back arrow stuck to left edge
             IconButton(onClick = onBack, modifier = Modifier.size(44.dp)) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = MaterialTheme.colorScheme.onBackground
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back"
                 )
             }
 
@@ -139,26 +141,26 @@ fun TopNavBar(
                 ) {
                     if (avatarPainter != null) {
                         Image(
-                            painter = avatarPainter,
-                            contentDescription = "Doctor avatar",
+                            painter = avatarPainter, contentDescription = "Doctor Profile Picture",
                             modifier = Modifier
                                 .size(40.dp)
                                 .clip(CircleShape)
                         )
                     } else {
-                        // fallback circle
-                        Box(
+                        // fail safe in case image didn't load
+                        Image(
+                            painter = painterResource(id = R.drawable.doc_prof_unloaded),
+                            contentDescription = "Doctor Profile Picture",
                             modifier = Modifier
                                 .size(40.dp)
                                 .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f))
                         )
                     }
 
                     Spacer(modifier = Modifier.width(10.dp))
 
                     Column {
-                        Text(
+                        Text(//doctor name display code
                             text = doctorName,
                             style = MaterialTheme.typography.bodyLarge
                         )
@@ -168,7 +170,7 @@ fun TopNavBar(
                             "offline" -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                             else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         }
-                        Text(
+                        Text(//status name display code
                             text = statusText,
                             style = MaterialTheme.typography.bodySmall,
                             color = statusColor
@@ -180,9 +182,7 @@ fun TopNavBar(
             // Settings (three dots) stuck to right edge
             IconButton(onClick = onSettings, modifier = Modifier.size(44.dp)) {
                 Icon(
-                    imageVector = Icons.Default.MoreVert,
-                    contentDescription = "Options",
-                    tint = MaterialTheme.colorScheme.onBackground
+                    imageVector = Icons.Default.MoreVert, contentDescription = "Options"
                 )
             }
         }
@@ -223,8 +223,8 @@ fun MessageNavBar(
 
     Surface(
         tonalElevation = 2.dp,
-        shadowElevation = 2.dp,
-        modifier = modifier.fillMaxWidth()
+        shadowElevation = 2.dp, modifier = modifier
+            .fillMaxWidth()
             .navigationBarsPadding()//pushes up when nav bar or keyboard is visible
     ) {
         Row(
@@ -233,36 +233,52 @@ fun MessageNavBar(
                 .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = onAttach) {
-                Icon(
-                    imageVector = Icons.Default.AttachFile,
-                    contentDescription = "Attach"
-                )
-            }
-
             TextField(
                 modifier = Modifier
-                    .weight(1f)
-                    .heightIn(min = 56.dp),
+                    .weight(1f) //drops down to the bottom of composables
+                    .heightIn(min = 56.dp), //doesnt allow it to shrink so much
+                shape = RoundedCornerShape(24.dp),
+                colors = TextFieldDefaults.colors( //all this to remove underline, shitty compose
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent,
+                    errorIndicatorColor = Color.Transparent,
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
+                ),
                 value = text,
                 onValueChange = { text = it },
                 placeholder = { Text("Type a message...") },
                 singleLine = false,
                 maxLines = 4,
                 trailingIcon = {
-                    IconButton(onClick = {
-                        if (text.isNotBlank()) {
-                            onSend(text.trim())
-                            text = ""
-                        }
-                    }) {
+                    IconButton(onClick = onAttach) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Send,
-                            contentDescription = "Send"
+                            imageVector = Icons.Default.AttachFile, contentDescription = "Attach"
                         )
                     }
                 }
             )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primary,
+                shadowElevation = 4.dp,
+                modifier = Modifier.size(48.dp)
+            ) {
+                IconButton(onClick = {
+                    if (text.isNotBlank()) {
+                        onSend(text.trim())
+                        text = ""
+                    }
+                }) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Send, contentDescription = "Send"
+                    )
+                }
+            }
         }
     }
 }
@@ -275,9 +291,8 @@ private fun ChatPreview() {
         Scaffold(
             topBar = {
                 TopNavBar(
-                    doctorName = "Dr. Anya Sharma",
-                    statusText = "online",
-                    avatarPainter = painterResource(id = R.drawable.unloaded_image), // replace
+                    doctorName = "Dr. Mohamed safwat", //place holder
+                    statusText = "online", avatarPainter = null,
                     onBack = {  },
                     onSettings = { /* TODO: open settings */ }
                 )
