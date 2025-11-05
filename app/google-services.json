@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "778749542245",
+    "project_id": "capsule-645a3",
+    "storage_bucket": "capsule-645a3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:778749542245:android:888f49deb25f77f3f72b8c",
+        "android_client_info": {
+          "package_name": "com.example.capsule"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDPe9Txv70B1yu_2OT2Px8y--gD_DVLAyU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
