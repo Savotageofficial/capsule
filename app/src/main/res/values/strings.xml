@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Capsule</string>
     <string name="title_activity_patient_home_page">PatientHomePageActivity</string>
+    <string name="title_activity_chat">ChatActivity</string>
 </resources>
