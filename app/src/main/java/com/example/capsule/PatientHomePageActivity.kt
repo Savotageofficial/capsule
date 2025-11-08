@@ -1,9 +1,11 @@
 package com.example.capsule
 
+import com.example.capsule.R
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,6 +30,9 @@ import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -40,12 +45,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.capsule.ui.theme.CapsuleTheme
 
+
+
+
+data class OfferItem(
+    val title: String,
+    val color: Color
+)
 class PatientHomePageActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -115,13 +130,18 @@ fun HomePage(modifier: Modifier = Modifier) {
         Spacer(modifier = Modifier.height(12.dp))
         LazyRow(modifier = Modifier.fillMaxWidth() , ) {
             val Offers = listOf(
-                "offer11231421",
-                "offer2",
-                "offer3"
+                OfferItem(
+                    title = "Get 20% off your next consultation",
+                    color = Color(0xFF4CAF50)
+                ),
+                OfferItem(
+                     title = "Introduce Yourself to a New way of vacination",
+                     color = Color(0xFF347deb)
+            )
             )
 
             items(items = Offers){ item ->
-                SliderItem(name = item)
+                SliderItem(Title = item.title , Description = "Limited Time offer" , backgroundColor = item.color)
 
             }
         }
@@ -130,6 +150,8 @@ fun HomePage(modifier: Modifier = Modifier) {
         Text(text = "Health Tips" , fontSize = 24.sp ,
             modifier = Modifier.padding(horizontal = 12.dp),
             fontWeight = FontWeight.Bold)
+
+
 
 
     }
@@ -245,25 +267,46 @@ fun NavBox(
 
 
 @Composable
-fun SliderItem(modifier: Modifier = Modifier, name : String){
+fun SliderItem(modifier: Modifier = Modifier, Title : String , Description : String , backgroundColor : Color){
     Card(modifier
                     .padding(10.dp)
-                    .fillMaxWidth()
-                    .height(100.dp)
+                    .width(250.dp)
+                    .height(150.dp)
                     .clip(RoundedCornerShape(20.dp))    , colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFF4CAF50)
+                        containerColor = backgroundColor
                     ),
         elevation = CardDefaults.cardElevation(10.dp)
 
 
         ) {
-            Box(
+            Column(
                 modifier
                     .padding(10.dp)
-                    .fillMaxSize() , contentAlignment = Alignment.Center
+                    .fillMaxSize()
             ){
-                Text(text = name , fontSize = 22.sp , fontWeight = FontWeight.Bold)
 
+
+                Text(text = Title ,
+                    fontSize = 21.sp ,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier= Modifier.height(50.dp) ,
+                    color = Color(0xffffffff),
+                    lineHeight = 20.sp
+                )
+
+                Text(text = Description , fontSize = 15.sp , color = Color(0xffffffff))
+                Spacer(modifier = Modifier.height(12.dp))
+                Button( onClick = {},
+                    colors = ButtonColors(containerColor = Color(0xFFFFFFFF) ,
+                        contentColor = backgroundColor ,
+                        disabledContainerColor = ButtonDefaults.buttonColors().disabledContainerColor ,
+                        disabledContentColor = ButtonDefaults.buttonColors().disabledContentColor),
+                    shape = RoundedCornerShape(12.dp)
+
+
+                ) {
+                    Text(text = "Learn More")
+                }
             }
 
     }
@@ -278,10 +321,43 @@ fun HomepagePreview() {
     }
 }
 
-//@Preview(showBackground = true , showSystemUi = true)
+@Composable
+fun AdviceItem(modifier: Modifier = Modifier){
+
+    Card(modifier
+        .padding(10.dp)
+        .fillMaxWidth()
+        .height(150.dp)
+        .clip(RoundedCornerShape(20.dp))    , colors = CardDefaults.cardColors(
+        containerColor = Color(0xFFdbdbdb)
+    ),
+        elevation = CardDefaults.cardElevation(10.dp)
+
+
+    ){
+        Row(modifier
+            .padding(15.dp)
+            .fillMaxSize()) {
+            Image(
+                painter = painterResource(id = R.drawable.medical_headphones),
+                contentDescription = "headphones"
+            )
+
+        }
+    }
+
+}
+//@Preview(showBackground = true)
 //@Composable
 //fun SliderItemPreview() {
 //    CapsuleTheme {
-//        SliderItem(name = "Card")
+//        SliderItem(Title = "Get 20% off your next consultation" , Description = "Limited Time Offer" , backgroundColor = Color(0xFF347deb))
+//    }
+//}
+//@Preview(showBackground = true)
+//@Composable
+//fun AdviceItemPreview() {
+//    CapsuleTheme {
+//        AdviceItem()
 //    }
 //}
