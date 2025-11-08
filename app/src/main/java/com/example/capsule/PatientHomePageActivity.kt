@@ -11,18 +11,25 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -50,6 +57,8 @@ class PatientHomePageActivity : ComponentActivity() {
                 ) { innerPadding ->
                     HomePage(modifier = Modifier.padding(innerPadding))
                 }
+
+
             }
         }
     }
@@ -86,8 +95,8 @@ fun HomePage(modifier: Modifier = Modifier) {
             )
 
         }
-        Spacer(modifier = Modifier.height(6.dp))
-        Row {
+        Spacer(modifier = Modifier.height(12.dp))
+        Row(horizontalArrangement = Arrangement.SpaceAround , modifier = Modifier.fillMaxWidth()) {
             NavBox(
                 icon = Icons.Default.DateRange,
                 label = "Appointments",
@@ -95,10 +104,34 @@ fun HomePage(modifier: Modifier = Modifier) {
                     //TODO : weeeeeee
                 }
             )
-            //NavBox(
-                //icon = Icons.Default.Chat
-            //)
+            NavBox(
+                icon = Icons.AutoMirrored.Filled.Chat,
+                label = "Chats",
+                onClick = {
+                    //TODO : weeeeeee
+                }
+            )
         }
+        Spacer(modifier = Modifier.height(12.dp))
+        LazyRow(modifier = Modifier.fillMaxWidth() , ) {
+            val Offers = listOf(
+                "offer11231421",
+                "offer2",
+                "offer3"
+            )
+
+            items(items = Offers){ item ->
+                SliderItem(name = item)
+
+            }
+        }
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(text = "Health Tips" , fontSize = 24.sp ,
+            modifier = Modifier.padding(horizontal = 12.dp),
+            fontWeight = FontWeight.Bold)
+
+
     }
 
 }
@@ -211,7 +244,32 @@ fun NavBox(
 }
 
 
+@Composable
+fun SliderItem(modifier: Modifier = Modifier, name : String){
+    Card(modifier
+                    .padding(10.dp)
+                    .fillMaxWidth()
+                    .height(100.dp)
+                    .clip(RoundedCornerShape(20.dp))    , colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFF4CAF50)
+                    ),
+        elevation = CardDefaults.cardElevation(10.dp)
 
+
+        ) {
+            Box(
+                modifier
+                    .padding(10.dp)
+                    .fillMaxSize() , contentAlignment = Alignment.Center
+            ){
+                Text(text = name , fontSize = 22.sp , fontWeight = FontWeight.Bold)
+
+            }
+
+    }
+
+
+}
 @Preview(showBackground = true , showSystemUi = true)
 @Composable
 fun HomepagePreview() {
@@ -219,3 +277,11 @@ fun HomepagePreview() {
         HomePage()
     }
 }
+
+//@Preview(showBackground = true , showSystemUi = true)
+//@Composable
+//fun SliderItemPreview() {
+//    CapsuleTheme {
+//        SliderItem(name = "Card")
+//    }
+//}
