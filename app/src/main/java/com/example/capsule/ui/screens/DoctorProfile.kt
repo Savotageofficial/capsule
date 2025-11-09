@@ -1,7 +1,6 @@
-package com.example.capsule
+package com.example.capsule.ui.screens
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -24,8 +23,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.capsule.ui.components.InfoCard
+import com.example.capsule.R
 import com.example.capsule.ui.theme.Blue
-import com.example.capsule.ui.theme.White
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -80,7 +80,10 @@ fun DoctorProfileScreen(viewModel: DoctorProfileViewModel = DoctorProfileViewMod
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            InfoCard(title = "Bio") {
+            InfoCard(
+                title = "Bio",
+                onEditClick = { /* Open edit personal info screen */ }
+            ) {
                 Text(doctor.bio, fontSize = 15.sp)
             }
 
@@ -112,7 +115,10 @@ fun DoctorProfileScreen(viewModel: DoctorProfileViewModel = DoctorProfileViewMod
                 }
             }
 
-            InfoCard(title = "License & Specialization") {
+            InfoCard(
+                title = "License & Specialization",
+                onEditClick = { /* Open edit personal info screen */ }
+            ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Image(
                         painter = painterResource(id = R.drawable.ic_specialization),
@@ -121,15 +127,6 @@ fun DoctorProfileScreen(viewModel: DoctorProfileViewModel = DoctorProfileViewMod
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(doctor.specialty)
-                }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_license),
-                        contentDescription = "License Icon",
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("License #: ${doctor.licenseNumber}")
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Image(
@@ -142,7 +139,10 @@ fun DoctorProfileScreen(viewModel: DoctorProfileViewModel = DoctorProfileViewMod
                 }
             }
 
-            InfoCard(title = "Location") {
+            InfoCard(
+                title = "Location",
+                onEditClick = { /* Open edit personal info screen */ }
+            ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         Text(doctor.clinicName, fontWeight = FontWeight.Medium)
@@ -173,8 +173,6 @@ fun DoctorProfileScreen(viewModel: DoctorProfileViewModel = DoctorProfileViewMod
         }
     }
 }
-
-
 
 @Preview(showBackground = true)
 @Composable

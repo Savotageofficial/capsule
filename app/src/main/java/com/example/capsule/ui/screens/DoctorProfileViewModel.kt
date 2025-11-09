@@ -1,8 +1,9 @@
-package com.example.capsule
+package com.example.capsule.ui.screens
 
-import androidx.lifecycle.ViewModel
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.ViewModel
+import com.example.capsule.R
 import com.example.capsule.model.Doctor
 
 class DoctorProfileViewModel : ViewModel() {
@@ -14,7 +15,6 @@ class DoctorProfileViewModel : ViewModel() {
             bio = "Dedicated cardiologist with a passion for preventative care and patient education.",
             rating = 4.9,
             reviewsCount = 125,
-            licenseNumber = "123456",
             experience = "15+ years of experience",
             clinicName = "City Heart Center",
             clinicAddress = "123 Main St, Anytown",

@@ -1,4 +1,4 @@
-package com.example.capsule
+package com.example.capsule.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -19,6 +19,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.capsule.ui.components.InfoCard
+import com.example.capsule.ui.components.InfoRow
+import com.example.capsule.R
 import com.example.capsule.ui.theme.Gray
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -101,26 +104,6 @@ fun PatientProfileScreen(
                 InfoRow(label = stringResource(R.string.gender), value = patient.gender)
                 InfoRow(label = stringResource(R.string.contact), value = patient.contact)
                 InfoRow(label = stringResource(R.string.email), value = patient.email)
-            }
-
-            // Medical History Card
-            InfoCard(
-                title = stringResource(R.string.medical_history),
-                onEditClick = {/* Open edit medical History screen */ }
-            ) {
-                if (patient.medicalHistory?.isBlank() == true) {
-                    Text(
-                        stringResource(R.string.no_history_added),
-                        color = Gray
-                    )
-                } else {
-                    patient.medicalHistory?.forEach { record ->
-                        Text(
-                            "$record",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                }
             }
 
             Spacer(modifier = Modifier.height(32.dp))

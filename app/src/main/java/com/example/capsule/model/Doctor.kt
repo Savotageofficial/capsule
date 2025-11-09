@@ -6,7 +6,6 @@ data class Doctor(
     val bio: String = "",
     val rating: Double = 0.0,
     val reviewsCount: Int = 0,
-    val licenseNumber: String = "",
     val experience: String = "",
     val clinicName: String = "",
     val clinicAddress: String = "",

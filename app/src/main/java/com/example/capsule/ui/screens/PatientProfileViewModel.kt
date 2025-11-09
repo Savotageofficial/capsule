@@ -1,8 +1,8 @@
-package com.example.capsule
+package com.example.capsule.ui.screens
 
-import androidx.lifecycle.ViewModel
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.ViewModel
 import com.example.capsule.model.Patient
 
 class PatientProfileViewModel : ViewModel() {
@@ -14,8 +14,7 @@ class PatientProfileViewModel : ViewModel() {
             dob = "",
             gender = "",
             contact = "",
-            email = "",
-            medicalHistory = ""
+            email = ""
         )
     )
     val patient: State<Patient> = _patient

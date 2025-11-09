@@ -1,6 +1,5 @@
-package com.example.capsule
+package com.example.capsule.ui.components
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,7 +26,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.capsule.R
 import com.example.capsule.ui.theme.Blue
+import com.example.capsule.ui.theme.DarkGray
 import com.example.capsule.ui.theme.Gray
 import com.example.capsule.ui.theme.White
 
@@ -59,8 +60,8 @@ fun InfoCard(
                 Text(
                     text = title,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 17.sp,
-                    color = Color(0xFF2C2C2C)
+                    fontSize = 18.sp,
+                    color = DarkGray
                 )
 
                 // Only show edit icon if onEditClick is provided
