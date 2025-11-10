@@ -69,7 +69,7 @@ class AuthRepository {
                                 onSuccess(userType)
                             }
                             .addOnFailureListener {
-                                onFailure("Failed to fetch user data")
+                                onFailure("Couldn’t get your info")
                             }
                     } else {
                         onFailure("Please verify your email")
@@ -90,7 +90,7 @@ class AuthRepository {
                 if (task.isSuccessful) {
                     onSuccess()
                 } else {
-                    onFailure(task.exception?.message ?: "Failed to send reset email")
+                    onFailure(task.exception?.message ?: "Failed to send reset password email")
                 }
             }
     }
