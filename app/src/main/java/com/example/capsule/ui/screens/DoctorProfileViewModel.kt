@@ -18,6 +18,7 @@ class DoctorProfileViewModel : ViewModel() {
             experience = "15+ years of experience",
             clinicName = "City Heart Center",
             clinicAddress = "123 Main St, Anytown",
+            locationUrl = "https://maps.app.goo.gl/W65gPob13KHBY3fCA",
             availability = "Mon, Wed, Fri | 9:00 AM - 5:00 PM",
             profileImageRes = R.drawable.doctor_avatar
         )

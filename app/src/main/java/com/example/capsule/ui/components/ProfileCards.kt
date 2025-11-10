@@ -9,25 +9,18 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.capsule.R
-import com.example.capsule.ui.theme.Blue
 import com.example.capsule.ui.theme.DarkGray
 import com.example.capsule.ui.theme.Gray
 import com.example.capsule.ui.theme.White
@@ -35,7 +28,6 @@ import com.example.capsule.ui.theme.White
 @Composable
 fun InfoCard(
     title: String,
-    onEditClick: (() -> Unit)? = null, // Optional click handler
     content: @Composable ColumnScope.() -> Unit
 ) {
     Card(
@@ -63,18 +55,6 @@ fun InfoCard(
                     fontSize = 18.sp,
                     color = DarkGray
                 )
-
-                // Only show edit icon if onEditClick is provided
-                if (onEditClick != null) {
-                    IconButton(onClick = onEditClick) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_edit),
-                            tint = Blue,
-                            contentDescription = "Edit icon",
-                            modifier = Modifier.size(22.dp)
-                        )
-                    }
-                }
             }
 
             Spacer(modifier = Modifier.height(6.dp))

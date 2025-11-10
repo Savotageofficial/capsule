@@ -9,6 +9,7 @@ data class Doctor(
     val experience: String = "",
     val clinicName: String = "",
     val clinicAddress: String = "",
+    val locationUrl: String = "",
     val availability: String = "",
     val profileImageRes: Int? = null
 )

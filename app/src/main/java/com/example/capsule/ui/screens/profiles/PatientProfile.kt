@@ -1,13 +1,13 @@
-package com.example.capsule.ui.screens
+package com.example.capsule.ui.screens.profiles
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,10 +19,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.capsule.ui.components.InfoCard
 import com.example.capsule.ui.components.InfoRow
 import com.example.capsule.R
+import com.example.capsule.ui.screens.PatientProfileViewModel
+import com.example.capsule.ui.theme.Blue
 import com.example.capsule.ui.theme.Gray
+import com.example.capsule.ui.theme.Red
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,6 +34,7 @@ fun PatientProfileScreen(
 
     onBackClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
+    onEditClick: () -> Unit = {},
     viewModel: PatientProfileViewModel = PatientProfileViewModel(),
 ) {
     // Observe the patient from ViewModel
@@ -53,10 +58,10 @@ fun PatientProfileScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = onSettingsClick) {
+                    IconButton(onClick = onEditClick) {
                         Icon(
-                            imageVector = Icons.Filled.Settings,
-                            contentDescription = "Settings"
+                            painter = painterResource(R.drawable.ic_edit),
+                            contentDescription = "Edit"
                         )
                     }
                 }
@@ -95,10 +100,7 @@ fun PatientProfileScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             //  Personal Information Card
-            InfoCard(
-                title = stringResource(R.string.personal_information),
-                onEditClick = { /* Open edit personal info screen */ }
-            ) {
+            InfoCard(title = stringResource(R.string.personal_information)) {
                 InfoRow(label = stringResource(R.string.full_name), value = patient.name)
                 InfoRow(label = stringResource(R.string.date_of_birth), value = patient.dob)
                 InfoRow(label = stringResource(R.string.gender), value = patient.gender)
@@ -107,6 +109,41 @@ fun PatientProfileScreen(
             }
 
             Spacer(modifier = Modifier.height(32.dp))
+
+            // Footer
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.your_data_is_secure_and_private),
+                    fontSize = 14.sp,
+                    color = Gray
+                )
+
+                Button(
+                    onClick = onSettingsClick,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Blue
+                    ),
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(stringResource(R.string.settings))
+                }
+
+                Button(
+                    onClick = { /* Logout */ },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Red
+                    ),
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(stringResource(R.string.logout))
+                }
+            }
         }
     }
 }
