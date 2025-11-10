@@ -14,12 +14,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -43,6 +45,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
@@ -60,6 +63,11 @@ import com.example.capsule.ui.theme.CapsuleTheme
 data class OfferItem(
     val title: String,
     val color: Color
+)
+data class Tip(
+    val Head: String ,
+    val Description: String ,
+    val Image : Int
 )
 class PatientHomePageActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -81,7 +89,7 @@ class PatientHomePageActivity : ComponentActivity() {
 
 @Composable
 fun HomePage(modifier: Modifier = Modifier) {
-    Column {
+    Column(modifier = modifier.background(color = Color(0xFFf5f2f2))) {
         Spacer(modifier = Modifier.height(24.dp))
         Row(
             modifier = modifier
@@ -150,6 +158,31 @@ fun HomePage(modifier: Modifier = Modifier) {
         Text(text = "Health Tips" , fontSize = 24.sp ,
             modifier = Modifier.padding(horizontal = 12.dp),
             fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(24.dp))
+
+        LazyColumn(
+            modifier = Modifier.fillMaxSize()
+
+        ) {
+            val Tips = listOf(
+                Tip(
+                    Head = "5 Tips for a Healthier Life",
+                    Description = "Simple Lifestyle Changes can make a big difference for your heart health.",
+                    Image = R.drawable.medical_headphones
+                ),
+                Tip(
+                    Head = "Understanding Your Blood Pressure",
+                    Description = "Learn what the numbers mean and how to manage them.",
+                    Image = R.drawable.medical_gauge
+                )
+
+            )
+            items(items = Tips){ item ->
+                AdviceItem(Head = item.Head , Description = item.Description , Image = item.Image)
+
+            }
+            
+        }
 
 
 
@@ -226,7 +259,7 @@ fun NavBox(
 ) {
     Column(
         modifier = modifier
-            .width(120.dp)
+            .width(150.dp)
             .height(120.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(Color.White)
@@ -313,25 +346,21 @@ fun SliderItem(modifier: Modifier = Modifier, Title : String , Description : Str
 
 
 }
-@Preview(showBackground = true , showSystemUi = true)
-@Composable
-fun HomepagePreview() {
-    CapsuleTheme {
-        HomePage()
-    }
-}
+
 
 @Composable
-fun AdviceItem(modifier: Modifier = Modifier){
+fun AdviceItem(modifier: Modifier = Modifier , Head: String , Description: String , Image : Int){
 
     Card(modifier
         .padding(10.dp)
         .fillMaxWidth()
         .height(150.dp)
+        .shadow(200.dp , shape = RoundedCornerShape(10.dp))
         .clip(RoundedCornerShape(20.dp))    , colors = CardDefaults.cardColors(
-        containerColor = Color(0xFFdbdbdb)
+        containerColor = Color(0xFFffffff)
     ),
-        elevation = CardDefaults.cardElevation(10.dp)
+        elevation = CardDefaults.cardElevation(150.dp),
+
 
 
     ){
@@ -339,10 +368,26 @@ fun AdviceItem(modifier: Modifier = Modifier){
             .padding(15.dp)
             .fillMaxSize()) {
             Image(
-                painter = painterResource(id = R.drawable.medical_headphones),
-                contentDescription = "headphones"
-            )
+                painter = painterResource(id = Image),
+                contentDescription = "headphones",
+                modifier = modifier.clip(RoundedCornerShape(size = 20.dp))
+                                    .size(120.dp)
 
+            )
+            Column(
+
+            ) {
+                Text(text = Head,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = modifier.padding(start = 15.dp , top = 10.dp)
+                )
+                Text(text = Description,
+                    modifier = modifier.padding(start = 15.dp , top = 10.dp),
+                    color = Color(0xFF5e5e5e)
+
+                )
+            }
         }
     }
 
@@ -354,10 +399,17 @@ fun AdviceItem(modifier: Modifier = Modifier){
 //        SliderItem(Title = "Get 20% off your next consultation" , Description = "Limited Time Offer" , backgroundColor = Color(0xFF347deb))
 //    }
 //}
+@Preview(showBackground = true , showSystemUi = true)
+@Composable
+fun HomepagePreview() {
+    CapsuleTheme {
+        HomePage()
+    }
+}
 //@Preview(showBackground = true)
 //@Composable
 //fun AdviceItemPreview() {
 //    CapsuleTheme {
-//        AdviceItem()
+//        AdviceItem(Head = "5 Tips for a Healthier Life", Description = "Simple Lifestyle Changes can make a big difference for your heart health.", Image = R.drawable.medical_headphones)
 //    }
 //}
