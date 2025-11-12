@@ -24,8 +24,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Chat
@@ -76,9 +78,9 @@ class PatientHomePageActivity : ComponentActivity() {
         setContent {
             CapsuleTheme {
                 Scaffold(
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
                 ) { innerPadding ->
-                    HomePage(modifier = Modifier.padding(innerPadding))
+                    HomePage(modifier = Modifier.padding())
                 }
 
 
@@ -89,7 +91,8 @@ class PatientHomePageActivity : ComponentActivity() {
 
 @Composable
 fun HomePage(modifier: Modifier = Modifier) {
-    Column(modifier = modifier.background(color = Color(0xFFf5f2f2))) {
+    Column(modifier = modifier.background(color = Color(0xFFf5f2f2))
+        ) {
         Spacer(modifier = Modifier.height(24.dp))
         Row(
             modifier = modifier
