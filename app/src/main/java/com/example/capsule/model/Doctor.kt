@@ -1,6 +1,7 @@
 package com.example.capsule.model
 
 data class Doctor(
+    val id: String,         // for Firebase (unique hashcode)
     val name: String = "",
     val specialty: String = "",
     val bio: String = "",

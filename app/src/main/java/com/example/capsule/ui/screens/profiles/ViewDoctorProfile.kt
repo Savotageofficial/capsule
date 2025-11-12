@@ -1,6 +1,8 @@
 package com.example.capsule.ui.screens.profiles
 
+import android.content.Intent
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -17,12 +19,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import com.example.capsule.ui.components.InfoCard
 import com.example.capsule.R
 import com.example.capsule.ui.screens.viewmodels.DoctorProfileViewModel
@@ -33,10 +37,11 @@ import com.example.capsule.ui.theme.White
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ViewDoctorProfileScreen(viewModel: DoctorProfileViewModel = DoctorProfileViewModel()) {
-
+fun ViewDoctorProfileScreen(
+    viewModel: DoctorProfileViewModel = DoctorProfileViewModel()
+) {
     val doctor = viewModel.doctor.value
-
+    val context = LocalContext.current
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -79,7 +84,7 @@ fun ViewDoctorProfileScreen(viewModel: DoctorProfileViewModel = DoctorProfileVie
                             .weight(1f)
                     ) {
                         Text(
-                            text = "Book Appointment",
+                            text = stringResource(R.string.book_appointment),
                             fontSize = 18.sp
                         )
                     }
@@ -97,7 +102,7 @@ fun ViewDoctorProfileScreen(viewModel: DoctorProfileViewModel = DoctorProfileVie
                             .weight(1f)
                     ) {
                         Text(
-                            text = "Start Chat",
+                            text = stringResource(R.string.start_chat),
                             fontSize = 20.sp
                         )
                     }
@@ -184,7 +189,13 @@ fun ViewDoctorProfileScreen(viewModel: DoctorProfileViewModel = DoctorProfileVie
                         Text(doctor.clinicName, fontWeight = FontWeight.Medium)
                         Text(doctor.clinicAddress, color = Color.Gray)
                     }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.clickable {
+                            val intent = Intent(Intent.ACTION_VIEW, doctor.locationUrl.toUri())
+                            context.startActivity(intent)
+                        }
+                    ) {
                         Icon(
                             Icons.Default.LocationOn,
                             contentDescription = null,

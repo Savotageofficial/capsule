@@ -41,10 +41,6 @@ fun UpcomingCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
-
-            }
-            Spacer(modifier = Modifier.width(8.dp))
 
             Column {
                 Text(name, fontWeight = FontWeight.Bold, fontSize = 18.sp)

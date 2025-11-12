@@ -16,6 +16,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.capsule.R
 import com.example.capsule.ui.components.UpcomingCard
 import com.example.capsule.ui.screens.viewmodels.DoctorProfileViewModel
 import com.example.capsule.ui.theme.Blue
@@ -36,7 +37,7 @@ fun DoctorScheduleScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = stringResource(com.example.capsule.R.string.schedule),
+                        text = stringResource(R.string.schedule),
                         style = MaterialTheme.typography.titleLarge
                     )
                 },
@@ -75,7 +76,7 @@ fun DoctorScheduleScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No upcoming appointments",
+                        text = stringResource(R.string.no_upcoming_appointments),
                         color = Color.Gray,
                         fontSize = 14.sp
                     )
@@ -100,7 +101,7 @@ fun DoctorScheduleScreen(
 }
 
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun DoctorScheduleScreenPreview() {
     MaterialTheme {

@@ -10,11 +10,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.capsule.R
 import com.example.capsule.ui.screens.viewmodels.DoctorProfileViewModel
 import com.example.capsule.ui.theme.Blue
 
@@ -43,7 +45,7 @@ fun DoctorEditProfileScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Edit Profile") },
+                title = { Text(stringResource(R.string.edit_profile)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
@@ -66,7 +68,7 @@ fun DoctorEditProfileScreen(
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Full Name") },
+                label = { Text(stringResource(R.string.full_name)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -76,7 +78,7 @@ fun DoctorEditProfileScreen(
             OutlinedTextField(
                 value = specialty,
                 onValueChange = { specialty = it },
-                label = { Text("Specialization") },
+                label = { Text(stringResource(R.string.specialization)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -86,7 +88,7 @@ fun DoctorEditProfileScreen(
             OutlinedTextField(
                 value = bio,
                 onValueChange = { bio = it },
-                label = { Text("Bio") },
+                label = { Text(stringResource(R.string.about)) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = 100.dp),
@@ -99,7 +101,7 @@ fun DoctorEditProfileScreen(
             OutlinedTextField(
                 value = experience,
                 onValueChange = { experience = it },
-                label = { Text("Experience") },
+                label = { Text(stringResource(R.string.experience)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -109,7 +111,7 @@ fun DoctorEditProfileScreen(
             OutlinedTextField(
                 value = clinicName,
                 onValueChange = { clinicName = it },
-                label = { Text("Clinic Name") },
+                label = { Text(stringResource(R.string.clinic_name)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -119,7 +121,7 @@ fun DoctorEditProfileScreen(
             OutlinedTextField(
                 value = clinicAddress,
                 onValueChange = { clinicAddress = it },
-                label = { Text("Clinic Address") },
+                label = { Text(stringResource(R.string.clinic_address)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -129,7 +131,7 @@ fun DoctorEditProfileScreen(
             OutlinedTextField(
                 value = locationUrl,
                 onValueChange = { locationUrl = it },
-                label = { Text("Clinic Address link on maps") },
+                label = { Text(stringResource(R.string.clinic_address_link_on_maps)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -139,7 +141,7 @@ fun DoctorEditProfileScreen(
             OutlinedTextField(
                 value = availability,
                 onValueChange = { availability = it },
-                label = { Text("Availability") },
+                label = { Text(stringResource(R.string.availability)) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
@@ -158,7 +160,7 @@ fun DoctorEditProfileScreen(
                     .height(50.dp),
                 shape = MaterialTheme.shapes.medium
             ) {
-                Text("Save Changes", fontSize = 16.sp)
+                Text(stringResource(R.string.save_changes), fontSize = 16.sp)
             }
         }
     }
@@ -181,7 +183,7 @@ fun DoctorEditProfileScreen(
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun DoctorEditProfileScreenPreview() {
     MaterialTheme {

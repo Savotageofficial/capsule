@@ -80,14 +80,16 @@ fun PatientProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Profile Image
-            Image(
-                painter = painterResource(id = R.drawable.patient_profile),
-                contentDescription = "Profile Picture",
-                modifier = Modifier
-                    .size(140.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop
-            )
+            patient.profileImageRes?.let {
+                Image(
+                    painter = painterResource(id = it),
+                    contentDescription = "Doctor Image",
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -95,6 +97,14 @@ fun PatientProfileScreen(
                 text = patient.name,
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = "ID: #${patient.id} ",
+                fontSize = 14.sp,
+                color = Gray
             )
 
             Spacer(modifier = Modifier.height(24.dp))

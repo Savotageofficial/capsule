@@ -76,7 +76,7 @@ fun ViewPatientProfileScreen(
                             .weight(1f)
                     ) {
                         Text(
-                            text = "Make Prescription",
+                            text = stringResource(R.string.make_a_prescription),
                             fontSize = 18.sp
                         )
                     }
@@ -94,7 +94,7 @@ fun ViewPatientProfileScreen(
                             .weight(1f)
                     ) {
                         Text(
-                            text = "Start Chat",
+                            text = stringResource(R.string.start_chat),
                             fontSize = 20.sp
                         )
                     }
@@ -119,18 +119,19 @@ fun ViewPatientProfileScreen(
                 modifier = Modifier
                     .fillMaxWidth()
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.patient_profile),
-                    contentDescription = "Profile Picture",
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop
-                )
+                patient.profileImageRes?.let {
+                    Image(
+                        painter = painterResource(id = it),
+                        contentDescription = "Doctor Image",
+                        modifier = Modifier
+                            .size(130.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                }
                 Spacer(modifier = Modifier.width(8.dp))
 
-                Column() {
-
+                Column {
                     Text(
                         text = patient.name,
                         style = MaterialTheme.typography.titleLarge,

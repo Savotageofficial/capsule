@@ -87,7 +87,10 @@ fun DoctorDashboardScreen(
                     }
                 }
                 IconButton(onClick = { /* navigate to settings */ }) {
-                    Icon(Icons.Default.Settings, contentDescription = "Settings")
+                    Icon(
+                        Icons.Default.Settings,
+                        contentDescription = "Settings"
+                    )
                 }
             }
 
@@ -95,7 +98,6 @@ fun DoctorDashboardScreen(
 
             // Stats Cards
             Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 4.dp)
@@ -206,11 +208,10 @@ fun DoctorDashboardScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // --- Upcoming Section ---
+            // Upcoming Section
             Text(stringResource(R.string.upcoming), fontWeight = FontWeight.Bold, fontSize = 22.sp)
             Spacer(modifier = Modifier.height(12.dp))
 
-            // LazyColumn for dynamic upcoming list
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -234,7 +235,7 @@ fun DoctorDashboardScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "No upcoming appointments",
+                                text = stringResource(R.string.no_upcoming_appointments),
                                 color = Color.Gray,
                                 fontSize = 14.sp
                             )
@@ -246,7 +247,7 @@ fun DoctorDashboardScreen(
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun DoctorDashboardScreenPreview() {
     MaterialTheme {

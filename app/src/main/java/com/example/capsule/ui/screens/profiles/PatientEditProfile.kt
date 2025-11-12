@@ -10,11 +10,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.capsule.R
 import com.example.capsule.ui.screens.viewmodels.PatientProfileViewModel
 import com.example.capsule.ui.theme.Blue
 
@@ -41,7 +43,7 @@ fun PatientEditProfileScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Edit Profile") },
+                title = { Text(stringResource(R.string.edit_profile) )},
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
@@ -64,7 +66,7 @@ fun PatientEditProfileScreen(
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Full Name") },
+                label = { Text(stringResource(R.string.full_name)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -74,7 +76,7 @@ fun PatientEditProfileScreen(
             OutlinedTextField(
                 value = dob,
                 onValueChange = { dob = it },
-                label = { Text("Date of Birth") },
+                label = { Text(stringResource(R.string.date_of_birth)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -84,7 +86,7 @@ fun PatientEditProfileScreen(
             OutlinedTextField(
                 value = gender,
                 onValueChange = { gender = it },
-                label = { Text("Gender") },
+                label = { Text(stringResource(R.string.gender)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -94,7 +96,7 @@ fun PatientEditProfileScreen(
             OutlinedTextField(
                 value = contact,
                 onValueChange = { contact = it },
-                label = { Text("Contact") },
+                label = { Text(stringResource(R.string.contact)) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
@@ -105,7 +107,7 @@ fun PatientEditProfileScreen(
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                label = { Text("Email") },
+                label = { Text(stringResource(R.string.email)) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
@@ -152,7 +154,7 @@ fun PatientEditProfileScreen(
                     .height(50.dp),
                 shape = MaterialTheme.shapes.medium
             ) {
-                Text("Save Changes", fontSize = 16.sp)
+                Text(stringResource(R.string.save_changes), fontSize = 16.sp)
             }
         }
     }

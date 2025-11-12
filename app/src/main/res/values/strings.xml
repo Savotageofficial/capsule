@@ -23,4 +23,14 @@
     <string name="messages">Messages</string>
     <string name="upcoming">Upcoming</string>
     <string name="make_a_prescription">Make a Prescription</string>
+    <string name="no_upcoming_appointments">No upcoming appointments</string>
+    <string name="specialization">Specialization</string>
+    <string name="experience">Experience</string>
+    <string name="clinic_name">Clinic Name</string>
+    <string name="clinic_address">Clinic Address</string>
+    <string name="clinic_address_link_on_maps">Clinic Address link on maps</string>
+    <string name="save_changes">Save Changes</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="book_appointment">Book Appointment</string>
+    <string name="start_chat">Start Chat</string>
 </resources>

@@ -11,13 +11,14 @@ class DoctorProfileViewModel : ViewModel() {
 
     private val _doctor = mutableStateOf(
         Doctor(
-            name = "Dr. Evelyn Reed",
+            id = "5656854",
+            name = "Dr. Hamza House",
             specialty = "Cardiologist",
-            bio = "Dedicated cardiologist with a passion for preventative care and patient education.",
+            bio = "Here to cure safwat.",
             rating = 4.9,
             reviewsCount = 125,
-            experience = "15+ years of experience",
-            clinicName = "City Heart Center",
+            experience = "15+ days of experience",
+            clinicName = "Capsule fckn group",
             clinicAddress = "123 Main St, Anytown",
             locationUrl = "https://maps.app.goo.gl/W65gPob13KHBY3fCA",
             availability = "Mon, Wed, Fri | 9:00 AM - 5:00 PM",

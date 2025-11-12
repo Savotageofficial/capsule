@@ -1,6 +1,8 @@
 package com.example.capsule.ui.screens.profiles
 
+import android.content.Intent
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -16,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -27,17 +30,20 @@ import com.example.capsule.R
 import com.example.capsule.ui.screens.viewmodels.DoctorProfileViewModel
 import com.example.capsule.ui.theme.Blue
 import com.example.capsule.ui.theme.Gold
+import com.example.capsule.ui.theme.Gray
 import com.example.capsule.ui.theme.Red
+import androidx.core.net.toUri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DoctorProfileScreen(
     onEditClick: () -> Unit = {},
     onBackClick: () -> Unit = {},
+
     viewModel: DoctorProfileViewModel = DoctorProfileViewModel()
 ) {
-
     val doctor = viewModel.doctor.value
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -88,7 +94,15 @@ fun DoctorProfileScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(doctor.name, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-            Text(doctor.specialty, fontSize = 16.sp, color = Color.Gray)
+            Text(doctor.specialty, fontSize = 18.sp, color = Color.Gray)
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "ID: #${doctor.id} ",
+                fontSize = 14.sp,
+                color = Gray
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -144,14 +158,20 @@ fun DoctorProfileScreen(
                     Text(doctor.experience)
                 }
             }
-
             InfoCard(title = stringResource(R.string.location)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         Text(doctor.clinicName, fontWeight = FontWeight.Medium)
                         Text(doctor.clinicAddress, color = Color.Gray)
                     }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.clickable {
+                            val intent = Intent(Intent.ACTION_VIEW, doctor.locationUrl.toUri())
+                            context.startActivity(intent)
+                        }
+
+                    ) {
                         Icon(
                             Icons.Default.LocationOn,
                             contentDescription = null,
