@@ -2,4 +2,6 @@
     <string name="app_name">Capsule</string>
     <string name="title_activity_patient_home_page">PatientHomePageActivity</string>
     <string name="title_activity_chat">ChatActivity</string>
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="title_activity_sign_up">SignUpActivity</string>
 </resources>
