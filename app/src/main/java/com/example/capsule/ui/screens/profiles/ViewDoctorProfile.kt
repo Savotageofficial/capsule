@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.capsule.ui.components.InfoCard
 import com.example.capsule.R
-import com.example.capsule.ui.screens.DoctorProfileViewModel
+import com.example.capsule.ui.screens.viewmodels.DoctorProfileViewModel
 import com.example.capsule.ui.theme.Blue
 import com.example.capsule.ui.theme.Gold
 import com.example.capsule.ui.theme.Green

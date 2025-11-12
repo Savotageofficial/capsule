@@ -15,7 +15,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.capsule.ui.screens.PatientProfileViewModel
+import com.example.capsule.ui.screens.viewmodels.PatientProfileViewModel
 import com.example.capsule.ui.theme.Blue
 
 @OptIn(ExperimentalMaterial3Api::class)

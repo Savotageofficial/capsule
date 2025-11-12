@@ -18,4 +18,9 @@
     <string name="your_data_is_secure_and_private">Your data is secure and private.</string>
     <string name="settings">Settings</string>
     <string name="logout">Logout</string>
+    <string name="welcome_back">Welcome back,</string>
+    <string name="schedule">Schedule</string>
+    <string name="messages">Messages</string>
+    <string name="upcoming">Upcoming</string>
+    <string name="make_a_prescription">Make a Prescription</string>
 </resources>

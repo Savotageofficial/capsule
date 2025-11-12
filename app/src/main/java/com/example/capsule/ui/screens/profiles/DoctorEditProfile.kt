@@ -1,4 +1,4 @@
-package com.example.capsule.ui.screens
+package com.example.capsule.ui.screens.profiles
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -15,6 +15,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.capsule.ui.screens.viewmodels.DoctorProfileViewModel
 import com.example.capsule.ui.theme.Blue
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -148,35 +149,6 @@ fun DoctorEditProfileScreen(
 
             Button(
                 onClick = {
-                    // TODO: make firebase repo file and and paste this in it
-                    /*
-                    val db = FirebaseFirestore.getInstance()
-                    val userId = FirebaseAuth.getInstance().currentUser?.uid
-
-                    if (userId != null) {
-                        val updatedDoctor = mapOf(
-                            "name" to name.text,
-                            "specialty" to specialty.text,
-                            "bio" to bio.text,
-                            "experience" to experience.text,
-                            "clinicName" to clinicName.text,
-                            "clinicAddress" to clinicAddress.text,
-                            "availability" to availability.text
-                        )
-
-                        db.collection("doctors")
-                            .document(userId)
-                            .update(updatedDoctor)
-                            .addOnSuccessListener {
-                                Log.d("DoctorEditProfile", "Doctor profile updated.")
-                                showSaveDialog = true
-                            }
-                            .addOnFailureListener { e ->
-                                Log.e("DoctorEditProfile", "Error updating profile", e)
-                            }
-                    }
-                    */
-
                     onSaveClick()
                     showSaveDialog = true
                 },

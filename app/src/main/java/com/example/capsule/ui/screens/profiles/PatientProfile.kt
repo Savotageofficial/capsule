@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.sp
 import com.example.capsule.ui.components.InfoCard
 import com.example.capsule.ui.components.InfoRow
 import com.example.capsule.R
-import com.example.capsule.ui.screens.PatientProfileViewModel
+import com.example.capsule.ui.screens.viewmodels.PatientProfileViewModel
 import com.example.capsule.ui.theme.Blue
 import com.example.capsule.ui.theme.Gray
 import com.example.capsule.ui.theme.Red

@@ -11,5 +11,7 @@ data class Doctor(
     val clinicAddress: String = "",
     val locationUrl: String = "",
     val availability: String = "",
-    val profileImageRes: Int? = null
+    val profileImageRes: Int? = null,
+    val appointments: List<Appointment> = emptyList()
 )
+
