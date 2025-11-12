@@ -33,4 +33,6 @@
     <string name="edit_profile">Edit Profile</string>
     <string name="book_appointment">Book Appointment</string>
     <string name="start_chat">Start Chat</string>
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="title_activity_sign_up">SignUpActivity</string>
 </resources>
