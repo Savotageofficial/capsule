@@ -79,7 +79,7 @@ class PatientHomePageActivity : ComponentActivity() {
             CapsuleTheme {
                 Scaffold(
                     modifier = Modifier
-                ) { innerPadding ->
+                ) {
                     HomePage(modifier = Modifier.padding())
                 }
 
