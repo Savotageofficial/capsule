@@ -86,7 +86,9 @@ class PatientHomePageActivity : ComponentActivity() {
 @Composable
 fun HomePage(
   modifier: Modifier = Modifier,
-  onProfilePatientClick: () -> Unit = {}
+  onProfilePatientClick: () -> Unit = {},
+  onAppointmentsClick: () -> Unit = {},
+  onChatsClick: () -> Unit = {}
 ) {
     Column(modifier = modifier.background(color = Color(0xFFf5f2f2))
         ) {
@@ -105,7 +107,7 @@ fun HomePage(
             )
             ProfileIcon(
                 onClick = {
-                    onProfilePatientClick
+                    onProfilePatientClick ()
                 }
             )
         }
@@ -124,14 +126,14 @@ fun HomePage(
                 icon = Icons.Default.DateRange,
                 label = "Appointments",
                 onClick = {
-                    //TODO : weeeeeee
+                    //TODO : onAppointmentsClick()
                 }
             )
             NavBox(
                 icon = Icons.AutoMirrored.Filled.Chat,
                 label = "Chats",
                 onClick = {
-                    //TODO : weeeeeee
+                    //TODO : onChatsClick()
                 }
             )
         }
@@ -198,7 +200,7 @@ fun HomePage(
 @Composable
 fun ProfileIcon(
     modifier: Modifier = Modifier,
-    onClick: () -> Unit = {}
+    onClick : () -> Unit = {}
 ) {
     IconButton(
         onClick =  onClick,
@@ -211,7 +213,6 @@ fun ProfileIcon(
         )
     }
 }
-
 @Composable
 fun SearchBar(
     modifier: Modifier = Modifier,
