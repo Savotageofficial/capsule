@@ -1,5 +1,5 @@
 // ChatActivity.kt
-package com.example.capsule
+/*package com.example.capsule
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -395,3 +395,5 @@ private fun ChatPreview() {
         }
     }
 }
+
+ */

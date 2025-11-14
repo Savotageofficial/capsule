@@ -8,7 +8,7 @@ class AuthRepository {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
 
-    val user = auth.currentUser //taken outside for repetition and memory leaks
+    // create account
     fun createAccount(
         email: String,
         password: String,
@@ -21,36 +21,49 @@ class AuthRepository {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    val userData = hashMapOf<String, Any?>(
-                        "name" to name,
-                        "email" to email,
-                        "userType" to userType,
-                        "specialization" to specialization
-                    )
-                    db.collection("users").document(user!!.uid).set(userData)
-                        .addOnSuccessListener {
-                            verifyEmail(onSuccess, onFailure)
-                        }
-                        .addOnFailureListener { exception ->
-                            onFailure(exception.message ?: "Failed to save user data")
-                        }
+                    val currentUser = auth.currentUser
+                    if (currentUser != null) {
+                        val userData = hashMapOf<String, Any?>(
+                            "name" to name,
+                            "email" to email,
+                            "userType" to userType,
+                            "specialization" to specialization
+                        )
+
+                        db.collection("users").document(currentUser.uid)
+                            .set(userData)
+                            .addOnSuccessListener {
+                                sendEmailVerification(onSuccess, onFailure)
+                            }
+                            .addOnFailureListener { exception ->
+                                onFailure(exception.message ?: "Failed to save user data")
+                            }
+                    } else {
+                        onFailure("Failed to create user")
+                    }
                 } else {
                     onFailure(task.exception?.message ?: "Sign up failed")
                 }
             }
     }
 
-    private fun verifyEmail(onSuccess: () -> Unit, onFailure: (String) -> Unit) {
-        user?.sendEmailVerification()
+    // email verification
+    private fun sendEmailVerification(
+        onSuccess: () -> Unit,
+        onFailure: (String) -> Unit
+    ) {
+        val currentUser = auth.currentUser
+        currentUser?.sendEmailVerification()
             ?.addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     onSuccess()
                 } else {
                     onFailure("Failed to send verification email")
                 }
-            }
+            } ?: onFailure("User not available")
     }
 
+    // sign in
     fun signIn(
         email: String,
         password: String,
@@ -60,8 +73,9 @@ class AuthRepository {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    if (user?.isEmailVerified == true) {
-                        db.collection("users").document(user.uid).get()
+                    val currentUser = auth.currentUser
+                    if (currentUser?.isEmailVerified == true) {
+                        db.collection("users").document(currentUser.uid).get()
                             .addOnSuccessListener { document ->
                                 val userType = document.getString("userType") ?: "Patient"
                                 onSuccess(userType)
@@ -78,6 +92,7 @@ class AuthRepository {
             }
     }
 
+    // reset password
     fun sendPasswordResetEmail(
         email: String,
         onSuccess: () -> Unit,
@@ -93,13 +108,17 @@ class AuthRepository {
             }
     }
 
+    // check if user signed in
     fun isUserSignedIn(): Boolean {
-        return user != null && user.isEmailVerified
+        val currentUser = auth.currentUser
+        return currentUser != null && currentUser.isEmailVerified
     }
 
+
     fun getCurrentUserType(onResult: (String?) -> Unit) {
-        if (user != null) {
-            db.collection("users").document(user.uid).get()
+        val currentUser = auth.currentUser
+        if (currentUser != null) {
+            db.collection("users").document(currentUser.uid).get()
                 .addOnSuccessListener { document ->
                     onResult(document.getString("userType"))
                 }
@@ -114,6 +133,4 @@ class AuthRepository {
     fun logout() {
         auth.signOut()
     }
-
 }
-
