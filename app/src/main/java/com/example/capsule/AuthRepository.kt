@@ -8,7 +8,7 @@ class AuthRepository {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
 
-    val user = auth.currentUser //taken outside for repetition and memory leaks
+//    val user = auth.currentUser | taken outside for repetition and memory leaks
     fun createAccount(
         email: String,
         password: String,
@@ -21,6 +21,7 @@ class AuthRepository {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
+                    val user = auth.currentUser
                     val userData = hashMapOf<String, Any?>(
                         "name" to name,
                         "email" to email,
@@ -41,6 +42,7 @@ class AuthRepository {
     }
 
     private fun verifyEmail(onSuccess: () -> Unit, onFailure: (String) -> Unit) {
+        val user = auth.currentUser
         user?.sendEmailVerification()
             ?.addOnCompleteListener { task ->
                 if (task.isSuccessful) {
@@ -60,6 +62,7 @@ class AuthRepository {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
+                    val user = auth.currentUser
                     if (user?.isEmailVerified == true) {
                         db.collection("users").document(user.uid).get()
                             .addOnSuccessListener { document ->
@@ -94,10 +97,12 @@ class AuthRepository {
     }
 
     fun isUserSignedIn(): Boolean {
+        val user = auth.currentUser
         return user != null && user.isEmailVerified
     }
 
     fun getCurrentUserType(onResult: (String?) -> Unit) {
+        val user = auth.currentUser
         if (user != null) {
             db.collection("users").document(user.uid).get()
                 .addOnSuccessListener { document ->
@@ -109,15 +114,6 @@ class AuthRepository {
         } else {
             onResult(null)
         }
-    }
-
-    fun updateUserStatus(isOnline: Boolean) {
-        user ?: return
-        val updates = hashMapOf<String, Any>(
-            "isOnline" to isOnline,
-            "LastSeen" to com.google.firebase.Timestamp.now()
-        )
-        db.collection("users").document(user.uid).update(updates)
     }
 }
 

@@ -22,6 +22,11 @@
             android:label="@string/title_activity_sign_up"
             android:theme="@style/Theme.Capsule"/>
         <activity
+            android:name=".SearchActivity"
+            android:exported="true"
+            android:label="@string/title_activity_search"
+            android:theme="@style/Theme.Capsule" />
+        <activity
             android:name=".LoginActivity"
             android:exported="false"
             android:label="@string/title_activity_login"
