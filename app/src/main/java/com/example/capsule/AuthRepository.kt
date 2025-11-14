@@ -114,5 +114,10 @@ class AuthRepository {
             onResult(null)
         }
     }
+
+    fun logout() {
+        auth.signOut()
+    }
+
 }
 
