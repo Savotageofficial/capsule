@@ -49,3 +49,5 @@ class DoctorProfileViewModel : ViewModel() {
 
     val doctor: State<Doctor> = _doctor
 }
+
+//ignore (by safwat)

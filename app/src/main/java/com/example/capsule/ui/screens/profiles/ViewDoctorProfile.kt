@@ -227,3 +227,4 @@ fun ViewDoctorProfileScreenPreview() {
         ViewDoctorProfileScreen()
     }
 }
+//ignore (by safwat)

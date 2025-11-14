@@ -9,3 +9,5 @@ data class Patient(
     val profileImageRes: Int? = null,
     val email: String,
 )
+
+//ignore (by safwat)

@@ -190,3 +190,4 @@ fun DoctorEditProfileScreenPreview() {
         DoctorEditProfileScreen()
     }
 }
+//ignore (by safwat)
