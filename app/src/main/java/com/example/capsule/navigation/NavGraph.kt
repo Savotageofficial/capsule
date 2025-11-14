@@ -23,6 +23,7 @@ fun NavGraph(navController: NavHostController) {
         composable("patientHome") {
             HomePage(
                 onProfilePatientClick =  { navController.navigate("patientProfile") },
+                searchonclick = {}
             )
         }
 

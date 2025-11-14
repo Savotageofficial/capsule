@@ -35,4 +35,5 @@
     <string name="start_chat">Start Chat</string>
     <string name="title_activity_login">LoginActivity</string>
     <string name="title_activity_sign_up">SignUpActivity</string>
+    <string name="title_activity_search">SearchActivity</string>
 </resources>
