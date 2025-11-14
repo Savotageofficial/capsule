@@ -16,19 +16,29 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
@@ -42,7 +52,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.modifier.modifierLocalOf
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
@@ -51,6 +67,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.toSize
 import com.example.capsule.ui.theme.CapsuleTheme
 import kotlin.math.exp
 
@@ -89,13 +106,27 @@ fun Search(modifier: Modifier = Modifier , searchResults: List<String>) {
 
             MySearchBar(searchResults = searchResults)
 
+        }
+        Spacer(modifier = Modifier.height(24.dp))
+        Row() {
+            var Specializations = listOf("Neurologist" , "Allergist" , "Anesthesiologist" , "Cardiologists" , "Colon and Rectal Surgeon" , "Critical Care Medicine Specialist" , "Dermatologist" , "Endocrinologist" , "Emergency Medicine Specialist" , "Family Physician" , "Gastroenterologist" , "Geriatric Medicine Specialist" , "Hematologist" , "Nephrologist" , "Oncologist" , "Ophthalmologist" , "Pathologist" , "Otolaryngologist" , "Physiatrist" , "Psychiatrist")
 
-
-
+            MyDropDown(Specializations)
 
 
 
         }
+//        Button(onClick = {} ,
+//            modifier = modifier.fillMaxWidth()
+//                .padding(horizontal = 30.dp)
+//                .height(60.dp),
+//            shape = RoundedCornerShape(10.dp),
+//            colors = ButtonColors(containerColor = Color(0xFF13c8ec) , contentColor = Color(0xFFFFFFFF) , disabledContainerColor = ButtonDefaults.buttonColors().disabledContainerColor , disabledContentColor = ButtonDefaults.buttonColors().disabledContentColor )
+//        ) { Text("Apply Filters",
+//            fontWeight = FontWeight.Bold,
+//            fontSize = 15.sp
+//            )
+//        }
 
     }
 
@@ -117,7 +148,8 @@ fun MySearchBar(text: String = "",
                 onQueryChange = {textFieldState = it
                     },
                 onSearch = {
-//                    onSearch(textFieldState.text.toString())
+                    //                   TODO(search in the database)
+
                     expanded = false
                 },
                 expanded = expanded,
@@ -149,18 +181,11 @@ fun MySearchBar(text: String = "",
             items(count = searchResults.size){index ->
             val resultText = searchResults[index]
             Row(
-
-
-
-
-
-
-
-
                 modifier = Modifier
                     .clickable {
                         textFieldState = resultText
                         expanded = false
+                        //                   TODO(search in the database)
                     }
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp , vertical = 12.dp)
@@ -170,6 +195,82 @@ fun MySearchBar(text: String = "",
         }
     } }
 }
+
+
+
+@Composable
+fun MyDropDown(Specializations : List<String>) {
+
+    // Declaring a boolean value to store
+    // the expanded state of the Text Field
+    var mExpanded by remember { mutableStateOf(false) }
+
+    // Create a list of cities
+    val mCities = Specializations
+
+    // Create a string value to store the selected city
+    var mSelectedText by remember { mutableStateOf("Speciality") }
+
+    var mTextFieldSize by remember { mutableStateOf(Size.Zero)}
+
+    // Up Icon when expanded and down icon when collapsed
+    val icon = if (mExpanded)
+        Icons.Filled.KeyboardArrowUp
+    else
+        Icons.Filled.KeyboardArrowDown
+
+    Column(Modifier.padding(20.dp)) {
+
+        // Create an Outlined Text Field
+        // with icon and not expanded
+        Row(
+
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(60.dp)
+                .clip(RoundedCornerShape(15.dp))
+                .background(color = Color(0xFFdff2f6))
+                .onGloballyPositioned { coordinates ->
+                    // This value is used to assign to
+                    // the DropDown the same width
+                    mTextFieldSize = coordinates.size.toSize()
+                }
+                .clickable { mExpanded = !mExpanded },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+
+
+        ){Text(mSelectedText,
+                modifier = Modifier.padding(start = 30.dp)
+        )
+            Icon(icon,"contentDescription",
+                Modifier
+                    .padding(end = 30.dp)
+            )
+        }
+
+        // Create a drop-down menu with list of cities,
+        // when clicked, set the Text Field text as the city selected
+        DropdownMenu(
+            expanded = mExpanded,
+            onDismissRequest = { mExpanded = false },
+            modifier = Modifier
+                .width(with(LocalDensity.current){mTextFieldSize.width.toDp()})
+
+        ) {
+            mCities.forEach { label ->
+                DropdownMenuItem(
+                    text = { Text(text = label) },
+                    onClick = {
+                        mSelectedText = label
+                        mExpanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
 
 @Preview(showBackground = true , showSystemUi = true)
 @Composable

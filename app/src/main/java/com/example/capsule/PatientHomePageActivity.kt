@@ -312,10 +312,10 @@ fun NavBox(
 @Composable
 fun SliderItem(modifier: Modifier = Modifier, Title : String , Description : String , backgroundColor : Color){
     Card(modifier
-                    .padding(10.dp)
-                    .width(250.dp)
-                    .height(150.dp)
-                    .clip(RoundedCornerShape(20.dp))    , colors = CardDefaults.cardColors(
+        .padding(10.dp)
+        .width(250.dp)
+        .height(150.dp)
+        .clip(RoundedCornerShape(20.dp))    , colors = CardDefaults.cardColors(
                         containerColor = backgroundColor
                     ),
         elevation = CardDefaults.cardElevation(10.dp)
@@ -410,13 +410,13 @@ fun AdviceItem(modifier: Modifier = Modifier , Head: String , Description: Strin
 //    }
 //}
 //-------------------------------
-//@Preview(showBackground = true , showSystemUi = true)
-//@Composable
-//fun HomepagePreview() {
-//    CapsuleTheme {
-//        HomePage()
-//    }
-//}
+@Preview(showBackground = true , showSystemUi = true)
+@Composable
+fun HomepagePreview() {
+    CapsuleTheme {
+        HomePage(searchonclick = { print("hello") })
+    }
+}
 //------------------------------
 //@Preview(showBackground = true)
 //@Composable
