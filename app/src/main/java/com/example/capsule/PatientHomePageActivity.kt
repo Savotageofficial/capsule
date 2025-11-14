@@ -1,5 +1,6 @@
 package com.example.capsule
 
+import android.content.Intent
 import com.example.capsule.R
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -24,8 +25,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Chat
@@ -55,9 +58,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.startActivity
 import com.example.capsule.ui.theme.CapsuleTheme
-
-
+import kotlin.jvm.java
 
 
 data class OfferItem(
@@ -75,11 +78,12 @@ class PatientHomePageActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             CapsuleTheme {
-                Scaffold(
-                    modifier = Modifier.fillMaxSize()
-                ) { innerPadding ->
-                    HomePage(modifier = Modifier.padding(innerPadding))
-                }
+
+                    HomePage(modifier = Modifier.padding() , {
+                        val intent = Intent(this , SearchActivity::class.java)
+                        startActivity(intent)
+                    } , {})
+
 
 
             }
@@ -88,8 +92,9 @@ class PatientHomePageActivity : ComponentActivity() {
 }
 
 @Composable
-fun HomePage(modifier: Modifier = Modifier) {
-    Column(modifier = modifier.background(color = Color(0xFFf5f2f2))) {
+fun HomePage(modifier: Modifier = Modifier , searchonclick: () -> Unit , onProfilePatientClick: () -> Unit) {
+    Column(modifier = modifier.background(color = Color(0xFFf5f2f2))
+        ) {
         Spacer(modifier = Modifier.height(24.dp))
         Row(
             modifier = modifier
@@ -106,6 +111,7 @@ fun HomePage(modifier: Modifier = Modifier) {
             ProfileIcon(
                 onClick = {
                     // TODO: Navigate to Profile Screen
+                    onProfilePatientClick
                 }
             )
         }
@@ -114,6 +120,10 @@ fun HomePage(modifier: Modifier = Modifier) {
             SearchBar (
                 onClick = {
                     // TODO: u know what to do dimwit!
+                    // dw , ik my job
+                    searchonclick()
+
+
                 }
             )
 
@@ -211,7 +221,8 @@ fun ProfileIcon(
 @Composable
 fun SearchBar(
     modifier: Modifier = Modifier,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    color: Color = Color(0xFF4CAF50)
 ) {
     Box(
         modifier = modifier
@@ -226,7 +237,7 @@ fun SearchBar(
             modifier = Modifier
                 .matchParentSize()
                 .background(
-                    color = Color(0xFF4CAF50), // soft green
+                    color = color, // soft green
                     shape = RoundedCornerShape(12.dp)
                 )
                 .clickable { onClick() }
@@ -302,10 +313,10 @@ fun NavBox(
 @Composable
 fun SliderItem(modifier: Modifier = Modifier, Title : String , Description : String , backgroundColor : Color){
     Card(modifier
-                    .padding(10.dp)
-                    .width(250.dp)
-                    .height(150.dp)
-                    .clip(RoundedCornerShape(20.dp))    , colors = CardDefaults.cardColors(
+        .padding(10.dp)
+        .width(250.dp)
+        .height(150.dp)
+        .clip(RoundedCornerShape(20.dp))    , colors = CardDefaults.cardColors(
                         containerColor = backgroundColor
                     ),
         elevation = CardDefaults.cardElevation(10.dp)
@@ -399,13 +410,15 @@ fun AdviceItem(modifier: Modifier = Modifier , Head: String , Description: Strin
 //        SliderItem(Title = "Get 20% off your next consultation" , Description = "Limited Time Offer" , backgroundColor = Color(0xFF347deb))
 //    }
 //}
+//-------------------------------
 @Preview(showBackground = true , showSystemUi = true)
 @Composable
 fun HomepagePreview() {
     CapsuleTheme {
-        HomePage()
+        HomePage(searchonclick = { print("hello") } , onProfilePatientClick = {})
     }
 }
+//------------------------------
 //@Preview(showBackground = true)
 //@Composable
 //fun AdviceItemPreview() {
