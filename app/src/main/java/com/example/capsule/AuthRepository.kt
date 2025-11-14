@@ -111,14 +111,9 @@ class AuthRepository {
         }
     }
 
-    fun updateUserStatus(isOnline: Boolean) {
-        user ?: return
-        val updates = hashMapOf<String, Any>(
-            "isOnline" to isOnline,
-            "LastSeen" to com.google.firebase.Timestamp.now()
-        )
-        db.collection("users").document(user.uid).update(updates)
+    fun logout() {
+        auth.signOut()
     }
+
 }
 
-// لول فشخ تمب سيمب عاش اتنشن

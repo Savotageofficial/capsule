@@ -57,12 +57,12 @@ class SignUpActivity : ComponentActivity() {
                                 finish()
                             },
                             onUserNotFound = {
-                                showSplash = false // Show the SignUp UI
+                                showSplash = false
                             }
                         )
                     }
                 } else {
-                    // Real Sign Up screen
+                    
                     var isLoading by remember { mutableStateOf(false) }
                     SignUpScreen(
                         onSignUpClick = { name, email, password, userType, specialization ->
