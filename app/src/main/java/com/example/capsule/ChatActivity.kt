@@ -127,7 +127,8 @@ fun TopNavBar(
         modifier = modifier
             .fillMaxWidth()
             .statusBarsPadding(), //MAGIC, THIS SHIT IS AMAZING
-        tonalElevation = 0.dp, //increases color difference from background a little, don't change it for now
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.0f),
+        tonalElevation = 0.dp, //useless line, kinda funny! ha!
         shadowElevation = 0.dp //its not useless, its just broken
     ) {
         Row(
@@ -290,11 +291,10 @@ fun MessageNavBar(
     var text by remember { mutableStateOf("") }
 
     Surface(
-        tonalElevation = 0.dp,
+        tonalElevation = 2.dp,
         shadowElevation = 2.dp, modifier = modifier
             .fillMaxWidth()
             .navigationBarsPadding()//pushes up when nav bar or keyboard is visible
-        //in case of an issue, use imePadding()
     ) {
         Row(
             modifier = modifier

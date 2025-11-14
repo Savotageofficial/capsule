@@ -15,6 +15,13 @@
             android:name=".ChatActivity"
             android:exported="false"
             android:label="@string/title_activity_chat"
+            android:theme="@style/Theme.Capsule"/>
+        <activity
+            android:name=".SearchActivity"
+            android:exported="true"
+            android:label="@string/title_activity_search"
+            android:theme="@style/Theme.Capsule" />
+        <activity
             android:name=".MainActivity"
             android:exported="false"
             android:label="@string/title_activity_sign_up"
@@ -26,7 +33,7 @@
             android:theme="@style/Theme.Capsule" />
         <activity
             android:name=".PatientHomePageActivity"
-            android:exported="false"
+            android:exported="true"
             android:label="@string/title_activity_patient_home_page"
             android:theme="@style/Theme.Capsule" />
         <activity
