@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,6 +21,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -36,6 +40,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,6 +54,9 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.capsule.model.ChatViewModel
+import com.example.capsule.model.Message
 import com.example.capsule.ui.theme.CapsuleTheme
 
 class ChatActivity : ComponentActivity() {
@@ -55,6 +64,11 @@ class ChatActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+
+            val chatViewModel = viewModel<ChatViewModel>()
+            val currentUserId = "user1"
+            val otherUserId = "user2"
+
             CapsuleTheme {
                 // instead of a compose function, scaffold contains unique compose functions
                 Scaffold(
@@ -73,7 +87,7 @@ class ChatActivity : ComponentActivity() {
                             onAttach = { /* TODO: opens attachment drop up menu */ },//should contain
                             //image, file, document, audio, prescription, or anything else u think is worth it!
                             onSend = { message ->
-                                // TODO: send message to Firebase using liveDate! pain! and suffering!
+                                chatViewModel.sendMessage(currentUserId, message)
                             }
                         )
                     },
@@ -85,10 +99,11 @@ class ChatActivity : ComponentActivity() {
                             .padding(innerPadding)
                     ) {
                         ChatArea(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f) // flexible: takes remaining space above bottom bar
+                            currentUserId = "user1",
+                            otherUserId = "user2",
+                            chatViewModel = chatViewModel
                         )
+
                         // MessageNavBar is in bottomBar of the Scaffold; keep layout simple
                     }
                 }
@@ -97,7 +112,7 @@ class ChatActivity : ComponentActivity() {
     }
 }
 
-/** composables **/
+/** composable **/
 /**  HAMZA HESHAM MADE THIS SHIT!  **/
 
 @Composable
@@ -112,7 +127,7 @@ fun TopNavBar(
         modifier = modifier
             .fillMaxWidth()
             .statusBarsPadding(), //MAGIC, THIS SHIT IS AMAZING
-        tonalElevation = 0.dp, //increases color difference from background a little, dont change it for now
+        tonalElevation = 0.dp, //increases color difference from background a little, don't change it for now
         shadowElevation = 0.dp //its not useless, its just broken
     ) {
         Row(
@@ -191,24 +206,78 @@ fun TopNavBar(
 /** ChatArea: flexible, shows messages from Firebase (hooked later).
  *  Currently it renders an empty placeholder and a note where to integrate Firebase. */
 @Composable
-fun ChatArea(modifier: Modifier = Modifier) {
-    // TODO: Replace this placeholder with a LazyColumn that observes Firebase messages.
-    // Example plan:
-    // 1) Create a ViewModel that exposes a Flow / State<List<Message>> from Firebase.
-    // 2) CollectAsState in this composable and feed a LazyColumn with items.
-    // 3) Scroll to bottom on new messages.
-    Box(
-        modifier = modifier
+fun ChatArea(
+    currentUserId: String,
+    otherUserId: String,
+    chatViewModel: ChatViewModel
+) {
+    // Start observing messages for this chat
+    LaunchedEffect(Unit) {
+        chatViewModel.startObserving(currentUserId, otherUserId)
+    }
+
+    val messages by chatViewModel.messages.collectAsState()
+    val listState = rememberLazyListState()
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(12.dp),
-        contentAlignment = Alignment.Center
+            .padding(12.dp)
     ) {
-        Text(
-            text = "No messages yet — Firebase integration goes here.",
-            style = MaterialTheme.typography.bodyMedium
-        )
+
+        // Chat messages list
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            reverseLayout = false
+        ) {
+            items(messages) { message ->
+                ChatBubble(message = message, isCurrentUser = message.senderId == currentUserId)
+            }
+        }
+
+        // Auto-scroll to bottom on new messages
+        LaunchedEffect(messages.size) {
+            if (messages.isNotEmpty()) {
+                listState.animateScrollToItem(messages.size - 1)
+            }
+        }
     }
 }
+
+@Composable
+fun ChatBubble(message: Message, isCurrentUser: Boolean) {
+    val bubbleColor = if (isCurrentUser) Color(0xFF19CEFF) else Color(0xFFEFEFEF)
+    val textColor = if (isCurrentUser) Color.White else Color.Black
+
+    Box(
+        modifier = Modifier.fillMaxWidth()
+            .background(
+                color = bubbleColor,
+                shape = RoundedCornerShape(
+                    topStart = if (isCurrentUser) 16.dp else 4.dp,
+                    topEnd = if (isCurrentUser) 4.dp else 16.dp,
+                    bottomStart = 16.dp,
+                    bottomEnd = 16.dp
+                )
+            ),
+        contentAlignment = (if (isCurrentUser) Alignment.End else Alignment.Start) as Alignment
+    ) {
+        Box(
+            modifier = Modifier
+                .background(bubbleColor, RoundedCornerShape(16.dp))
+                .padding(12.dp)
+        ) {
+            Text(
+                text = message.message,
+                color = textColor
+            )
+        }
+    }
+}
+
 
 /** Bottom message bar: input, attach button, send button.
  *  We leave the send/attach handlers empty for you to implement the Firebase / image picker logic. */
@@ -235,8 +304,8 @@ fun MessageNavBar(
         ) {
             TextField(
                 modifier = Modifier
-                    .weight(1f) //drops down to the bottom of composables
-                    .heightIn(min = 56.dp), //doesnt allow it to shrink so much
+                    .weight(1f) //drops down to the bottom of composable
+                    .heightIn(min = 56.dp), //doesn't allow it to shrink so much
                 shape = RoundedCornerShape(24.dp),
                 colors = TextFieldDefaults.colors( //all this to remove underline, shitty compose
                     focusedIndicatorColor = Color.Transparent,
@@ -286,6 +355,9 @@ fun MessageNavBar(
 @Preview
 @Composable
 private fun ChatPreview() {
+
+    val chatViewModel = viewModel<ChatViewModel>()
+
     CapsuleTheme {
         // Root scaffold contains the top, center (chat) and bottom (message) parts
         Scaffold(
@@ -313,10 +385,11 @@ private fun ChatPreview() {
                     .padding(innerPadding)
             ) {
                 ChatArea(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f) // flexible: takes remaining space above bottom bar
+                    currentUserId = "me",
+                    otherUserId = "doctor",
+                    chatViewModel = chatViewModel
                 )
+
                 // MessageNavBar is in bottomBar of the Scaffold; keep layout simple
             }
         }
