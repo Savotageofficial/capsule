@@ -1,5 +1,6 @@
 package com.example.capsule
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,12 +15,17 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             CapsuleTheme {
-                val navController = rememberNavController()
                 val userType = intent.getStringExtra("userType") ?: "Patient"
-                val startDestination = if (userType == "Doctor") "DoctorDashboard" else "patientHome"
 
-                // This should work now
-                NavGraph(navController = navController, startDestination = startDestination)
+                if (userType == "Doctor") {
+                    // Use NavGraph for doctors
+                    val navController = rememberNavController()
+                    NavGraph(navController = navController, startDestination = "DoctorDashboard")
+                } else {
+                    // Launch PatientHomePageActivity for patients
+                    startActivity(Intent(this, PatientHomePageActivity::class.java))
+                    finish() // Close MainActivity
+                }
             }
         }
     }

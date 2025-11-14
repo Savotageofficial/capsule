@@ -21,10 +21,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Person
@@ -51,8 +49,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.compose.rememberNavController
+import com.example.capsule.navigation.PatientNavGraph
 import com.example.capsule.ui.theme.CapsuleTheme
-
 
 data class OfferItem(
     val title: String,
@@ -65,31 +64,37 @@ data class Tip(
     val Image: Int
 )
 
+
 class PatientHomePageActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             CapsuleTheme {
-                Scaffold(
-                    modifier = Modifier
-                ) { innerPadding ->
-                    HomePage(modifier = Modifier.padding())
-                }
+                // use navigation in patient home intent
+                // made separated nav graph
+                val navController = rememberNavController()
 
+                Scaffold(modifier = Modifier) { innerPadding ->
+                    PatientNavGraph(navController = navController)
+                    // moved modifier to PatientNavGraph
+                }
 
             }
         }
     }
 }
-
 @Composable
 fun HomePage(
-  modifier: Modifier = Modifier,
-  onProfilePatientClick: () -> Unit = {}
+    modifier: Modifier = Modifier,
+    onProfilePatientClick: () -> Unit = {},
+    onAppointmentsClick: () -> Unit = {},        // later
+    onChatsClick: () -> Unit = {},            // later
+    onSearchClick: () -> Unit = {}          // later
 ) {
-    Column(modifier = modifier.background(color = Color(0xFFf5f2f2))
-        ) {
+    Column(
+        modifier = modifier.background(color = Color(0xFFf5f2f2))
+    ) {
         Spacer(modifier = Modifier.height(24.dp))
         Row(
             modifier = modifier
@@ -103,17 +108,14 @@ fun HomePage(
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
             )
-            ProfileIcon(
-                onClick = {
-                    onProfilePatientClick
-                }
-            )
+            ProfileIcon(onClick = onProfilePatientClick)
         }
 
         Row {
             SearchBar(
                 onClick = {
                     // TODO: u know what to do dimwit!
+                    //  onClick = onSearchClick
                 }
             )
 
@@ -125,6 +127,7 @@ fun HomePage(
                 label = "Appointments",
                 onClick = {
                     //TODO : weeeeeee
+                    // onAppointmentsClick
                 }
             )
             NavBox(
@@ -132,6 +135,7 @@ fun HomePage(
                 label = "Chats",
                 onClick = {
                     //TODO : weeeeeee
+                    // onChatsClick
                 }
             )
         }
@@ -201,7 +205,7 @@ fun ProfileIcon(
     onClick: () -> Unit = {}
 ) {
     IconButton(
-        onClick =  onClick,
+        onClick = onClick,
         modifier = modifier.size(48.dp)
     ) {
         Icon(

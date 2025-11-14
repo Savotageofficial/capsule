@@ -168,7 +168,7 @@ fun DoctorEditProfileScreen(
                 onClick = {
                     isLoading = true
 
-                    // ACTUAL SAVE LOGIC - This saves to Firebase
+                    // map snt to firebase
                     val updatedData = mapOf(
                         "name" to name.text,
                         "specialty" to specialty.text,

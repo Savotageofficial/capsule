@@ -5,7 +5,6 @@ data class Doctor(
     override val name: String = "",
     override val email: String = "",
     override val userType: String = "Doctor",
-
     val specialty: String = "",
     val bio: String = "",
     val rating: Double = 0.0,

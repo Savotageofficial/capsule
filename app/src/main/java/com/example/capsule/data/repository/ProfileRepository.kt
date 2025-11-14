@@ -10,10 +10,7 @@ class ProfileRepository {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
-    // ---------------------------
     //     CREATE PROFILES with Firebase ID
-    // ---------------------------
-
     fun createDoctor(doctor: Doctor, onDone: (Boolean) -> Unit) {
         val currentUser = auth.currentUser
         if (currentUser != null) {
@@ -44,10 +41,7 @@ class ProfileRepository {
         }
     }
 
-    // ---------------------------
     //        GET PROFILES
-    // ---------------------------
-
     fun getCurrentDoctor(onResult: (Doctor?) -> Unit) {
         val currentUser = auth.currentUser
         if (currentUser != null) {
@@ -55,7 +49,7 @@ class ProfileRepository {
                 .document(currentUser.uid)
                 .get()
                 .addOnSuccessListener { snap ->
-                    onResult(snap.toObject(Doctor::class.java))
+                    onResult(snap.toObject(Doctor::class.java))  // converts the Firestore data into a Doctor object.
                 }
                 .addOnFailureListener { onResult(null) }
         } else {
@@ -99,10 +93,7 @@ class ProfileRepository {
             .addOnFailureListener { onResult(null) }
     }
 
-    // ---------------------------
     //     UPDATE PROFILES
-    // ---------------------------
-
     fun updateCurrentDoctor(data: Map<String, Any>, onDone: (Boolean) -> Unit) {
         val currentUser = auth.currentUser
         if (currentUser != null) {
@@ -135,7 +126,7 @@ class ProfileRepository {
 
         fun getInstance(): ProfileRepository {
             return instance ?: synchronized(this) {
-                instance ?: ProfileRepository().also { instance = it }
+                instance ?: ProfileRepository().also { instance = it } // create ProfileRepository
             }
         }
     }

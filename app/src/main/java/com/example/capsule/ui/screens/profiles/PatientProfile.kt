@@ -42,7 +42,7 @@ fun PatientProfileScreen(
     val viewModel = viewModel<PatientProfileViewModel>()
 
     // Load data from Firebase on first launch
-    LaunchedEffect(patientId) {
+    LaunchedEffect(patientId) {         // The composable first enters the composition
         if (patientId == null) {
             viewModel.loadCurrentPatientProfile() // Load current user
         } else {

@@ -5,7 +5,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,18 +18,15 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.R
 import com.example.capsule.ui.components.UpcomingCard
 import com.example.capsule.ui.screens.viewmodels.DoctorProfileViewModel
-import com.example.capsule.ui.theme.Blue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DoctorScheduleScreen(
     viewModel: DoctorProfileViewModel = viewModel(),
     onPatientClick: (String) -> Unit = {},
-    onAddSlotClick: () -> Unit = {},
     onBackClick: () -> Unit = {}
-
 ) {
-    val upcomingAppointments = viewModel.upcomingAppointments
+    val appointments = viewModel.appointments.value // USE STATE APPOINTMENTS
 
     Scaffold(
         topBar = {
@@ -50,18 +46,6 @@ fun DoctorScheduleScreen(
                     }
                 }
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onAddSlotClick,
-                containerColor = Blue
-            ) {
-                Icon(
-                    Icons.Default.Add,
-                    contentDescription = "Add Slot",
-                    tint = Color.White
-                )
-            }
         }
     ) { padding ->
         Column(
@@ -69,7 +53,7 @@ fun DoctorScheduleScreen(
                 .padding(padding)
                 .padding(16.dp)
         ) {
-            if (upcomingAppointments.isEmpty()) {
+            if (appointments.isEmpty()) { // USE STATE APPOINTMENTS
                 Box(
                     modifier = Modifier
                         .fillMaxSize(),
@@ -85,12 +69,15 @@ fun DoctorScheduleScreen(
                 LazyColumn(
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    items(upcomingAppointments) { appointment ->
+                    items(appointments) { appointment -> // USE STATE APPOINTMENTS
                         UpcomingCard(
                             name = appointment.patientName,
                             details = "${appointment.time} - ${appointment.type}",
-                            onClick = { onPatientClick(appointment.patientName) },
-                            showMoreIcon = true
+                            onClick = { onPatientClick(appointment.patientId) },
+                            showMoreIcon = true,
+                            onDeleteClick = {
+                                viewModel.deleteAppointment(appointment.id)
+                            }
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                     }

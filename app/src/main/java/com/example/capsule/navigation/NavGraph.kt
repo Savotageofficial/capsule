@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.capsule.HomePage
 import com.example.capsule.ui.screens.dashboards.DoctorDashboardScreen
 import com.example.capsule.ui.screens.features.DoctorScheduleScreen
 import com.example.capsule.ui.screens.profiles.DoctorEditProfileScreen
@@ -15,26 +14,26 @@ import com.example.capsule.ui.screens.profiles.ViewDoctorProfileScreen
 import com.example.capsule.ui.screens.profiles.ViewPatientProfileScreen
 
 @Composable
-fun NavGraph(navController: NavHostController, startDestination: String ) {
+fun NavGraph(navController: NavHostController, startDestination: String) {
 
     NavHost(
         navController = navController,
         startDestination = startDestination  // Home
     ) {
         // Patient Home
-        composable("patientHome") {
-            HomePage(
-                onProfilePatientClick = { navController.navigate("patientProfile") },
-            )
-        }
+//        composable("patientHome") {
+//            HomePage(
+//                onProfilePatientClick = { navController.navigate("patientProfile") },
+//            )
+//        }
 
         // Doctor Dashboard
         composable("DoctorDashboard") {
             DoctorDashboardScreen(
                 onProfileClick = { navController.navigate("doctorProfile") },
-                onPatientClick = { patientName ->
-                    navController.navigate("patientProfile/$patientName")
-                }
+                onPatientClick = { patientId ->
+                    navController.navigate("patientProfile/$patientId") }, // still not used
+                onScheduleClick = { navController.navigate(("doctorSchedule")) }
             )
         }
 
@@ -94,9 +93,8 @@ fun NavGraph(navController: NavHostController, startDestination: String ) {
         composable("doctorSchedule") {
             DoctorScheduleScreen(
                 onBackClick = { navController.popBackStack() },
-                onAddSlotClick = { /* Navigate to add slot screen */ },
-                onPatientClick = { patientName ->
-                    navController.navigate("viewPatientProfile/$patientName")
+                onPatientClick = { patientId ->
+                    navController.navigate("viewPatientProfile/$patientId")
                 }
             )
         }

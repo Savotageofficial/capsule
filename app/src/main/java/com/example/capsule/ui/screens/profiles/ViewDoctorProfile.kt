@@ -69,7 +69,7 @@ fun ViewDoctorProfileScreen(
             CenterAlignedTopAppBar(
                 title = { Text(stringResource(R.string.profile_title)) },
                 navigationIcon = {
-                    IconButton(onClick = { onBackClick }) {
+                    IconButton(onClick = onBackClick) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"

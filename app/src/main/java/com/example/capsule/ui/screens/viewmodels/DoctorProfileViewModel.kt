@@ -6,9 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.capsule.data.model.Appointment
 import com.example.capsule.data.model.Doctor
-import com.example.capsule.data.model.Patient
 import com.example.capsule.data.repository.ProfileRepository
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
 class DoctorProfileViewModel(
@@ -19,17 +17,18 @@ class DoctorProfileViewModel(
     val doctor: State<Doctor?> = _doctor
 
     private val _appointments = mutableStateOf<List<Appointment>>(emptyList())
-    val appointments: State<List<Appointment>> = _appointments
+    val appointments: State<List<Appointment>> = _appointments              // booking complete
 
     private val _isLoading = mutableStateOf(false)
     val isLoading: State<Boolean> = _isLoading
 
     // Dummy appointments for development
-    val upcomingAppointments = listOf(
+    private val dummyAppointments = listOf(
         Appointment(
             id = "1",
             doctorName = "Dr. John Smith",
             patientName = "Sarah Johnson",
+            patientId = "patient123",
             time = "10:00 AM",
             type = "In-Person",
             status = "Upcoming"
@@ -38,6 +37,7 @@ class DoctorProfileViewModel(
             id = "2",
             doctorName = "Dr. John Smith",
             patientName = "Mike Wilson",
+            patientId = "patient456",
             time = "2:30 PM",
             type = "Video Call",
             status = "Upcoming"
@@ -46,36 +46,12 @@ class DoctorProfileViewModel(
             id = "3",
             doctorName = "Dr. John Smith",
             patientName = "Emma Davis",
+            patientId = "patient789",
             time = "4:15 PM",
-            type = "In-Person",
-            status = "Upcoming"
-        ),
-        Appointment(
-            id = "4",
-            doctorName = "Dr. John Smith",
-            patientName = "Robert Brown",
-            time = "11:30 AM",
-            type = "Video Call",
-            status = "Upcoming"
-        ),
-        Appointment(
-            id = "5",
-            doctorName = "Dr. John Smith",
-            patientName = "Lisa Anderson",
-            time = "3:45 PM",
             type = "In-Person",
             status = "Upcoming"
         )
     )
-
-    // ADD THIS METHOD - Your screens are calling it!
-    fun loadDoctorProfile(doctorId: String) {
-        if (doctorId == "current" || doctorId.isEmpty()) {
-            loadCurrentDoctorProfile()
-        } else {
-            loadDoctorProfileById(doctorId)
-        }
-    }
 
     //   LOAD CURRENT DOCTOR PROFILE (using Firebase UID)
     fun loadCurrentDoctorProfile() {
@@ -129,30 +105,16 @@ class DoctorProfileViewModel(
         }
     }
 
-    //   CREATE DOCTOR PROFILE (for signup)
-    fun createDoctorProfile(doctor: Doctor, onDone: (Boolean) -> Unit) {
-        viewModelScope.launch {
-            profileRepository.createDoctor(doctor) { success ->
-                if (success) {
-                    _doctor.value = doctor.copy(id = FirebaseAuth.getInstance().currentUser?.uid ?: "")
-                }
-                onDone(success)
-            }
-        }
-    }
-
-    //   LOAD APPOINTMENTS (using dummy data for now)
+    //   LOAD APPOINTMENTS (using dummy data for now) - KEEP ONLY THIS ONE
     fun loadDoctorAppointments() {
-        // You can later connect this to Firestore collection("appointments")
-        // where doctorId == current user ID
-        _appointments.value = upcomingAppointments
-    }
+        _isLoading.value = true
+        // For now, use dummy data but assign to state
+        _appointments.value = dummyAppointments
+        _isLoading.value = false
 
-    //   ADD NEW APPOINTMENT (for schedule management)
-    fun addAppointment(appointment: Appointment) {
-        val currentAppointments = _appointments.value.toMutableList()
-        currentAppointments.add(appointment)
-        _appointments.value = currentAppointments
+        // TODO: Later connect to Firestore:
+        // db.collection("appointments").whereEqualTo("doctorId", currentUserId).get()
+        // where doctorId == current user ID
     }
 
     //   DELETE APPOINTMENT
@@ -160,79 +122,20 @@ class DoctorProfileViewModel(
         val currentAppointments = _appointments.value.toMutableList()
         currentAppointments.removeAll { it.id == appointmentId }
         _appointments.value = currentAppointments
+
+        // TODO: Later add Firestore deletion
+        // profileRepository.deleteAppointment(appointmentId) { success ->
+        //     if (success) {
+        //         // Update local state
+        //         val updated = _appointments.value.toMutableList()
+        //         updated.removeAll { it.id == appointmentId }
+        //         _appointments.value = updated
+        //     }
+        // }
     }
 
-    //   GET TODAY'S APPOINTMENTS
+    //   GET TODAY'S APPOINTMENTS for later
     fun getTodaysAppointments(): List<Appointment> {
-        return upcomingAppointments.take(3) // Return first 3 as today's appointments
-    }
-
-    //   GET APPOINTMENTS BY PATIENT NAME
-    fun getAppointmentsByPatient(patientName: String): List<Appointment> {
-        return upcomingAppointments.filter { it.patientName == patientName }
-    }
-
-    companion object {
-        fun previewDoctor(): Doctor {
-            return Doctor(
-                id = "preview_doctor_123",
-                name = "Dr. John Smith",
-                email = "john.smith@hospital.com",
-                userType = "Doctor",
-                specialty = "Cardiologist",
-                bio = "Experienced cardiologist with 10+ years of practice...",
-                rating = 4.8,
-                reviewsCount = 142,
-                experience = "10 years",
-                clinicName = "City Heart Center",
-                clinicAddress = "123 Medical Ave, Healthcare City",
-                locationUrl = "https://maps.google.com/?q=123+Medical+Ave",
-                availability = "Mon-Fri: 9AM-5PM",
-                profileImageRes = null // You can add a drawable resource ID here
-            )
-        }
-
-        fun previewPatient(): Patient {
-            return Patient(
-                id = "preview_patient_123",
-                name = "Sarah Johnson",
-                email = "sarah.j@email.com",
-                userType = "Patient",
-                dob = "1990-05-15",
-                gender = "Female",
-                contact = "+1234567890",
-                profileImageRes = null // You can add a drawable resource ID here
-            )
-        }
-
-        // Additional dummy appointments for different scenarios
-        fun getSampleAppointments(): List<Appointment> {
-            return listOf(
-                Appointment(
-                    id = "1",
-                    doctorName = "Dr. John Smith",
-                    patientName = "Sarah Johnson",
-                    time = "10:00 AM",
-                    type = "In-Person",
-                    status = "Upcoming"
-                ),
-                Appointment(
-                    id = "2",
-                    doctorName = "Dr. John Smith",
-                    patientName = "Mike Wilson",
-                    time = "2:30 PM",
-                    type = "Video Call",
-                    status = "Upcoming"
-                ),
-                Appointment(
-                    id = "3",
-                    doctorName = "Dr. John Smith",
-                    patientName = "Emma Davis",
-                    time = "4:15 PM",
-                    type = "In-Person",
-                    status = "Upcoming"
-                )
-            )
-        }
+        return _appointments.value.take(3) // Use state appointments, not upcomingAppointments
     }
 }

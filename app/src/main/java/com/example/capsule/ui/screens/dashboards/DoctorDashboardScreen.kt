@@ -1,5 +1,6 @@
 package com.example.capsule.ui.screens.dashboards
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,12 +16,12 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -29,10 +30,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.R
-import com.example.capsule.data.model.Appointment
 import com.example.capsule.ui.components.UpcomingCard
 import com.example.capsule.ui.screens.viewmodels.DoctorProfileViewModel
 import com.example.capsule.ui.theme.Blue
+import com.example.capsule.ui.theme.Green
 import com.example.capsule.ui.theme.Red
 import com.example.capsule.ui.theme.White
 
@@ -40,47 +41,24 @@ import com.example.capsule.ui.theme.White
 fun DoctorDashboardScreen(
     viewModel: DoctorProfileViewModel = viewModel(),
     onProfileClick: () -> Unit = {},
-    onPatientClick: (String) -> Unit = {},
+    onPatientClick: (String) -> Unit = {},  // for later
     onScheduleClick: () -> Unit = {},
-    onMessagesClick: () -> Unit = {},
-    onPrescriptionClick: () -> Unit = {}
+    onMessagesClick: () -> Unit = {},       // when chat finish
+    onPrescriptionClick: () -> Unit = {}    // when presc finish
 ) {
     val doctor = viewModel.doctor.value
+    val appointments = viewModel.appointments.value // USE REAL APPOINTMENTS
+    val isLoading = viewModel.isLoading.value // USE LOADING STATE
+    val context = LocalContext.current
 
     // Load doctor data when screen opens
     LaunchedEffect(Unit) {
         viewModel.loadCurrentDoctorProfile()
     }
 
-    // Dummy appointments data - replace with real data from ViewModel later
-    val upcomingAppointments = remember {
-        listOf(
-            Appointment(
-                id = "1",
-                patientName = "Sarah Johnson",
-                time = "10:00 AM",
-                type = "In-Person",
-                status = "Upcoming"
-            ),
-            Appointment(
-                id = "2",
-                patientName = "Mike Wilson",
-                time = "2:30 PM",
-                type = "Video Call",
-                status = "Upcoming"
-            ),
-            Appointment(
-                id = "3",
-                patientName = "Emma Davis",
-                time = "4:15 PM",
-                type = "In-Person",
-                status = "Upcoming"
-            )
-        )
-    }
 
     // Show loading state
-    if (doctor == null) {
+    if (doctor == null || isLoading) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -238,7 +216,7 @@ fun DoctorDashboardScreen(
                         ) {
                             Icon(
                                 painter = painterResource(R.drawable.ic_messages),
-                                tint = Color(0xFF07B607),
+                                tint = Green,
                                 contentDescription = "Messages"
                             )
                             // Unread message indicator
@@ -286,27 +264,17 @@ fun DoctorDashboardScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // Upcoming Section
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
+
                 Text(
                     text = stringResource(R.string.upcoming),
                     fontWeight = FontWeight.Bold,
-                    fontSize = 22.sp
+                    fontSize = 22.sp,
+                    modifier = Modifier.fillMaxWidth()
                 )
-                Text(
-                    text = "See All",
-                    color = Blue,
-                    fontSize = 14.sp,
-                    modifier = Modifier.clickable { onScheduleClick() }
-                )
-            }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            if (upcomingAppointments.isEmpty()) {
+            if (appointments.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -328,11 +296,6 @@ fun DoctorDashboardScreen(
                             color = Color.Gray,
                             fontSize = 16.sp
                         )
-                        Text(
-                            text = "Add time slots to get appointments",
-                            color = Color.LightGray,
-                            fontSize = 14.sp
-                        )
                     }
                 }
             } else {
@@ -342,16 +305,21 @@ fun DoctorDashboardScreen(
                         .weight(1f),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(upcomingAppointments) { appointment ->
+                    items(appointments) { appointment ->
                         UpcomingCard(
                             name = appointment.patientName,
                             details = "${appointment.time} - ${appointment.type}",
-                            onClick = { onPatientClick(appointment.patientName) },
+                            // USE THE REAL patientId FROM STATE
+                            onClick = {
+                                Toast.makeText(context, "Fake Appointment ", Toast.LENGTH_SHORT).show()
+                            //    onPatientClick(appointment.patientId)
+                                      },
                             showMoreIcon = false
                         )
                     }
                 }
             }
+
         }
     }
 }
