@@ -12,6 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Capsule">
         <activity
+            android:name=".ChatActivity"
+            android:exported="false"
+            android:label="@string/title_activity_chat"
             android:name=".MainActivity"
             android:exported="false"
             android:label="@string/title_activity_sign_up"
