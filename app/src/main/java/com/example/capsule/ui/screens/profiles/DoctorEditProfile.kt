@@ -16,6 +16,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.R
 import com.example.capsule.ui.screens.viewmodels.DoctorProfileViewModel
 import com.example.capsule.ui.theme.Blue
@@ -23,12 +24,25 @@ import com.example.capsule.ui.theme.Blue
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DoctorEditProfileScreen(
-    viewModel: DoctorProfileViewModel = DoctorProfileViewModel(),
+    viewModel: DoctorProfileViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onSaveClick: () -> Unit = {}
 ) {
     val doctor = viewModel.doctor.value
     val scrollState = rememberScrollState()
+
+    // Load current doctor when screen opens
+    LaunchedEffect(Unit) {
+        viewModel.loadCurrentDoctorProfile()
+    }
+
+    // If still loading or no doctor
+    if (doctor == null) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+        return
+    }
 
     // Editable fields
     var name by remember { mutableStateOf(TextFieldValue(doctor.name)) }
@@ -41,6 +55,7 @@ fun DoctorEditProfileScreen(
     var availability by remember { mutableStateOf(TextFieldValue(doctor.availability)) }
 
     var showSaveDialog by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -151,16 +166,45 @@ fun DoctorEditProfileScreen(
 
             Button(
                 onClick = {
-                    onSaveClick()
-                    showSaveDialog = true
+                    isLoading = true
+
+                    // ACTUAL SAVE LOGIC - This saves to Firebase
+                    val updatedData = mapOf(
+                        "name" to name.text,
+                        "specialty" to specialty.text,
+                        "bio" to bio.text,
+                        "experience" to experience.text,
+                        "clinicName" to clinicName.text,
+                        "clinicAddress" to clinicAddress.text,
+                        "locationUrl" to locationUrl.text,
+                        "availability" to availability.text
+                    )
+
+                    viewModel.updateDoctorProfile(updatedData) { success ->
+                        isLoading = false
+                        if (success) {
+                            showSaveDialog = true
+                            onSaveClick() // Call the callback
+                        } else {
+                            // TODO: Show error message
+                        }
+                    }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Blue),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                shape = MaterialTheme.shapes.medium
+                shape = MaterialTheme.shapes.medium,
+                enabled = !isLoading
             ) {
-                Text(stringResource(R.string.save_changes), fontSize = 16.sp)
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(stringResource(R.string.save_changes), fontSize = 16.sp)
+                }
             }
         }
     }

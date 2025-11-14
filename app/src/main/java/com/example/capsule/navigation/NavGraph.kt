@@ -1,35 +1,37 @@
 package com.example.capsule.navigation
 
-import  androidx.compose.runtime.Composable
+import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.capsule.HomePage
 import com.example.capsule.ui.screens.dashboards.DoctorDashboardScreen
+import com.example.capsule.ui.screens.features.DoctorScheduleScreen
 import com.example.capsule.ui.screens.profiles.DoctorEditProfileScreen
 import com.example.capsule.ui.screens.profiles.DoctorProfileScreen
 import com.example.capsule.ui.screens.profiles.PatientEditProfileScreen
 import com.example.capsule.ui.screens.profiles.PatientProfileScreen
+import com.example.capsule.ui.screens.profiles.ViewDoctorProfileScreen
+import com.example.capsule.ui.screens.profiles.ViewPatientProfileScreen
 
 @Composable
-fun NavGraph(navController: NavHostController) {
+fun NavGraph(navController: NavHostController, startDestination: String ) {
 
     NavHost(
         navController = navController,
-        startDestination = "login"  // starting screen
+        startDestination = startDestination  // Home
     ) {
-
         // Patient Home
         composable("patientHome") {
             HomePage(
-                onProfilePatientClick =  { navController.navigate("patientProfile") },
+                onProfilePatientClick = { navController.navigate("patientProfile") },
             )
         }
 
         // Doctor Dashboard
         composable("DoctorDashboard") {
             DoctorDashboardScreen(
-                onProfileClick =  { navController.navigate("doctorProfile") },
+                onProfileClick = { navController.navigate("doctorProfile") },
                 onPatientClick = { patientName ->
                     navController.navigate("patientProfile/$patientName")
                 }
@@ -39,6 +41,7 @@ fun NavGraph(navController: NavHostController) {
         // Doctor Profile
         composable("doctorProfile") {
             DoctorProfileScreen(
+                doctorId = null, // This will load current doctor
                 onEditClick = { navController.navigate("editDoctorProfile") },
                 onBackClick = { navController.popBackStack() },
             )
@@ -47,6 +50,7 @@ fun NavGraph(navController: NavHostController) {
         // Edit Doctor Profile
         composable("editDoctorProfile") {
             DoctorEditProfileScreen(
+                onBackClick = { navController.popBackStack() },
                 onSaveClick = { navController.popBackStack() }
             )
         }
@@ -54,6 +58,7 @@ fun NavGraph(navController: NavHostController) {
         // Patient Profile
         composable("patientProfile") {
             PatientProfileScreen(
+                patientId = null, // This will load current patient
                 onEditClick = { navController.navigate("editPatientProfile") },
                 onBackClick = { navController.popBackStack() }
             )
@@ -62,37 +67,37 @@ fun NavGraph(navController: NavHostController) {
         // Edit Patient Profile
         composable("editPatientProfile") {
             PatientEditProfileScreen(
-                onSaveClick = {
-                    // TODO: make firebase repo file and and paste this in it
-                    /*
-                    val db = FirebaseFirestore.getInstance()
-                    val userId = FirebaseAuth.getInstance().currentUser?.uid
+                onBackClick = { navController.popBackStack() },
+                onSaveClick = { navController.popBackStack() }
+            )
+        }
 
-                    if (userId != null) {
-                        val updatedDoctor = mapOf(
-                            "name" to name.text,
-                            "specialty" to specialty.text,
-                            "bio" to bio.text,
-                            "experience" to experience.text,
-                            "clinicName" to clinicName.text,
-                            "clinicAddress" to clinicAddress.text,
-                            "availability" to availability.text
-                        )
-
-                        db.collection("doctors")
-                            .document(userId)
-                            .update(updatedDoctor)
-                            .addOnSuccessListener {
-                                Log.d("DoctorEditProfile", "Doctor profile updated.")
-                                showSaveDialog = true
-                            }
-                            .addOnFailureListener { e ->
-                                Log.e("DoctorEditProfile", "Error updating profile", e)
-                            }
-                    }
-                    */
-                },
+        // Add view doctor profile route
+        composable("viewDoctorProfile/{doctorId}") { backStackEntry ->
+            val doctorId = backStackEntry.arguments?.getString("doctorId")
+            ViewDoctorProfileScreen(
+                doctorId = doctorId,
                 onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        // Add view patient profile route
+        composable("viewPatientProfile/{patientId}") { backStackEntry ->
+            val patientId = backStackEntry.arguments?.getString("patientId")
+            ViewPatientProfileScreen(
+                patientId = patientId,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        // Add doctor schedule route
+        composable("doctorSchedule") {
+            DoctorScheduleScreen(
+                onBackClick = { navController.popBackStack() },
+                onAddSlotClick = { /* Navigate to add slot screen */ },
+                onPatientClick = { patientName ->
+                    navController.navigate("viewPatientProfile/$patientName")
+                }
             )
         }
     }

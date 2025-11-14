@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.ui.components.InfoRow
 import com.example.capsule.R
 import com.example.capsule.ui.screens.viewmodels.PatientProfileViewModel
@@ -30,12 +32,28 @@ import com.example.capsule.ui.theme.White
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ViewPatientProfileScreen(
-
+    patientId: String? = null,
     onBackClick: () -> Unit = {},
-    viewModel: PatientProfileViewModel = PatientProfileViewModel(),
+    viewModel: PatientProfileViewModel = viewModel(),
 ) {
-    // Observe the patient from ViewModel
     val patient = viewModel.patient.value
+
+    // Load patient data when screen opens
+    LaunchedEffect(patientId) {
+        if (patientId == null) {
+            viewModel.loadCurrentPatientProfile()
+        } else {
+            viewModel.loadPatientProfileById(patientId)
+        }
+    }
+
+    // Show loading state
+    if (patient == null) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+        return
+    }
 
     Scaffold(
         topBar = {

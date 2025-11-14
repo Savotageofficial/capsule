@@ -1,4 +1,4 @@
-package com.example.capsule.model
+package com.example.capsule.data.model
 
 data class Appointment(
     val id: String = "",                 // unique id (useful for Firestore)

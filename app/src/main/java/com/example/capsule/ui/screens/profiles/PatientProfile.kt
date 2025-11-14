@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.ui.components.InfoCard
 import com.example.capsule.ui.components.InfoRow
 import com.example.capsule.R
@@ -31,15 +33,36 @@ import com.example.capsule.ui.theme.Red
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PatientProfileScreen(
-
+    patientId: String? = null,
     onBackClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
-    onEditClick: () -> Unit = {},
-    viewModel: PatientProfileViewModel = PatientProfileViewModel(),
+    onEditClick: () -> Unit = {}
 ) {
-    // Observe the patient from ViewModel
+    // Create ViewModel
+    val viewModel = viewModel<PatientProfileViewModel>()
+
+    // Load data from Firebase on first launch
+    LaunchedEffect(patientId) {
+        if (patientId == null) {
+            viewModel.loadCurrentPatientProfile() // Load current user
+        } else {
+            viewModel.loadPatientProfileById(patientId) // Load specific patient
+        }
+    }
+
+    // Observe patient State
     val patient = viewModel.patient.value
 
+    // If still loading
+    if (patient == null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+        return
+    }
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -79,11 +102,10 @@ fun PatientProfileScreen(
                 .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Profile Image
             patient.profileImageRes?.let {
                 Image(
                     painter = painterResource(id = it),
-                    contentDescription = "Doctor Image",
+                    contentDescription = "Profile Image",
                     modifier = Modifier
                         .size(120.dp)
                         .clip(CircleShape),
@@ -99,23 +121,14 @@ fun PatientProfileScreen(
                 fontWeight = FontWeight.Bold
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
-            Text(
-                text = "ID: #${patient.id} ",
-                fontSize = 14.sp,
-                color = Gray
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            //  Personal Information Card
             InfoCard(title = stringResource(R.string.personal_information)) {
-                InfoRow(label = stringResource(R.string.full_name), value = patient.name)
-                InfoRow(label = stringResource(R.string.date_of_birth), value = patient.dob)
-                InfoRow(label = stringResource(R.string.gender), value = patient.gender)
-                InfoRow(label = stringResource(R.string.contact), value = patient.contact)
-                InfoRow(label = stringResource(R.string.email), value = patient.email)
+                InfoRow("Full Name", patient.name)
+                InfoRow("Date of Birth", patient.dob)
+                InfoRow("Gender", patient.gender)
+                InfoRow("Contact", patient.contact)
+                InfoRow("Email", patient.email)
             }
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -158,10 +171,11 @@ fun PatientProfileScreen(
     }
 }
 
+
 @Preview(showBackground = true)
 @Composable
 fun PatientProfileScreenPreview() {
     MaterialTheme {
-        PatientProfileScreen()
+        PatientProfileScreen("123")
     }
 }

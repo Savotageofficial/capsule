@@ -13,6 +13,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,17 +34,44 @@ import com.example.capsule.ui.theme.Gold
 import com.example.capsule.ui.theme.Gray
 import com.example.capsule.ui.theme.Red
 import androidx.core.net.toUri
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DoctorProfileScreen(
+    doctorId: String? = null,
     onEditClick: () -> Unit = {},
     onBackClick: () -> Unit = {},
+    onSettingsClick: () -> Unit = {},
 
-    viewModel: DoctorProfileViewModel = DoctorProfileViewModel()
-) {
+    ) {
+    // Create ViewModel
+    val viewModel = viewModel<DoctorProfileViewModel>()
+
+    // Load data from Firebase on first launch
+    LaunchedEffect(doctorId) {
+        if (doctorId == null) {
+            viewModel.loadCurrentDoctorProfile() // Load current user
+        } else {
+            viewModel.loadDoctorProfileById(doctorId) // Load specific doctor
+        }
+    }
+    // Observe patient State
     val doctor = viewModel.doctor.value
+
     val context = LocalContext.current
+
+
+    // If still loading
+    if (doctor == null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+        return
+    }
 
     Scaffold(
         topBar = {
@@ -96,15 +124,7 @@ fun DoctorProfileScreen(
             Text(doctor.name, fontSize = 22.sp, fontWeight = FontWeight.Bold)
             Text(doctor.specialty, fontSize = 18.sp, color = Color.Gray)
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "ID: #${doctor.id} ",
-                fontSize = 14.sp,
-                color = Gray
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(22.dp))
 
             InfoCard(title = "Bio") {
                 Text(doctor.bio, fontSize = 15.sp)
@@ -228,6 +248,6 @@ fun DoctorProfileScreen(
 @Composable
 fun DoctorProfileScreenPreview() {
     MaterialTheme {
-        DoctorProfileScreen()
+        DoctorProfileScreen("5412")
     }
 }

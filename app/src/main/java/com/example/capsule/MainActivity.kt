@@ -15,7 +15,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             CapsuleTheme {
                 val navController = rememberNavController()
-                NavGraph(navController = navController) // all screens are handled here
+                val userType = intent.getStringExtra("userType") ?: "Patient"
+                val startDestination = if (userType == "Doctor") "DoctorDashboard" else "patientHome"
+
+                // This should work now
+                NavGraph(navController = navController, startDestination = startDestination)
             }
         }
     }

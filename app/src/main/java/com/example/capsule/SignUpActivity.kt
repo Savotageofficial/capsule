@@ -88,40 +88,35 @@ class SignUpActivity : ComponentActivity() {
 
     private fun checkUserStatus(onUserFound: (String) -> Unit, onUserNotFound: () -> Unit) {
         val user = auth.currentUser
-
         if (user != null) {
-            user.reload()
-                .addOnSuccessListener {
-                    if (auth.currentUser != null && auth.currentUser!!.isEmailVerified) {
-                        db.collection("users").document(auth.currentUser!!.uid)
-                            .get()
-                            .addOnSuccessListener { document ->
-                                if (document.exists()) {
-                                    val userType = document.getString("userType") ?: "Patient"
-                                    onUserFound(userType)
-                                } else {
-                                    auth.signOut()
-                                    onUserNotFound()
+            user.reload().addOnSuccessListener {
+                if (auth.currentUser != null && auth.currentUser!!.isEmailVerified) {
+                    db.collection("users").document(auth.currentUser!!.uid)
+                        .get()
+                        .addOnSuccessListener { document ->
+                            if (document.exists()) {
+                                val userType = document.getString("userType") ?: "Patient"
+                                // Navigate to MainActivity instead of PatientHomePageActivity
+                                val intent = Intent(this@SignUpActivity, MainActivity::class.java).apply {
+                                    putExtra("userType", userType)
+                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                                 }
-                            }
-                            .addOnFailureListener {
+                                startActivity(intent)
+                                finish()
+                            } else {
                                 auth.signOut()
                                 onUserNotFound()
                             }
-                    } else {
-                        auth.signOut()
-                        onUserNotFound()
-                    }
-                }
-                .addOnFailureListener {
+                        }
+                } else {
                     auth.signOut()
                     onUserNotFound()
                 }
+            }
         } else {
             onUserNotFound()
         }
     }
-
     private fun createAccount(
         name: String,
         email: String,

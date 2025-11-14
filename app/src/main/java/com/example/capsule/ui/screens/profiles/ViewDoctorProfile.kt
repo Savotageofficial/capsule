@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,6 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.ui.components.InfoCard
 import com.example.capsule.R
 import com.example.capsule.ui.screens.viewmodels.DoctorProfileViewModel
@@ -38,16 +40,36 @@ import com.example.capsule.ui.theme.White
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ViewDoctorProfileScreen(
-    viewModel: DoctorProfileViewModel = DoctorProfileViewModel()
+    doctorId: String? = null,
+    onBackClick: () -> Unit = {},
+    viewModel: DoctorProfileViewModel = viewModel() // Use viewModel() instead of direct instantiation
 ) {
     val doctor = viewModel.doctor.value
     val context = LocalContext.current
+
+    // Load doctor data when screen opens
+    LaunchedEffect(doctorId) {
+        if (doctorId == null) {
+            viewModel.loadCurrentDoctorProfile()
+        } else {
+            viewModel.loadDoctorProfileById(doctorId)
+        }
+    }
+
+    // Show loading state
+    if (doctor == null) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text(stringResource(R.string.profile_title)) },
                 navigationIcon = {
-                    IconButton(onClick = { /* Navigate back */ }) {
+                    IconButton(onClick = { onBackClick }) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"

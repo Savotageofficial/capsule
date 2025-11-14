@@ -78,10 +78,9 @@ class LoginActivity : ComponentActivity() {
     }
 
     private fun navigateToHome(userType: String) {
-        val intent = if (userType == "Doctor") {
-            Intent(this, PatientHomePageActivity::class.java)
-        } else {
-            Intent(this, PatientHomePageActivity::class.java)
+        val intent = Intent(this, MainActivity::class.java).apply {
+            putExtra("userType", userType)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
         startActivity(intent)
         finish()
@@ -215,29 +214,29 @@ fun LoginScreen(
 
         }
 
-            Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(40.dp))
 
 
 
-            Text(
-                buildAnnotatedString {
-                    append("Don't have an account? ")
-                    withStyle(
-                        style = SpanStyle(
-                            color = Color.White,
-                            fontWeight = FontWeight.Medium,
-                            textDecoration = TextDecoration.Underline
-                        )
-                    ) {
-                        append("Sign Up")
-                    }
-                },
-                fontSize = 15.sp,
-                color = textGrayColor,
-                modifier = Modifier.clickable { onSignUpClick() }
-            )
+        Text(
+            buildAnnotatedString {
+                append("Don't have an account? ")
+                withStyle(
+                    style = SpanStyle(
+                        color = Color.White,
+                        fontWeight = FontWeight.Medium,
+                        textDecoration = TextDecoration.Underline
+                    )
+                ) {
+                    append("Sign Up")
+                }
+            },
+            fontSize = 15.sp,
+            color = textGrayColor,
+            modifier = Modifier.clickable { onSignUpClick() }
+        )
 
-            Spacer(modifier = Modifier.height(30.dp))
+        Spacer(modifier = Modifier.height(30.dp))
 
     }
 }

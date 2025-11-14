@@ -1,5 +1,9 @@
 package com.example.capsule
 
+import android.util.Log
+import com.example.capsule.data.model.Doctor
+import com.example.capsule.data.model.Patient
+import com.example.capsule.data.repository.ProfileRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -29,6 +33,11 @@ class AuthRepository {
                     )
                     db.collection("users").document(user!!.uid).set(userData)
                         .addOnSuccessListener {
+                            if (userType == "Doctor") {
+                                createDoctorProfile(user.uid, name, email, specialization)
+                            } else {
+                                createPatientProfile(user.uid, name, email)
+                            }
                             verifyEmail(onSuccess, onFailure)
                         }
                         .addOnFailureListener { exception ->
@@ -52,6 +61,56 @@ class AuthRepository {
             }
     }
 
+    private fun createDoctorProfile(
+        uid: String,
+        name: String,
+        email: String,
+        specialization: String?
+    ) {
+        val doctor = Doctor(
+            id = uid,
+            name = name,
+            email = email,
+            userType = "Doctor",
+            specialty = specialization ?: "General Practitioner",
+            bio = "",
+            rating = 0.0,
+            reviewsCount = 0,
+            experience = "",
+            clinicName = "",
+            clinicAddress = "",
+            locationUrl = "",
+            availability = ""
+        )
+
+        ProfileRepository.getInstance().createDoctor(doctor) { success ->
+            if (success) {
+                Log.d("AuthRepo", "Doctor profile created successfully for: $uid")
+            } else {
+                Log.e("AuthRepo", "Failed to create doctor profile for: $uid")
+            }
+        }
+    }
+
+    private fun createPatientProfile(uid: String, name: String, email: String) {
+        val patient = Patient(
+            id = uid,
+            name = name,
+            email = email,
+            userType = "Patient",
+            dob = "",
+            gender = "",
+            contact = ""
+        )
+        ProfileRepository.getInstance().createPatient(patient) { success ->
+            if (success) {
+                Log.d("AuthRepo", "Patient profile created successfully for: $uid")
+            } else {
+                Log.e("AuthRepo", "Failed to create patient profile for: $uid")
+            }
+        }
+    }
+
     fun signIn(
         email: String,
         password: String,
@@ -69,7 +128,7 @@ class AuthRepository {
                                 onSuccess(userType)
                             }
                             .addOnFailureListener {
-                                onFailure("Couldn’t get your info")
+                                onFailure("Couldn't get your info")
                             }
                     } else {
                         onFailure("Please verify your email")
