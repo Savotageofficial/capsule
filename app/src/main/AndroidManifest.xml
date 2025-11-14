@@ -12,6 +12,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Capsule">
         <activity
+            android:name=".ChatActivity"
+            android:exported="false"
+            android:label="@string/title_activity_chat"
+            android:theme="@style/Theme.Capsule"/>
+        <activity
             android:name=".SearchActivity"
             android:exported="true"
             android:label="@string/title_activity_search"

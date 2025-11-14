@@ -82,7 +82,7 @@ class PatientHomePageActivity : ComponentActivity() {
                     HomePage(modifier = Modifier.padding() , {
                         val intent = Intent(this , SearchActivity::class.java)
                         startActivity(intent)
-                    })
+                    } , {})
 
 
 
@@ -92,7 +92,7 @@ class PatientHomePageActivity : ComponentActivity() {
 }
 
 @Composable
-fun HomePage(modifier: Modifier = Modifier , searchonclick: () -> Unit) {
+fun HomePage(modifier: Modifier = Modifier , searchonclick: () -> Unit , onProfilePatientClick: () -> Unit) {
     Column(modifier = modifier.background(color = Color(0xFFf5f2f2))
         ) {
         Spacer(modifier = Modifier.height(24.dp))
@@ -111,6 +111,7 @@ fun HomePage(modifier: Modifier = Modifier , searchonclick: () -> Unit) {
             ProfileIcon(
                 onClick = {
                     // TODO: Navigate to Profile Screen
+                    onProfilePatientClick
                 }
             )
         }
@@ -414,7 +415,7 @@ fun AdviceItem(modifier: Modifier = Modifier , Head: String , Description: Strin
 @Composable
 fun HomepagePreview() {
     CapsuleTheme {
-        HomePage(searchonclick = { print("hello") })
+        HomePage(searchonclick = { print("hello") } , onProfilePatientClick = {})
     }
 }
 //------------------------------
