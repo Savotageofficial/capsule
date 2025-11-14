@@ -6,19 +6,21 @@
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/logo"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@drawable/logo"
         android:supportsRtl="true"
         android:theme="@style/Theme.Capsule">
         <activity
             android:name=".ChatActivity"
             android:exported="false"
             android:label="@string/title_activity_chat"
+            android:theme="@style/Theme.Capsule" />
+        <activity
             android:name=".MainActivity"
             android:exported="false"
             android:label="@string/title_activity_sign_up"
-            android:theme="@style/Theme.Capsule" />
+            android:theme="@style/Theme.Capsule"/>
         <activity
             android:name=".LoginActivity"
             android:exported="false"
@@ -29,6 +31,7 @@
             android:exported="false"
             android:label="@string/title_activity_patient_home_page"
             android:theme="@style/Theme.Capsule" />
+        <!--    main launcher activity    -->
         <activity
             android:name=".SignUpActivity"
             android:exported="true"
