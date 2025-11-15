@@ -126,7 +126,7 @@ fun LoginScreen(
             painter = painterResource(id = R.drawable.logo),
             contentDescription = "Logo",
             modifier = Modifier
-                .size(350.dp) // adjust size if needed
+                .size(350.dp)
         )
 
         Spacer(modifier = Modifier.height(20.dp)) // space before inputs
