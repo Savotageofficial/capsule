@@ -6,7 +6,7 @@ Capsule is a smart healthcare platform designed to connect patients and doctors 
 [Open in Google Drive] ---> (https://drive.google.com/drive/folders/12W6IqiuVX6UYnNunSWuwz5N-7RT2OoNY?usp=sharing)
 
 
--Team Members
+#Team Members
 
 -Mohamed Safwat
 
@@ -18,6 +18,14 @@ Capsule is a smart healthcare platform designed to connect patients and doctors 
 
 -Mohamed Hany
 
+##Overview
+
+Capsule is a healthcare application designed to simplify communication between patients and their psychology specialists. It serves both patients and doctors by eliminating the need for physical visits, reducing travel stress, time loss, and everyday obstacles that hold people back from receiving proper mental healthcare. Capsule provides secure online prescriptions, keeps medical records safely stored even if the device is lost, and maintains quick access to doctor contacts. The app also guides users to nearby hospitals when urgent support is needed, ensuring help is always within reach.
+
+##System Requirments
+a phone
+
+#Documentation
 
 ## Work history
 
