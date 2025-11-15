@@ -7,6 +7,35 @@ Fast, secure, and accessible—healthcare has never been this convenient.
 
 [Open in Google Drive] ---> (https://drive.google.com/drive/folders/12W6IqiuVX6UYnNunSWuwz5N-7RT2OoNY?usp=sharing)
 
+## Completed Features
+
+Authentication (Login & Registration)
+Full Firebase authentication for both patients and doctors.
+
+User Type Detection
+Auto-route users based on whether they are patients or doctors.
+
+Doctor Profile Module
+View doctor details, specialties, experience, clinic info, and ratings.
+
+Patient Profile Module
+Display patient medical information & basic details.
+
+Doctor Dashboard
+Doctors can view upcoming appointments and their schedule.
+
+Patient Home
+Browse doctors, view categories, and navigate the main features.
+
+Firestore Integration
+Real-time data fetching and updates for all user types.
+
+Single-Activity Architecture With Jetpack Compose Navigation
+Clean, scalable navigation structure.
+
+UI Enhancements
+Improved layout, animations, and consistent design across the app.
+
 ## Team Members
 
 Mohamed Safwat
