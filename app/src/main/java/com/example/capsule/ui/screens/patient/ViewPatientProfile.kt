@@ -1,4 +1,4 @@
-package com.example.capsule.ui.screens.profiles
+package com.example.capsule.ui.screens.patient
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -24,7 +24,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.ui.components.InfoRow
 import com.example.capsule.R
-import com.example.capsule.ui.screens.viewmodels.PatientProfileViewModel
 import com.example.capsule.ui.theme.Blue
 import com.example.capsule.ui.theme.Green
 import com.example.capsule.ui.theme.White
@@ -177,5 +176,3 @@ fun ViewPatientProfileScreenPreview() {
         ViewPatientProfileScreen()
     }
 }
-
-//ignore (by safwat)

@@ -1,48 +1,78 @@
+// NavGraph.kt (updated)
 package com.example.capsule.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.capsule.ui.screens.dashboards.DoctorDashboardScreen
-import com.example.capsule.ui.screens.features.DoctorScheduleScreen
-import com.example.capsule.ui.screens.profiles.DoctorEditProfileScreen
-import com.example.capsule.ui.screens.profiles.DoctorProfileScreen
-import com.example.capsule.ui.screens.profiles.PatientEditProfileScreen
-import com.example.capsule.ui.screens.profiles.PatientProfileScreen
-import com.example.capsule.ui.screens.profiles.ViewDoctorProfileScreen
-import com.example.capsule.ui.screens.profiles.ViewPatientProfileScreen
+import com.example.capsule.ui.screens.patient.HomePage
+import com.example.capsule.ui.screens.features.Search
+import com.example.capsule.ui.screens.features.SettingsScreen
+import com.example.capsule.ui.screens.doctor.DoctorDashboardScreen
+import com.example.capsule.ui.screens.doctor.DoctorEditProfileScreen
+import com.example.capsule.ui.screens.doctor.DoctorProfileScreen
+import com.example.capsule.ui.screens.doctor.DoctorScheduleScreen
+import com.example.capsule.ui.screens.doctor.ViewDoctorProfileScreen
+import com.example.capsule.ui.screens.patient.PatientEditProfileScreen
+import com.example.capsule.ui.screens.patient.PatientProfileScreen
+import com.example.capsule.ui.screens.patient.ViewPatientProfileScreen
 
 @Composable
-fun NavGraph(navController: NavHostController, startDestination: String) {
-
+fun NavGraph(
+    navController: NavHostController,
+    startDestination: String,
+    onLogout: () -> Unit = {}
+) {
     NavHost(
         navController = navController,
-        startDestination = startDestination  // Home
+        startDestination = startDestination
     ) {
         // Patient Home
-//        composable("patientHome") {
-//            HomePage(
-//                onProfilePatientClick = { navController.navigate("patientProfile") },
-//            )
-//        }
+        composable("patientHome") {
+            HomePage(
+                onProfilePatientClick = { navController.navigate("patientProfile") },
+                onSearchClick = { navController.navigate("search") },
+                onSettingsClick = { navController.navigate("settings") },
+                )
+        }
+
+        // Search Screen
+        composable("search") {
+            Search(
+                searchResults = listOf("mohamed safwat", "mohamed hany", "youssef ahmed", "hamza hesham"),
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        // Settings Screen
+        composable("settings") {
+            SettingsScreen(
+                onBack = { navController.popBackStack() },
+                onLogout = onLogout
+            )
+        }
 
         // Doctor Dashboard
         composable("DoctorDashboard") {
             DoctorDashboardScreen(
                 onProfileClick = { navController.navigate("doctorProfile") },
                 onPatientClick = { patientId ->
-                    navController.navigate("patientProfile/$patientId") }, // still not used
-                onScheduleClick = { navController.navigate(("doctorSchedule")) }
+                    navController.navigate("patientProfile/$patientId")
+                },
+                onScheduleClick = { navController.navigate("doctorSchedule") },
+                onSettingsClick = { navController.navigate("settings") },
+                onMessagesClick = { /* TODO */ },
+                onPrescriptionClick = { /* TODO */ }
             )
         }
 
         // Doctor Profile
         composable("doctorProfile") {
             DoctorProfileScreen(
-                doctorId = null, // This will load current doctor
+                doctorId = null,
                 onEditClick = { navController.navigate("editDoctorProfile") },
                 onBackClick = { navController.popBackStack() },
+                onSettingsClick = { navController.navigate("settings") }
             )
         }
 
@@ -57,9 +87,10 @@ fun NavGraph(navController: NavHostController, startDestination: String) {
         // Patient Profile
         composable("patientProfile") {
             PatientProfileScreen(
-                patientId = null, // This will load current patient
+                patientId = null,
                 onEditClick = { navController.navigate("editPatientProfile") },
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                onSettingsClick = { navController.navigate("settings") }
             )
         }
 
@@ -71,7 +102,7 @@ fun NavGraph(navController: NavHostController, startDestination: String) {
             )
         }
 
-        // Add view doctor profile route
+        // View Doctor Profile
         composable("viewDoctorProfile/{doctorId}") { backStackEntry ->
             val doctorId = backStackEntry.arguments?.getString("doctorId")
             ViewDoctorProfileScreen(
@@ -80,7 +111,7 @@ fun NavGraph(navController: NavHostController, startDestination: String) {
             )
         }
 
-        // Add view patient profile route
+        // View Patient Profile
         composable("viewPatientProfile/{patientId}") { backStackEntry ->
             val patientId = backStackEntry.arguments?.getString("patientId")
             ViewPatientProfileScreen(
@@ -89,7 +120,7 @@ fun NavGraph(navController: NavHostController, startDestination: String) {
             )
         }
 
-        // Add doctor schedule route
+        // Doctor Schedule
         composable("doctorSchedule") {
             DoctorScheduleScreen(
                 onBackClick = { navController.popBackStack() },

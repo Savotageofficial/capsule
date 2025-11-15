@@ -1,4 +1,4 @@
-package com.example.capsule.ui.screens.profiles
+package com.example.capsule.ui.screens.patient
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -25,10 +25,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.ui.components.InfoCard
 import com.example.capsule.ui.components.InfoRow
 import com.example.capsule.R
-import com.example.capsule.ui.screens.viewmodels.PatientProfileViewModel
 import com.example.capsule.ui.theme.Blue
 import com.example.capsule.ui.theme.Gray
-import com.example.capsule.ui.theme.Red
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -111,6 +109,16 @@ fun PatientProfileScreen(
                         .clip(CircleShape),
                     contentScale = ContentScale.Crop
                 )
+            }?: run {
+                // Fallback image if profileImageRes is null
+                Image(
+                    painter = painterResource(id = R.drawable.patient_profile),
+                    contentDescription = "Doctor Image",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(CircleShape)
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -128,7 +136,6 @@ fun PatientProfileScreen(
                 InfoRow("Date of Birth", patient.dob)
                 InfoRow("Gender", patient.gender)
                 InfoRow("Contact", patient.contact)
-                InfoRow("Email", patient.email)
             }
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -150,22 +157,12 @@ fun PatientProfileScreen(
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Blue
                     ),
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(stringResource(R.string.settings))
                 }
 
-                Button(
-                    onClick = { /* Logout */ },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Red
-                    ),
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text(stringResource(R.string.logout))
-                }
             }
         }
     }
@@ -179,5 +176,3 @@ fun PatientProfileScreenPreview() {
         PatientProfileScreen("123")
     }
 }
-
-//ignore (by safwat)

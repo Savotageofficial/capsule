@@ -1,4 +1,4 @@
-package com.example.capsule.ui.screens.profiles
+package com.example.capsule.ui.screens.patient
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -18,42 +18,38 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.R
-import com.example.capsule.ui.screens.viewmodels.DoctorProfileViewModel
 import com.example.capsule.ui.theme.Blue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DoctorEditProfileScreen(
-    viewModel: DoctorProfileViewModel = viewModel(),
+fun PatientEditProfileScreen(
+    viewModel: PatientProfileViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onSaveClick: () -> Unit = {}
 ) {
-    val doctor = viewModel.doctor.value
+    val patient = viewModel.patient.value
     val scrollState = rememberScrollState()
 
-    // Load current doctor when screen opens
+    // Load current patient when screen opens
     LaunchedEffect(Unit) {
-        viewModel.loadCurrentDoctorProfile()
+        viewModel.loadCurrentPatientProfile()
     }
 
-    // If still loading or no doctor
-    if (doctor == null) {
+    // If still loading or no patient
+    if (patient == null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
         }
         return
     }
 
-    // Editable fields
-    var name by remember { mutableStateOf(TextFieldValue(doctor.name)) }
-    var specialty by remember { mutableStateOf(TextFieldValue(doctor.specialty)) }
-    var bio by remember { mutableStateOf(TextFieldValue(doctor.bio)) }
-    var experience by remember { mutableStateOf(TextFieldValue(doctor.experience)) }
-    var clinicName by remember { mutableStateOf(TextFieldValue(doctor.clinicName)) }
-    var clinicAddress by remember { mutableStateOf(TextFieldValue(doctor.clinicAddress)) }
-    var locationUrl by remember { mutableStateOf(TextFieldValue(doctor.locationUrl)) }
-    var availability by remember { mutableStateOf(TextFieldValue(doctor.availability)) }
+    // Editable fields with current patient data
+    var name by remember { mutableStateOf(TextFieldValue(patient.name)) }
+    var dob by remember { mutableStateOf(TextFieldValue(patient.dob)) }
+    var gender by remember { mutableStateOf(TextFieldValue(patient.gender)) }
+    var contact by remember { mutableStateOf(TextFieldValue(patient.contact)) }
 
+    var showErrorDialog by remember { mutableStateOf(false) }
     var showSaveDialog by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
 
@@ -79,7 +75,7 @@ fun DoctorEditProfileScreen(
                 .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
+            // Editable fields
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
@@ -91,9 +87,9 @@ fun DoctorEditProfileScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             OutlinedTextField(
-                value = specialty,
-                onValueChange = { specialty = it },
-                label = { Text(stringResource(R.string.specialization)) },
+                value = dob,
+                onValueChange = { dob = it },
+                label = { Text(stringResource(R.string.date_of_birth)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -101,22 +97,9 @@ fun DoctorEditProfileScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             OutlinedTextField(
-                value = bio,
-                onValueChange = { bio = it },
-                label = { Text(stringResource(R.string.about)) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 100.dp),
-                singleLine = false,
-                maxLines = 6
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            OutlinedTextField(
-                value = experience,
-                onValueChange = { experience = it },
-                label = { Text(stringResource(R.string.experience)) },
+                value = gender,
+                onValueChange = { gender = it },
+                label = { Text(stringResource(R.string.gender)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -124,40 +107,10 @@ fun DoctorEditProfileScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             OutlinedTextField(
-                value = clinicName,
-                onValueChange = { clinicName = it },
-                label = { Text(stringResource(R.string.clinic_name)) },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            OutlinedTextField(
-                value = clinicAddress,
-                onValueChange = { clinicAddress = it },
-                label = { Text(stringResource(R.string.clinic_address)) },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            OutlinedTextField(
-                value = locationUrl,
-                onValueChange = { locationUrl = it },
-                label = { Text(stringResource(R.string.clinic_address_link_on_maps)) },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            OutlinedTextField(
-                value = availability,
-                onValueChange = { availability = it },
-                label = { Text(stringResource(R.string.availability)) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                value = contact,
+                onValueChange = { contact = it },
+                label = { Text(stringResource(R.string.contact)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -167,26 +120,21 @@ fun DoctorEditProfileScreen(
             Button(
                 onClick = {
                     isLoading = true
-
-                    // map snt to firebase
+                    // This saves to Firebase
                     val updatedData = mapOf(
                         "name" to name.text,
-                        "specialty" to specialty.text,
-                        "bio" to bio.text,
-                        "experience" to experience.text,
-                        "clinicName" to clinicName.text,
-                        "clinicAddress" to clinicAddress.text,
-                        "locationUrl" to locationUrl.text,
-                        "availability" to availability.text
+                        "dob" to dob.text,
+                        "gender" to gender.text,
+                        "contact" to contact.text,
                     )
 
-                    viewModel.updateDoctorProfile(updatedData) { success ->
+                    viewModel.updatePatientProfile(updatedData) { success ->
                         isLoading = false
                         if (success) {
                             showSaveDialog = true
                             onSaveClick() // Call the callback
                         } else {
-                            // TODO: Show error message
+                            showErrorDialog = true
                         }
                     }
                 },
@@ -208,11 +156,26 @@ fun DoctorEditProfileScreen(
             }
         }
     }
-
-    // Confirmation dialog
+// Error Dialog
+    if (showErrorDialog) {
+        AlertDialog(
+            onDismissRequest = { showErrorDialog = false },
+            confirmButton = {
+                TextButton(onClick = { showErrorDialog = false }) {
+                    Text("OK")
+                }
+            },
+            title = { Text("Update Failed") },
+            text = { Text("Failed to update your profile. Please try again.") }
+        )
+    }
+    // Dialog shown when saving is done
     if (showSaveDialog) {
         AlertDialog(
-            onDismissRequest = { showSaveDialog = false },
+            onDismissRequest = {
+                showSaveDialog = false
+                onBackClick() // Navigate back when dismissed
+            },
             confirmButton = {
                 TextButton(onClick = {
                     showSaveDialog = false
@@ -225,13 +188,14 @@ fun DoctorEditProfileScreen(
             text = { Text("Your profile information has been successfully updated.") }
         )
     }
+
 }
 
-@Preview(showBackground = true, showSystemUi = true)
+@Preview(showBackground = true)
 @Composable
-fun DoctorEditProfileScreenPreview() {
+fun PatientEditProfileScreenPreview() {
     MaterialTheme {
-        DoctorEditProfileScreen()
+        PatientEditProfileScreen()
     }
 }
 //ignore (by safwat)

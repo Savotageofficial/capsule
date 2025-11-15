@@ -1,50 +1,34 @@
-package com.example.capsule
+package com.example.capsule.ui.screens.features
 
-import android.content.Intent
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.firebase.auth.FirebaseAuth
-
-class SettingsActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        setContent {
-            SettingsScreen(
-                onBack = { finish() }
-            )
-        }
-    }
-}
+import com.example.capsule.data.repository.AuthRepository
 
 @Composable
-fun SettingsScreen(onBack: () -> Unit) {
+fun SettingsScreen(
+    onBack: () -> Unit,
+    onLogout: () -> Unit
+) {
 
     val authRepo = remember { AuthRepository() }
     val context = LocalContext.current
@@ -78,7 +62,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        Icons.Default.ArrowBack,
+                        Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = null,
                         tint = Color.Black,
                         modifier = Modifier
@@ -97,56 +81,6 @@ fun SettingsScreen(onBack: () -> Unit) {
 
                 Spacer(modifier = Modifier.height(25.dp))
 
-                // user card
-                Card(
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {}
-                ) {
-
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-
-                        Image(
-                            painter = painterResource(id = R.drawable.user),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(70.dp)
-                                .clip(CircleShape),
-                            contentScale = ContentScale.Crop
-                        )
-
-                        Spacer(modifier = Modifier.width(16.dp))
-
-                        Column {
-                            Text(
-                                text = "User Name",
-                                fontSize = 19.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF222222)
-                            )
-                            Text(
-                                text = "email@example.com",
-                                fontSize = 15.sp,
-                                color = Color.Gray
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.weight(1f))
-
-                        Icon(
-                            Icons.Default.KeyboardArrowRight,
-                            contentDescription = null,
-                            tint = Color.Gray
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(30.dp))
 
                 Text(
                     text = "Preferences",
@@ -211,7 +145,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                         Spacer(modifier = Modifier.weight(1f))
 
                         Icon(
-                            Icons.Default.KeyboardArrowRight,
+                            Icons.AutoMirrored.Filled.KeyboardArrowRight,
                             contentDescription = null,
                             tint = Color.Gray
                         )
@@ -264,7 +198,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                         Spacer(modifier = Modifier.weight(1f))
 
                         Icon(
-                            Icons.Default.KeyboardArrowRight,
+                            Icons.AutoMirrored.Filled.KeyboardArrowRight,
                             contentDescription = null,
                             tint = Color.Gray
                         )
@@ -289,11 +223,8 @@ fun SettingsScreen(onBack: () -> Unit) {
                 Button(
                     onClick = {
                         authRepo.logout()
-                        context.startActivity(
-                            Intent(context, SignUpActivity::class.java).apply {
-                                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                            }
-                        )
+                        // Instead of starting new activity, we'll handle this in MainActivity
+                        onLogout()
                     },
                     shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFE5E5)),
@@ -316,7 +247,7 @@ fun SettingsScreen(onBack: () -> Unit) {
 @Composable
 fun ToggleItem(
     title: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     checked: Boolean,
     onChange: (Boolean) -> Unit
 ) {

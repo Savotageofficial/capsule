@@ -1,4 +1,4 @@
-package com.example.capsule.ui.screens.dashboards
+package com.example.capsule.ui.screens.doctor
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -31,7 +31,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.R
 import com.example.capsule.ui.components.UpcomingCard
-import com.example.capsule.ui.screens.viewmodels.DoctorProfileViewModel
 import com.example.capsule.ui.theme.Blue
 import com.example.capsule.ui.theme.Green
 import com.example.capsule.ui.theme.Red
@@ -41,6 +40,7 @@ import com.example.capsule.ui.theme.White
 fun DoctorDashboardScreen(
     viewModel: DoctorProfileViewModel = viewModel(),
     onProfileClick: () -> Unit = {},
+    onSettingsClick: () -> Unit = {},
     onPatientClick: (String) -> Unit = {},  // for later
     onScheduleClick: () -> Unit = {},
     onMessagesClick: () -> Unit = {},       // when chat finish
@@ -70,11 +70,6 @@ fun DoctorDashboardScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 CircularProgressIndicator(color = Blue)
-                Text(
-                    text = "Loading your dashboard...",
-                    color = Color.Gray,
-                    fontSize = 16.sp
-                )
             }
         }
         return
@@ -136,7 +131,7 @@ fun DoctorDashboardScreen(
                         )
                     }
                 }
-                IconButton(onClick = { /* navigate to settings */ }) {
+                IconButton(onClick = onSettingsClick) {
                     Icon(
                         Icons.Default.Settings,
                         contentDescription = "Settings",
@@ -194,7 +189,10 @@ fun DoctorDashboardScreen(
 
                 // Messages card
                 Card(
-                    onClick = onMessagesClick,
+                    onClick = {
+                        onMessagesClick()
+                        Toast.makeText(context, "Wait for it!", Toast.LENGTH_SHORT).show()
+                    },
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(White),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
@@ -241,7 +239,11 @@ fun DoctorDashboardScreen(
 
             // Make Prescription Button
             Button(
-                onClick = onPrescriptionClick,
+                onClick = {
+                    onPrescriptionClick
+                    Toast.makeText(context, "Wait for it!", Toast.LENGTH_SHORT).show()
+
+                },
                 colors = ButtonDefaults.buttonColors(containerColor = Blue),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier

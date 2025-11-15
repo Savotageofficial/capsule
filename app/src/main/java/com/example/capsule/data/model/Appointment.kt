@@ -9,4 +9,3 @@ data class Appointment(
     val type: String = "",               // Chat , In-Person -> for both
     val status: String = "",             // Upcoming , Completed , Cancelled -> for patient
 )
-//ignore (by safwat)

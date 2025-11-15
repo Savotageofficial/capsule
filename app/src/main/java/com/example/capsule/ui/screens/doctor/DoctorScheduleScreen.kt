@@ -1,4 +1,4 @@
-package com.example.capsule.ui.screens.features
+package com.example.capsule.ui.screens.doctor
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,7 +17,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.R
 import com.example.capsule.ui.components.UpcomingCard
-import com.example.capsule.ui.screens.viewmodels.DoctorProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -95,5 +94,3 @@ fun DoctorScheduleScreenPreview() {
         DoctorScheduleScreen()
     }
 }
-
-//ignore (by safwat)
