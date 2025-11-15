@@ -9,6 +9,7 @@ Fast, secure, and accessible—healthcare has never been this convenient.
 
 ## Completed Features
 
+#Team Members
 Authentication (Login & Registration)
 Full Firebase authentication for both patients and doctors.
 
@@ -27,6 +28,14 @@ Doctors can view upcoming appointments and their schedule.
 Patient Home
 Browse doctors, view categories, and navigate the main features.
 
+##Overview
+
+Capsule is a healthcare application designed to simplify communication between patients and their psychology specialists. It serves both patients and doctors by eliminating the need for physical visits, reducing travel stress, time loss, and everyday obstacles that hold people back from receiving proper mental healthcare. Capsule provides secure online prescriptions, keeps medical records safely stored even if the device is lost, and maintains quick access to doctor contacts. The app also guides users to nearby hospitals when urgent support is needed, ensuring help is always within reach.
+
+##System Requirments
+a phone
+
+#Documentation
 Firestore Integration
 Real-time data fetching and updates for all user types.
 
