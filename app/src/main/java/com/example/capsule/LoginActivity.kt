@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.capsule.data.repository.AuthRepository
 import com.example.capsule.ui.theme.CapsuleTheme
 
 class LoginActivity : ComponentActivity() {
@@ -96,10 +97,9 @@ class LoginActivity : ComponentActivity() {
     }
 
     private fun navigateToHome(userType: String) {
-        val intent = if (userType == "Doctor") {
-            Intent(this, PatientHomePageActivity::class.java)
-        } else {
-            Intent(this, PatientHomePageActivity::class.java)
+        val intent = Intent(this, MainActivity::class.java).apply {
+            putExtra("userType", userType)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
         startActivity(intent)
         finish()
@@ -163,11 +163,14 @@ fun LoginScreen(
             ),
             shape = RoundedCornerShape(20.dp),
             singleLine = true,
-            modifier = Modifier.fillMaxWidth().height(54.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(54.dp)
         )
 
         Spacer(modifier = Modifier.height(14.dp))
 
+        // Password input
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
@@ -188,6 +191,7 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        // Forgot password
         Text(
             text = "Forgot Password?",
             modifier = Modifier.align(Alignment.End).clickable { onForgotPasswordClick(email) },
@@ -199,6 +203,7 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(30.dp))
 
+        // Login button
         Button(
             onClick = { onLoginClick(email, password) },
             colors = ButtonDefaults.buttonColors(containerColor = buttonColor),

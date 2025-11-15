@@ -1,8 +1,10 @@
-package com.example.capsule.model
+package com.example.capsule.data.model
 
 data class Doctor(
-    val id: String,         // for Firebase (unique hashcode)
-    val name: String = "",
+    override val id: String = "",
+    override val name: String = "",
+    override val email: String = "",
+    override val userType: String = "Doctor",
     val specialty: String = "",
     val bio: String = "",
     val rating: Double = 0.0,
@@ -12,7 +14,5 @@ data class Doctor(
     val clinicAddress: String = "",
     val locationUrl: String = "",
     val availability: String = "",
-    val profileImageRes: Int? = null,
-    val appointments: List<Appointment> = emptyList()
-)
-//ignore (by safwat)
+    val profileImageRes: Int? = null
+) : UserProfile(id = id, name = name, email = email, userType = userType)

@@ -1,6 +1,7 @@
-package com.example.capsule.ui.screens.profiles
+package com.example.capsule.ui.screens.doctor
 
 import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -12,8 +13,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,28 +27,56 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
 import com.example.capsule.ui.components.InfoCard
 import com.example.capsule.R
-import com.example.capsule.ui.screens.viewmodels.DoctorProfileViewModel
 import com.example.capsule.ui.theme.Blue
 import com.example.capsule.ui.theme.Gold
-import com.example.capsule.ui.theme.Green
-import com.example.capsule.ui.theme.White
+import androidx.core.net.toUri
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ViewDoctorProfileScreen(
-    viewModel: DoctorProfileViewModel = DoctorProfileViewModel()
-) {
+fun DoctorProfileScreen(
+    doctorId: String? = null,
+    onEditClick: () -> Unit = {},
+    onBackClick: () -> Unit = {},
+    onSettingsClick: () -> Unit = {},
+
+    ) {
+    // Create ViewModel
+    val viewModel = viewModel<DoctorProfileViewModel>()
+
+    // Load data from Firebase on first launch
+    LaunchedEffect(doctorId) {
+        if (doctorId == null) {
+            viewModel.loadCurrentDoctorProfile() // Load current user
+        } else {
+            viewModel.loadDoctorProfileById(doctorId) // Load specific doctor
+        }
+    }
+    // Observe patient State
     val doctor = viewModel.doctor.value
+
     val context = LocalContext.current
+
+
+    // If still loading
+    if (doctor == null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text(stringResource(R.string.profile_title)) },
                 navigationIcon = {
-                    IconButton(onClick = { /* Navigate back */ }) {
+                    IconButton(onClick = onBackClick) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
@@ -55,59 +84,14 @@ fun ViewDoctorProfileScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* Save Doctor */ }) {
+                    IconButton(onClick = onEditClick) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_bookmark),
+                            painter = painterResource(R.drawable.ic_edit),
                             contentDescription = "Edit"
                         )
                     }
                 }
             )
-        },
-        bottomBar = {
-            BottomAppBar(
-                containerColor = White,
-                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 8.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    Button(
-                        onClick = { /* TODO: Handle booking */ },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Green
-                        ),
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .weight(1f)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.book_appointment),
-                            fontSize = 18.sp
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(16.dp))
-
-                    Button(
-                        onClick = { /* TODO: Handle chat */ },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Blue
-                        ),
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .weight(1f)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.start_chat),
-                            fontSize = 20.sp
-                        )
-                    }
-                }
-            }
         }
     ) { padding ->
 
@@ -131,35 +115,55 @@ fun ViewDoctorProfileScreen(
                         .clip(CircleShape),
                     contentScale = ContentScale.Crop
                 )
+            } ?: run {
+                // Fallback image if profileImageRes is null
+                Image(
+                    painter = painterResource(id = R.drawable.doc_prof_unloaded),
+                    contentDescription = "Doctor Image",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(CircleShape)
+                )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(doctor.name, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-            Text(
-                text = doctor.specialty,
-                fontSize = 16.sp,
-                color = Blue
-            )
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_star),
-                    contentDescription = "Rating Star",
-                    tint = Gold,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = "${doctor.rating}",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp
-                )
+            Text(doctor.specialty, fontSize = 18.sp, color = Color.Gray)
+
+            Spacer(modifier = Modifier.height(22.dp))
+
+            InfoCard(title = "Bio") {
+                Text(doctor.bio, fontSize = 15.sp)
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            InfoCard(title = stringResource(R.string.about)) {
-                Text(text = doctor.bio, fontSize = 15.sp)
+            InfoCard(title = stringResource(R.string.rating)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Based on ${doctor.reviewsCount} patient reviews",
+                        color = Color.Gray,
+                        fontSize = 14.sp
+                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_star),
+                            contentDescription = "Rating Star",
+                            tint = Gold,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "${doctor.rating}",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp
+                        )
+                    }
+                }
             }
 
             InfoCard(title = stringResource(R.string.license_specialization)) {
@@ -182,7 +186,6 @@ fun ViewDoctorProfileScreen(
                     Text(doctor.experience)
                 }
             }
-
             InfoCard(title = stringResource(R.string.location)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
@@ -192,9 +195,15 @@ fun ViewDoctorProfileScreen(
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.clickable {
-                            val intent = Intent(Intent.ACTION_VIEW, doctor.locationUrl.toUri())
-                            context.startActivity(intent)
+                            if (doctor.locationUrl.isBlank()) {
+                                Toast.makeText(context, "No Location Provided", Toast.LENGTH_SHORT)
+                                    .show()
+                            } else {
+                                val intent = Intent(Intent.ACTION_VIEW, doctor.locationUrl.toUri())
+                                context.startActivity(intent)
+                            }
                         }
+
                     ) {
                         Icon(
                             Icons.Default.LocationOn,
@@ -203,7 +212,7 @@ fun ViewDoctorProfileScreen(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = stringResource(R.string.view_on_map),
+                            text = "View on Map",
                             color = Blue,
                             fontSize = 14.sp
                         )
@@ -215,6 +224,20 @@ fun ViewDoctorProfileScreen(
                 Text(doctor.availability, color = Color.Gray)
             }
 
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Button(
+                onClick = onSettingsClick,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Blue
+                ),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            ) {
+                Text(stringResource(R.string.settings))
+            }
 
         }
     }
@@ -222,9 +245,8 @@ fun ViewDoctorProfileScreen(
 
 @Preview(showBackground = true)
 @Composable
-fun ViewDoctorProfileScreenPreview() {
+fun DoctorProfileScreenPreview() {
     MaterialTheme {
-        ViewDoctorProfileScreen()
+        DoctorProfileScreen("5412")
     }
 }
-//ignore (by safwat)

@@ -22,6 +22,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.capsule.data.repository.AuthRepository
 import com.example.capsule.ui.theme.CapsuleTheme
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -48,10 +49,10 @@ class SignUpActivity : ComponentActivity() {
                         delay(1000)
                         checkUserStatus(
                             onUserFound = { userType ->
-                                val intent = if (userType == "Doctor") {
-                                    Intent(this@SignUpActivity, PatientHomePageActivity::class.java)
-                                } else {
-                                    Intent(this@SignUpActivity, PatientHomePageActivity::class.java)
+                                // Navigate to MainActivity for both user types
+                                val intent = Intent(this@SignUpActivity, MainActivity::class.java).apply {
+                                    putExtra("userType", userType)
+                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                                 }
                                 startActivity(intent)
                                 finish()
@@ -62,7 +63,7 @@ class SignUpActivity : ComponentActivity() {
                         )
                     }
                 } else {
-                    
+
                     var isLoading by remember { mutableStateOf(false) }
                     SignUpScreen(
                         onSignUpClick = { name, email, password, userType, specialization ->
@@ -88,35 +89,31 @@ class SignUpActivity : ComponentActivity() {
 
     private fun checkUserStatus(onUserFound: (String) -> Unit, onUserNotFound: () -> Unit) {
         val user = auth.currentUser
-
         if (user != null) {
-            user.reload()
-                .addOnSuccessListener {
-                    if (auth.currentUser != null && auth.currentUser!!.isEmailVerified) {
-                        db.collection("users").document(auth.currentUser!!.uid)
-                            .get()
-                            .addOnSuccessListener { document ->
-                                if (document.exists()) {
-                                    val userType = document.getString("userType") ?: "Patient"
-                                    onUserFound(userType)
-                                } else {
-                                    auth.signOut()
-                                    onUserNotFound()
+            user.reload().addOnSuccessListener {
+                if (auth.currentUser != null && auth.currentUser!!.isEmailVerified) {
+                    db.collection("users").document(auth.currentUser!!.uid)
+                        .get()
+                        .addOnSuccessListener { document ->
+                            if (document.exists()) {
+                                val userType = document.getString("userType") ?: "Patient"
+                                // Navigate to MainActivity
+                                val intent = Intent(this@SignUpActivity, MainActivity::class.java).apply {
+                                    putExtra("userType", userType)
+                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                                 }
-                            }
-                            .addOnFailureListener {
+                                startActivity(intent)
+                                finish()
+                            } else {
                                 auth.signOut()
                                 onUserNotFound()
                             }
-                    } else {
-                        auth.signOut()
-                        onUserNotFound()
-                    }
-                }
-                .addOnFailureListener {
+                        }
+                } else {
                     auth.signOut()
                     onUserNotFound()
                 }
+            }
         } else {
             onUserNotFound()
         }
@@ -134,7 +131,6 @@ class SignUpActivity : ComponentActivity() {
         repository.createAccount(email, password, name, userType, specialization, onSuccess, onFailure)
     }
 }
-
 @Composable
 fun SplashScreen() {
     val gradientBrush = Brush.verticalGradient(
@@ -285,7 +281,13 @@ fun SignUpScreen(
 
             Button(
                 onClick = {
-                    onSignUpClick(name, email, password, userType, if (userType == "Doctor") specialization else null)
+                    onSignUpClick(
+                        name,
+                        email,
+                        password,
+                        userType,
+                        if (userType == "Doctor") specialization else null
+                    )
                 },
                 modifier = Modifier
                     .fillMaxWidth()

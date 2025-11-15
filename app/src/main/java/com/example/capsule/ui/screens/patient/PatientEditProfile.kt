@@ -1,4 +1,4 @@
-package com.example.capsule.ui.screens.profiles
+package com.example.capsule.ui.screens.patient
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -16,34 +16,47 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.R
-import com.example.capsule.ui.screens.viewmodels.PatientProfileViewModel
 import com.example.capsule.ui.theme.Blue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PatientEditProfileScreen(
-    viewModel: PatientProfileViewModel = PatientProfileViewModel(),
+    viewModel: PatientProfileViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onSaveClick: () -> Unit = {}
 ) {
     val patient = viewModel.patient.value
     val scrollState = rememberScrollState()
 
+    // Load current patient when screen opens
+    LaunchedEffect(Unit) {
+        viewModel.loadCurrentPatientProfile()
+    }
+
+    // If still loading or no patient
+    if (patient == null) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
     // Editable fields with current patient data
     var name by remember { mutableStateOf(TextFieldValue(patient.name)) }
     var dob by remember { mutableStateOf(TextFieldValue(patient.dob)) }
     var gender by remember { mutableStateOf(TextFieldValue(patient.gender)) }
     var contact by remember { mutableStateOf(TextFieldValue(patient.contact)) }
-    var email by remember { mutableStateOf(TextFieldValue(patient.email)) }
 
-    // For showing save confirmation
+    var showErrorDialog by remember { mutableStateOf(false) }
     var showSaveDialog by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(stringResource(R.string.edit_profile) )},
+                title = { Text(stringResource(R.string.edit_profile)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
@@ -102,67 +115,67 @@ fun PatientEditProfileScreen(
                 singleLine = true
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text(stringResource(R.string.email)) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
                 onClick = {
-                    // TODO: make firebase repo file and and paste this in it
-                    /*
-                    val db = FirebaseFirestore.getInstance()
-                    val userId = FirebaseAuth.getInstance().currentUser?.uid
+                    isLoading = true
+                    // This saves to Firebase
+                    val updatedData = mapOf(
+                        "name" to name.text,
+                        "dob" to dob.text,
+                        "gender" to gender.text,
+                        "contact" to contact.text,
+                    )
 
-                    if (userId != null) {
-                        val updatedData = mapOf(
-                            "name" to name.text,
-                            "dob" to dob.text,
-                            "gender" to gender.text,
-                            "contact" to contact.text,
-                            "email" to email.text
-                        )
-
-                        db.collection("patients")
-                            .document(userId)
-                            .update(updatedData)
-                            .addOnSuccessListener {
-                                Log.d("PatientEditProfile", "Profile updated successfully.")
-                                showSaveDialog = true
-                            }
-                            .addOnFailureListener { e ->
-                                Log.e("PatientEditProfile", "Error updating profile", e)
-                            }
+                    viewModel.updatePatientProfile(updatedData) { success ->
+                        isLoading = false
+                        if (success) {
+                            showSaveDialog = true
+                            onSaveClick() // Call the callback
+                        } else {
+                            showErrorDialog = true
+                        }
                     }
-                    */
-
-                    // Trigger local save callback (for preview or offline mode)
-                    onSaveClick()
-                    showSaveDialog = true
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Blue),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                shape = MaterialTheme.shapes.medium
+                shape = MaterialTheme.shapes.medium,
+                enabled = !isLoading
             ) {
-                Text(stringResource(R.string.save_changes), fontSize = 16.sp)
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(stringResource(R.string.save_changes), fontSize = 16.sp)
+                }
             }
         }
     }
-
+// Error Dialog
+    if (showErrorDialog) {
+        AlertDialog(
+            onDismissRequest = { showErrorDialog = false },
+            confirmButton = {
+                TextButton(onClick = { showErrorDialog = false }) {
+                    Text("OK")
+                }
+            },
+            title = { Text("Update Failed") },
+            text = { Text("Failed to update your profile. Please try again.") }
+        )
+    }
     // Dialog shown when saving is done
     if (showSaveDialog) {
         AlertDialog(
-            onDismissRequest = { showSaveDialog = false },
+            onDismissRequest = {
+                showSaveDialog = false
+                onBackClick() // Navigate back when dismissed
+            },
             confirmButton = {
                 TextButton(onClick = {
                     showSaveDialog = false
@@ -175,6 +188,7 @@ fun PatientEditProfileScreen(
             text = { Text("Your profile information has been successfully updated.") }
         )
     }
+
 }
 
 @Preview(showBackground = true)
