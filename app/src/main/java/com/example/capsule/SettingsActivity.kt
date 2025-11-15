@@ -223,9 +223,9 @@ fun SettingsScreen(onBack: () -> Unit) {
                         exit = fadeOut()
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
-                            Text("Version: 1.0.0", color = Color.Gray)
-                            Text("Developed by: Your Team", color = Color.Gray)
-                            Text("App description goes here.", color = Color.Gray)
+                            Text("Version: 0.0.1 Alpha", color = Color.Gray)
+                            Text("Developed by: Capsule Team", color = Color.Gray)
+                            Text("Developed with love", color = Color.Gray)
                         }
                     }
                 }

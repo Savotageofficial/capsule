@@ -82,7 +82,8 @@ class PatientHomePageActivity : ComponentActivity() {
                     HomePage(modifier = Modifier.padding() , {
                         val intent = Intent(this , SearchActivity::class.java)
                         startActivity(intent)
-                    } , {})
+                    } , {val intent = Intent(this , SettingsActivity::class.java)
+                        startActivity(intent)})
 
 
 
@@ -111,7 +112,7 @@ fun HomePage(modifier: Modifier = Modifier , searchonclick: () -> Unit , onProfi
             ProfileIcon(
                 onClick = {
                     // TODO: Navigate to Profile Screen
-                    onProfilePatientClick
+                    onProfilePatientClick()
                 }
             )
         }
