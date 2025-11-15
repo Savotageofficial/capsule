@@ -177,3 +177,5 @@ fun ViewPatientProfileScreenPreview() {
         ViewPatientProfileScreen()
     }
 }
+
+//ignore (by safwat)

@@ -95,3 +95,5 @@ fun DoctorScheduleScreenPreview() {
         DoctorScheduleScreen()
     }
 }
+
+//ignore (by safwat)
