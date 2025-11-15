@@ -1,6 +1,7 @@
 package com.example.capsule.ui.screens.doctor
 
 import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -194,8 +195,13 @@ fun DoctorProfileScreen(
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.clickable {
-                            val intent = Intent(Intent.ACTION_VIEW, doctor.locationUrl.toUri())
-                            context.startActivity(intent)
+                            if (doctor.locationUrl.isBlank()) {
+                                Toast.makeText(context, "No Location Provided", Toast.LENGTH_SHORT)
+                                    .show()
+                            } else {
+                                val intent = Intent(Intent.ACTION_VIEW, doctor.locationUrl.toUri())
+                                context.startActivity(intent)
+                            }
                         }
 
                     ) {
