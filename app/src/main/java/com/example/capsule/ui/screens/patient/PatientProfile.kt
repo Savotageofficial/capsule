@@ -27,6 +27,7 @@ import com.example.capsule.ui.components.InfoRow
 import com.example.capsule.R
 import com.example.capsule.ui.theme.Blue
 import com.example.capsule.ui.theme.Gray
+import com.example.capsule.util.formatDateOfBirth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,12 +41,8 @@ fun PatientProfileScreen(
     val viewModel = viewModel<PatientProfileViewModel>()
 
     // Load data from Firebase on first launch
-    LaunchedEffect(patientId) {         // The composable first enters the composition
-        if (patientId == null) {
-            viewModel.loadCurrentPatientProfile() // Load current user
-        } else {
-            viewModel.loadPatientProfileById(patientId) // Load specific patient
-        }
+    LaunchedEffect(patientId) {          // The composable first enters the composition
+            viewModel.loadCurrentPatientProfile()       // Load current user
     }
 
     // Observe patient State
@@ -133,7 +130,7 @@ fun PatientProfileScreen(
 
             InfoCard(title = stringResource(R.string.personal_information)) {
                 InfoRow("Full Name", patient.name)
-                InfoRow("Date of Birth", patient.dob)
+                InfoRow("Date of Birth", formatDateOfBirth(patient.dob))
                 InfoRow("Gender", patient.gender)
                 InfoRow("Contact", patient.contact)
             }

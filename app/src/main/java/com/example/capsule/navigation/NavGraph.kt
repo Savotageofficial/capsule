@@ -1,4 +1,3 @@
-// NavGraph.kt (updated)
 package com.example.capsule.navigation
 
 import androidx.compose.runtime.Composable
@@ -13,6 +12,7 @@ import com.example.capsule.ui.screens.doctor.DoctorEditProfileScreen
 import com.example.capsule.ui.screens.doctor.DoctorProfileScreen
 import com.example.capsule.ui.screens.doctor.DoctorScheduleScreen
 import com.example.capsule.ui.screens.doctor.ViewDoctorProfileScreen
+import com.example.capsule.ui.screens.patient.PatientAppointmentsScreen
 import com.example.capsule.ui.screens.patient.PatientEditProfileScreen
 import com.example.capsule.ui.screens.patient.PatientProfileScreen
 import com.example.capsule.ui.screens.patient.ViewPatientProfileScreen
@@ -33,6 +33,8 @@ fun NavGraph(
                 onProfilePatientClick = { navController.navigate("patientProfile") },
                 onSearchClick = { navController.navigate("search") },
                 onSettingsClick = { navController.navigate("settings") },
+                onAppointmentsClick = { navController.navigate("patientAppointments") },
+                onChatsClick = { /* Later */ }
                 )
         }
 
@@ -127,6 +129,21 @@ fun NavGraph(
                 onPatientClick = { patientId ->
                     navController.navigate("viewPatientProfile/$patientId")
                 }
+            )
+        }
+
+        // patient Schedule
+        composable("patientAppointments") {
+            PatientAppointmentsScreen(
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable("bookAppointment/{doctorId}") { backStackEntry ->
+            val doctorId = backStackEntry.arguments?.getString("doctorId")
+            ViewDoctorProfileScreen(
+                doctorId = doctorId,
+                onBackClick = { navController.popBackStack() }
             )
         }
     }

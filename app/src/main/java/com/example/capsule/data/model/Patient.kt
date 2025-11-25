@@ -6,7 +6,7 @@ data class Patient(
     override val email: String = "",
     override val userType: String = "Patient",
 
-    val dob: String = "",
+    val dob: Long = System.currentTimeMillis(),
     val gender: String = "",
     val contact: String = "",
     val profileImageRes: Int? = null

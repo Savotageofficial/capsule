@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.capsule.data.model.Appointment
 import com.example.capsule.data.model.Doctor
+import com.example.capsule.data.model.TimeSlot
 import com.example.capsule.data.repository.ProfileRepository
 import kotlinx.coroutines.launch
 
@@ -20,25 +21,15 @@ class DoctorProfileViewModel : ViewModel() {
 
     private val _isLoading = mutableStateOf(false)
     val isLoading = _isLoading
-    // Simple dummy data
-    private val dummyAppointments = listOf(
-        Appointment(
-            id = "1", patientName = "Sarah Johnson", patientId = "patient123",
-            time = "10:00 AM", type = "In-Person", status = "Upcoming"
-        ),
-        Appointment(
-            id = "2", patientName = "Mike Wilson", patientId = "patient456",
-            time = "2:30 PM", type = "Video Call", status = "Upcoming"
-        )
-    )
 
-    // Load current doctor
+
+    // Load current doctor profile
     fun loadCurrentDoctorProfile() {
         _isLoading.value = true
         viewModelScope.launch {
             profileRepository.getCurrentDoctor { doctor ->
                 _doctor.value = doctor
-                _appointments.value = dummyAppointments // Load appointments immediately
+                loadDoctorAppointments() // Load real appointments
                 _isLoading.value = false
             }
         }
@@ -50,8 +41,19 @@ class DoctorProfileViewModel : ViewModel() {
         viewModelScope.launch {
             profileRepository.getDoctorById(doctorId) { doctor ->
                 _doctor.value = doctor
-                _appointments.value = dummyAppointments
+                loadDoctorAppointments() // Load real appointments
                 _isLoading.value = false
+            }
+        }
+    }
+
+    // Load appointments from Firestore
+    private fun loadDoctorAppointments() {
+        _doctor.value?.id?.let { doctorId ->
+            viewModelScope.launch {
+                profileRepository.getDoctorAppointments(doctorId) { appointments ->
+                    _appointments.value = appointments
+                }
             }
         }
     }
@@ -61,16 +63,18 @@ class DoctorProfileViewModel : ViewModel() {
         viewModelScope.launch {
             profileRepository.updateCurrentDoctor(data) { success ->
                 if (success) {
-                    // Update local state
+                    // Update local state with proper type casting
                     _doctor.value = _doctor.value?.copy(
                         name = data["name"] as? String ?: _doctor.value!!.name,
                         specialty = data["specialty"] as? String ?: _doctor.value!!.specialty,
                         bio = data["bio"] as? String ?: _doctor.value!!.bio,
                         experience = data["experience"] as? String ?: _doctor.value!!.experience,
                         clinicName = data["clinicName"] as? String ?: _doctor.value!!.clinicName,
-                        clinicAddress = data["clinicAddress"] as? String ?: _doctor.value!!.clinicAddress,
+                        clinicAddress = data["clinicAddress"] as? String
+                            ?: _doctor.value!!.clinicAddress,
                         locationUrl = data["locationUrl"] as? String ?: _doctor.value!!.locationUrl,
-                        availability = data["availability"] as? String ?: _doctor.value!!.availability
+                        availability = (data["availability"] as? Map<String, List<TimeSlot>>)
+                            ?: _doctor.value!!.availability
                     )
                 }
                 onDone(success)
@@ -78,23 +82,29 @@ class DoctorProfileViewModel : ViewModel() {
         }
     }
 
+    // Update availability specifically
+    fun updateAvailability(updatedAvailability: Map<String, List<TimeSlot>>) {
+        viewModelScope.launch {
+            val data = mapOf("availability" to updatedAvailability)
+            profileRepository.updateCurrentDoctor(data) { success ->
+                if (success) {
+                    _doctor.value = _doctor.value?.copy(availability = updatedAvailability)
+                }
+            }
+        }
+    }
+
     // Delete appointment
     fun deleteAppointment(appointmentId: String) {
-        _appointments.value = _appointments.value.filter { it.id != appointmentId }
-
-        // TODO: Later add Firestore deletion
-        // profileRepository.deleteAppointment(appointmentId) { success ->
-        //     if (success) {
-        //         // Update local state
-        //         val updated = _appointments.value.toMutableList()
-        //         updated.removeAll { it.id == appointmentId }
-        //         _appointments.value = updated
-        //     }
-        // }
+        viewModelScope.launch {
+            profileRepository.deleteAppointment(appointmentId) { success ->
+                if (success) {
+                    // Update local state
+                    _appointments.value = _appointments.value.filter { it.id != appointmentId }
+                }
+                // TODO: Show error message if deletion fails
+            }
+        }
     }
 
-    //   GET TODAY'S APPOINTMENTS for later
-    fun getTodaysAppointments(): List<Appointment> {
-        return _appointments.value.take(3) // Use state appointments, not upcomingAppointments
-    }
 }

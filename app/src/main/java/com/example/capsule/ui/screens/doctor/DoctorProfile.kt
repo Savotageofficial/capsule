@@ -41,8 +41,7 @@ fun DoctorProfileScreen(
     onEditClick: () -> Unit = {},
     onBackClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
-
-    ) {
+) {
     // Create ViewModel
     val viewModel = viewModel<DoctorProfileViewModel>()
 
@@ -54,11 +53,10 @@ fun DoctorProfileScreen(
             viewModel.loadDoctorProfileById(doctorId) // Load specific doctor
         }
     }
-    // Observe patient State
+
+    // Observe doctor State
     val doctor = viewModel.doctor.value
-
     val context = LocalContext.current
-
 
     // If still loading
     if (doctor == null) {
@@ -186,6 +184,7 @@ fun DoctorProfileScreen(
                     Text(doctor.experience)
                 }
             }
+
             InfoCard(title = stringResource(R.string.location)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
@@ -203,7 +202,6 @@ fun DoctorProfileScreen(
                                 context.startActivity(intent)
                             }
                         }
-
                     ) {
                         Icon(
                             Icons.Default.LocationOn,
@@ -220,8 +218,34 @@ fun DoctorProfileScreen(
                 }
             }
 
+            // ✅ FIXED: Availability Section
             InfoCard(title = stringResource(R.string.availability)) {
-                Text(doctor.availability, color = Color.Gray)
+                if (doctor.availability.isEmpty()) {
+                    Text("Not set", color = Color.Gray, fontSize = 15.sp)
+                } else {
+                    Column {
+                        doctor.availability.forEach { (day, slots) ->
+                            if (slots.isNotEmpty()) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = day,
+                                        fontWeight = FontWeight.Medium,
+                                        fontSize = 15.sp
+                                    )
+                                    Text(
+                                        text = slots.joinToString(", ") { "${it.start} - ${it.end}" },
+                                        color = Color.Gray,
+                                        fontSize = 14.sp
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(4.dp))
+                            }
+                        }
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -238,7 +262,6 @@ fun DoctorProfileScreen(
             ) {
                 Text(stringResource(R.string.settings))
             }
-
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.example.capsule.data.repository
 
+import com.example.capsule.data.model.Appointment
 import com.example.capsule.data.model.Doctor
 import com.example.capsule.data.model.Patient
 import com.google.firebase.auth.FirebaseAuth
@@ -8,9 +9,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 class ProfileRepository {
 
     private val db = FirebaseFirestore.getInstance()
-    private val auth = FirebaseAuth.getInstance()
+    private val auth = FirebaseAuth.getInstance()  // For UID
 
-    //     CREATE PROFILES with Firebase ID
+    // CREATE PROFILES with Firebase ID
     fun createDoctor(doctor: Doctor, onDone: (Boolean) -> Unit) {
         val currentUser = auth.currentUser
         if (currentUser != null) {
@@ -41,7 +42,7 @@ class ProfileRepository {
         }
     }
 
-    //        GET PROFILES
+    // GET PROFILES
     fun getCurrentDoctor(onResult: (Doctor?) -> Unit) {
         val currentUser = auth.currentUser
         if (currentUser != null) {
@@ -118,6 +119,66 @@ class ProfileRepository {
         } else {
             onDone(false)
         }
+    }
+
+    fun getDoctorAppointments(doctorId: String, onResult: (List<Appointment>) -> Unit) {
+        db.collection("appointments")
+            .whereEqualTo("doctorId", doctorId)
+            .whereEqualTo("status", "Upcoming")
+            .get()
+            .addOnSuccessListener { querySnapshot -> // the documents from firebase
+                val appointments = querySnapshot.documents.mapNotNull { doc ->
+                    doc.toObject(Appointment::class.java)?.copy(id = doc.id)
+                }
+                onResult(appointments)
+            }
+            .addOnFailureListener {
+                onResult(emptyList())
+            }
+    }
+    fun deleteAppointment(appointmentId: String, onDone: (Boolean) -> Unit) {
+        db.collection("appointments")
+            .document(appointmentId)
+            .delete()
+            .addOnSuccessListener { onDone(true) }
+            .addOnFailureListener { onDone(false) }
+    }
+    fun bookAppointment(appointment: Appointment, onDone: (Boolean) -> Unit) {
+        db.collection("appointments")
+            .add(appointment)
+            .addOnSuccessListener {
+                // Update the appointment with the generated ID
+                db.collection("appointments")
+                    .document(it.id)
+                    .update("id", it.id)
+                    .addOnSuccessListener { onDone(true) }
+                    .addOnFailureListener { onDone(false) }
+            }
+            .addOnFailureListener { onDone(false) }
+    }
+
+    fun getPatientAppointments(patientId: String, onResult: (List<Appointment>) -> Unit) {
+        db.collection("appointments")
+            .whereEqualTo("patientId", patientId)
+            .whereEqualTo("status", "Upcoming")
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val appointments = querySnapshot.documents.mapNotNull { doc ->
+                    doc.toObject(Appointment::class.java)?.copy(id = doc.id)
+                }.sortedBy { it.dateTime }
+                onResult(appointments)
+            }
+            .addOnFailureListener {
+                onResult(emptyList())
+            }
+    }
+
+    fun updateAppointmentStatus(appointmentId: String, status: String, onDone: (Boolean) -> Unit) {
+        db.collection("appointments")
+            .document(appointmentId)
+            .update("status", status)
+            .addOnSuccessListener { onDone(true) }
+            .addOnFailureListener { onDone(false) }
     }
 
     companion object {
