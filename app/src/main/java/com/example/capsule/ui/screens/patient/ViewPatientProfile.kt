@@ -33,7 +33,7 @@ import com.example.capsule.ui.theme.White
 fun ViewPatientProfileScreen(
     patientId: String? = null,
     onBackClick: () -> Unit = {},
-    viewModel: PatientProfileViewModel = viewModel(),
+    viewModel: PatientViewModel = viewModel(),
 ) {
     val patient = viewModel.patient.value
 

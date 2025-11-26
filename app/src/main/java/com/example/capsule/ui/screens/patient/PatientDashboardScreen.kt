@@ -60,7 +60,7 @@ import com.example.capsule.ui.theme.White
 
 @Composable
 fun HomePage(
-    viewModel: PatientProfileViewModel = viewModel(),
+    viewModel: PatientViewModel = viewModel(),
     modifier: Modifier = Modifier,
     onSearchClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},

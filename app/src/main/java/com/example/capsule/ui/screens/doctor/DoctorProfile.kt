@@ -43,7 +43,7 @@ fun DoctorProfileScreen(
     onSettingsClick: () -> Unit = {},
 ) {
     // Create ViewModel
-    val viewModel = viewModel<DoctorProfileViewModel>()
+    val viewModel = viewModel<DoctorViewModel>()
 
     // Load data from Firebase on first launch
     LaunchedEffect(doctorId) {

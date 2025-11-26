@@ -21,7 +21,7 @@ import com.example.capsule.ui.components.UpcomingCard
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DoctorScheduleScreen(
-    viewModel: DoctorProfileViewModel = viewModel(),
+    viewModel: DoctorViewModel = viewModel(),
     onPatientClick: (String) -> Unit = {},
     onBackClick: () -> Unit = {}
 ) {

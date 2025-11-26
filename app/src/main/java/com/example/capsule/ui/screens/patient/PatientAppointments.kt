@@ -23,7 +23,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun PatientAppointmentsScreen(
     onBackClick: () -> Unit = {},
-    viewModel: PatientProfileViewModel = viewModel()
+    viewModel: PatientViewModel = viewModel()
 ) {
     val appointments = viewModel.appointments.value
 

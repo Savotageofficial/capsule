@@ -34,7 +34,7 @@ import com.example.capsule.util.formatDateOfBirth
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PatientEditProfileScreen(
-    viewModel: PatientProfileViewModel = viewModel(),
+    viewModel: PatientViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onSaveClick: () -> Unit = {}
 ) {

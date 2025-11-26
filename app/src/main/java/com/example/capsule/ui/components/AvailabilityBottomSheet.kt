@@ -16,126 +16,99 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.capsule.data.model.TimeSlot
+import com.example.capsule.ui.screens.doctor.DoctorViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AvailabilityBottomSheet(
-    show: Boolean, // Control visibility
-    initialAvailability: Map<String, List<TimeSlot>>,
-    onSave: (Map<String, List<TimeSlot>>) -> Unit,
+    show: Boolean,
+    viewModel: DoctorViewModel,
     onDismiss: () -> Unit
 ) {
-    var availability by remember { mutableStateOf(initialAvailability) }
+    if (!show) return
 
-    // Initialize with default days if empty
-    if (availability.isEmpty()) {
-        availability = mapOf(
-            "Monday" to mutableListOf(TimeSlot("09:00", "17:00")),
-            "Tuesday" to mutableListOf(TimeSlot("09:00", "17:00")),
-            "Wednesday" to mutableListOf(TimeSlot("09:00", "17:00")),
-            "Thursday" to mutableListOf(TimeSlot("09:00", "17:00")),
-            "Friday" to mutableListOf(TimeSlot("09:00", "17:00"))
-        )
-    }
-
-    if (show) {
-        ModalBottomSheet(
-            onDismissRequest = onDismiss
+    ModalBottomSheet(
+        onDismissRequest = onDismiss
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            Column(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .verticalScroll(rememberScrollState())
-            ) {
 
-                Text("Edit Availability", style = MaterialTheme.typography.titleLarge)
+            Text(
+                "Edit Availability",
+                style = MaterialTheme.typography.titleLarge
+            )
 
-                Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(16.dp))
 
-                // Days of the week
-                val days = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+            val days = listOf(
+                "Monday", "Tuesday", "Wednesday",
+                "Thursday", "Friday", "Saturday", "Sunday"
+            )
 
-                days.forEach { day ->
-                    val daySlots = availability[day] ?: mutableListOf()
+            days.forEach { day ->
 
-                    DayAvailabilityCard(
-                        day = day,
-                        slots = daySlots.toMutableList(),
-                        onAddSlot = {
-                            availability = availability.toMutableMap().apply {
-                                val currentSlots = this[day]?.toMutableList() ?: mutableListOf()
-                                currentSlots.add(TimeSlot("09:00", "17:00"))
-                                this[day] = currentSlots
-                            }
-                        },
-                        onSlotUpdated = { index, updatedSlot ->
-                            availability = availability.toMutableMap().apply {
-                                val currentSlots = this[day]?.toMutableList() ?: mutableListOf()
-                                if (index < currentSlots.size) {
-                                    currentSlots[index] = updatedSlot
-                                    this[day] = currentSlots
-                                }
-                            }
-                        },
-                        onSlotDeleted = { index ->
-                            availability = availability.toMutableMap().apply {
-                                val currentSlots = this[day]?.toMutableList() ?: mutableListOf()
-                                if (index < currentSlots.size) {
-                                    currentSlots.removeAt(index)
-                                    // Remove day if no slots left
-                                    if (currentSlots.isEmpty()) {
-                                        remove(day)
-                                    } else {
-                                        this[day] = currentSlots
-                                    }
-                                }
-                            }
-                        }
-                    )
-                    Spacer(Modifier.height(12.dp))
-                }
+                val slots = viewModel.availability[day] ?: emptyList()
 
-                Spacer(Modifier.height(16.dp))
-
-                // Action buttons
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    OutlinedButton(
-                        onClick = onDismiss,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Cancel")
+                DayAvailabilityCard(
+                    day = day,
+                    slots = slots,
+                    onAddSlot = { viewModel.addSlot(day) },
+                    onSlotUpdated = { index, updated ->
+                        viewModel.updateSlot(day, index, updated)
+                    },
+                    onSlotDeleted = { index ->
+                        viewModel.deleteSlot(day, index)
                     }
+                )
 
-                    Button(
-                        onClick = { onSave(availability) },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Save")
-                    }
-                }
-
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(12.dp))
             }
+
+            Spacer(Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                OutlinedButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Cancel")
+                }
+
+                Button(
+                    onClick = {
+                        viewModel.saveAvailability { success ->
+                            if (success) onDismiss()
+                        }
+                    },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Save")
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
         }
     }
 }
 
+
 @Composable
 fun DayAvailabilityCard(
     day: String,
-    slots: MutableList<TimeSlot>,
+    slots: List<TimeSlot>,
     onAddSlot: () -> Unit,
     onSlotUpdated: (Int, TimeSlot) -> Unit,
-    onSlotDeleted: (Int) -> Unit,
+    onSlotDeleted: (Int) -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Column(Modifier.padding(16.dp)) {
 
@@ -157,12 +130,10 @@ fun DayAvailabilityCard(
                 slots.forEachIndexed { index, slot ->
                     TimeSlotEditor(
                         slot = slot,
-                        onChange = { updated -> onSlotUpdated(index, updated) },
+                        onChange = { onSlotUpdated(index, it) },
                         onDelete = { onSlotDeleted(index) }
                     )
-                    if (index < slots.size - 1) {
-                        Spacer(Modifier.height(8.dp))
-                    }
+                    if (index < slots.size - 1) Spacer(Modifier.height(8.dp))
                 }
             }
         }

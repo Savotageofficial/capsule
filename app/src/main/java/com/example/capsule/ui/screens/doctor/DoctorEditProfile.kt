@@ -1,10 +1,13 @@
 package com.example.capsule.ui.screens.doctor
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,7 +24,7 @@ import com.example.capsule.ui.theme.Blue
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DoctorEditProfileScreen(
-    viewModel: DoctorProfileViewModel = viewModel(),
+    viewModel: DoctorViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onSaveClick: () -> Unit = {}
 ) {
@@ -41,12 +44,22 @@ fun DoctorEditProfileScreen(
 
     // Editable fields
     var name by remember { mutableStateOf(TextFieldValue(doctor.name)) }
-    var specialty by remember { mutableStateOf(TextFieldValue(doctor.specialty)) }
     var bio by remember { mutableStateOf(TextFieldValue(doctor.bio)) }
     var experience by remember { mutableStateOf(TextFieldValue(doctor.experience)) }
     var clinicName by remember { mutableStateOf(TextFieldValue(doctor.clinicName)) }
     var clinicAddress by remember { mutableStateOf(TextFieldValue(doctor.clinicAddress)) }
     var locationUrl by remember { mutableStateOf(TextFieldValue(doctor.locationUrl)) }
+
+    var specialty by remember { mutableStateOf(doctor.specialty) }
+
+    val specializations = listOf(
+        "Neurologist", "Allergist", "Anesthesiologist", "Cardiologists",
+        "Colon and Rectal Surgeon", "Critical Care Medicine Specialist",
+        "Dermatologist", "Endocrinologist", "Emergency Medicine Specialist",
+        "Family Physician", "Gastroenterologist", "Geriatric Medicine Specialist",
+        "Hematologist", "Nephrologist", "Oncologist", "Ophthalmologist",
+        "Pathologist", "Otolaryngologist", "Physiatrist", "Psychiatrist"
+    )
 
     var showAvailabilitySheet by remember { mutableStateOf(false) }
     var showErrorDialog by remember { mutableStateOf(false) }
@@ -92,13 +105,12 @@ fun DoctorEditProfileScreen(
 
                     Spacer(Modifier.height(12.dp))
 
-                    OutlinedTextField(
-                        value = specialty,
-                        onValueChange = { specialty = it },
-                        label = { Text(stringResource(R.string.specialization)) },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
+                    SpecialtyDropdown(
+                        selected = specialty,
+                        onSelected = { specialty = it },
+                        specialties = specializations
                     )
+
 
                     Spacer(Modifier.height(12.dp))
 
@@ -180,7 +192,7 @@ fun DoctorEditProfileScreen(
                     isLoading = true
                     val updatedData = mapOf(
                         "name" to name.text,
-                        "specialty" to specialty.text,
+                        "specialty" to specialty,
                         "bio" to bio.text,
                         "experience" to experience.text,
                         "clinicName" to clinicName.text,
@@ -242,11 +254,55 @@ fun DoctorEditProfileScreen(
     // Availability Bottom Sheet
     AvailabilityBottomSheet(
         show = showAvailabilitySheet,
-        initialAvailability = doctor.availabilityMap,
-        onDismiss = { showAvailabilitySheet = false },
-        onSave = { updated ->
-            viewModel.updateAvailability(updated) // Update via ViewModel
-            showAvailabilitySheet = false
-        }
+        viewModel = viewModel,
+        onDismiss = { showAvailabilitySheet = false }
     )
+
 }
+
+@Composable
+fun SpecialtyDropdown(
+    selected: String,
+    onSelected: (String) -> Unit,
+    specialties: List<String>
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    // Box to properly anchor the dropdown menu
+    Box(modifier = Modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            value = selected,
+            onValueChange = { }, // disable typing
+            readOnly = true,
+            label = { Text("Specialization") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { expanded = true },
+            trailingIcon = {
+                Icon(
+                    imageVector = if (expanded) Icons.Default.KeyboardArrowUp
+                    else Icons.Default.KeyboardArrowDown,
+                    contentDescription = null
+                )
+            }
+        )
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.fillMaxWidth() // make menu full width
+        ) {
+            specialties.forEach { item ->
+                DropdownMenuItem(
+                    text = { Text(item) },
+                    onClick = {
+                        onSelected(item)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+

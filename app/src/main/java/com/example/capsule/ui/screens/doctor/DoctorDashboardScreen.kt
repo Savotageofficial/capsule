@@ -38,7 +38,7 @@ import com.example.capsule.ui.theme.White
 
 @Composable
 fun DoctorDashboardScreen(
-    viewModel: DoctorProfileViewModel = viewModel(),
+    viewModel: DoctorViewModel = viewModel(),
     onProfileClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
     onPatientClick: (String) -> Unit = {},  // for later

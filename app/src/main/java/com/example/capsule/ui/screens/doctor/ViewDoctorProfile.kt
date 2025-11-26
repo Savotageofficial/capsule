@@ -16,9 +16,9 @@ import androidx.compose.material3.*
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,8 +36,9 @@ import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.ui.components.InfoCard
 import com.example.capsule.R
+import com.example.capsule.data.model.TimeSlot
 import com.example.capsule.ui.components.BookingBottomSheet
-import com.example.capsule.ui.screens.patient.PatientProfileViewModel
+import com.example.capsule.ui.screens.patient.PatientViewModel
 import com.example.capsule.ui.theme.Blue
 import com.example.capsule.ui.theme.Gold
 import com.example.capsule.ui.theme.Green
@@ -48,10 +49,12 @@ import com.example.capsule.ui.theme.White
 fun ViewDoctorProfileScreen(
     doctorId: String? = null,
     onBackClick: () -> Unit = {},
-    viewModel: DoctorProfileViewModel = viewModel(),
-    patientViewModel: PatientProfileViewModel = viewModel()
+    onBookingSuccess: (Long, TimeSlot, String) -> Unit = { _, _, _ -> },
+    viewModel: DoctorViewModel = viewModel(),
+    patientViewModel: PatientViewModel = viewModel()
 ) {
     val doctor = viewModel.doctor.value
+    val patient = patientViewModel.patient.value // Patient data from HomePage
     var showBookingSheet by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
@@ -64,7 +67,7 @@ fun ViewDoctorProfileScreen(
         }
     }
 
-    // Show loading state
+    // Show loading state only for doctor
     if (doctor == null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
@@ -104,14 +107,26 @@ fun ViewDoctorProfileScreen(
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     Button(
-                        onClick = { showBookingSheet = true },
+                        onClick = {
+                            if (patient == null) {
+                                // This should rarely happen if navigation is correct
+                                Toast.makeText(
+                                    context,
+                                    "Please go back to home screen first",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            } else {
+                                showBookingSheet = true
+                            }
+                        },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Green
                         ),
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier
                             .fillMaxSize()
-                            .weight(1f)
+                            .weight(1f),
+                        enabled = patient != null // Simple check
                     ) {
                         Text(
                             text = stringResource(R.string.book_appointment),
@@ -239,7 +254,6 @@ fun ViewDoctorProfileScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.clickable {
                             if (doctor.locationUrl.isBlank()) {
-                                // Show message if no location URL
                                 Toast.makeText(context, "No location available", Toast.LENGTH_SHORT)
                                     .show()
                             } else {
@@ -282,7 +296,8 @@ fun ViewDoctorProfileScreen(
                                         modifier = Modifier.weight(1f)
                                     )
                                     Text(
-                                        text = slots.joinToString(", ") { "${it.start} - ${it.end}" },
+                                        text = slots.joinToString(", ")  // يدمج العناصر بفاصلة ومسافة
+                                        { "${it.start} - ${it.end}" },
                                         color = Color.Gray,
                                         fontSize = 14.sp,
                                         modifier = Modifier.weight(1f)
@@ -303,19 +318,16 @@ fun ViewDoctorProfileScreen(
                 BookingBottomSheet(
                     doctor = doctor,
                     onConfirm = { timestamp, slot, type ->
-                        patientViewModel.bookAppointment(doctor, timestamp, slot, type) { success ->
+                        patientViewModel.bookAppointment(
+                            doctor, timestamp, slot, type
+                        ) { success, message ->
                             showBookingSheet = false
                             if (success) {
-                                Toast.makeText(
-                                    context,
-                                    "Appointment booked successfully!",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                onBackClick() // Go back to previous screen
+                                onBookingSuccess(timestamp, slot, type)
                             } else {
                                 Toast.makeText(
                                     context,
-                                    "Failed to book appointment",
+                                    message ?: "Failed to book",
                                     Toast.LENGTH_SHORT
                                 ).show()
                             }

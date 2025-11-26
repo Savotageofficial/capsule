@@ -38,7 +38,7 @@ fun PatientProfileScreen(
     onEditClick: () -> Unit = {}
 ) {
     // Create ViewModel
-    val viewModel = viewModel<PatientProfileViewModel>()
+    val viewModel = viewModel<PatientViewModel>()
 
     // Load data from Firebase on first launch
     LaunchedEffect(patientId) {          // The composable first enters the composition
