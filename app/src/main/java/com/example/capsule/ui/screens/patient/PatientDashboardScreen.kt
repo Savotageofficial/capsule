@@ -60,7 +60,7 @@ import com.example.capsule.ui.theme.White
 
 @Composable
 fun HomePage(
-    viewModel: PatientProfileViewModel = viewModel(),
+    viewModel: PatientViewModel = viewModel(),
     modifier: Modifier = Modifier,
     onSearchClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
@@ -126,7 +126,7 @@ fun HomePage(
                     } ?: run {
                         // Fallback image if profileImageRes is null
                         Image(
-                            painter = painterResource(id = R.drawable.patient_profile), // Use patient image
+                            painter = painterResource(id = R.drawable.patient_profile),
                             contentDescription = "Patient Image",
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
@@ -173,17 +173,14 @@ fun HomePage(
                 NavBox(
                     icon = Icons.Default.DateRange,
                     label = "Appointments",
-                    onClick = {
-                        Toast.makeText(context, "Wait for it!", Toast.LENGTH_SHORT).show()
-                        // onAppointmentsClick
-                    }
+                    onClick = onAppointmentsClick
                 )
                 NavBox(
                     icon = Icons.AutoMirrored.Filled.Chat,
                     label = "Chats",
                     onClick = {
-                        Toast.makeText(context, "Wait for it!", Toast.LENGTH_SHORT).show()
-                        // onChatsClick
+                        onChatsClick()
+                        Toast.makeText(context, "Chat feature coming soon!", Toast.LENGTH_SHORT).show()
                     }
                 )
             }
@@ -197,7 +194,7 @@ fun HomePage(
                         color = Color(0xFF4CAF50)
                     ),
                     OfferItem(
-                        title = "Introduce Yourself to a New way of vacination",
+                        title = "Introduce Yourself to a New way of vaccination",
                         color = Color(0xFF347deb)
                     )
                 )
@@ -433,6 +430,12 @@ fun AdviceItem(
 @Composable
 fun HomepagePreview() {
     CapsuleTheme {
-        HomePage()
+        HomePage(
+            onProfilePatientClick = {},
+            onSearchClick = {},
+            onSettingsClick = {},
+            onAppointmentsClick = {},
+            onChatsClick = {}
+        )
     }
 }

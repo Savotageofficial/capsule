@@ -33,7 +33,7 @@ import com.example.capsule.ui.theme.White
 fun ViewPatientProfileScreen(
     patientId: String? = null,
     onBackClick: () -> Unit = {},
-    viewModel: PatientProfileViewModel = viewModel(),
+    viewModel: PatientViewModel = viewModel(),
 ) {
     val patient = viewModel.patient.value
 
@@ -155,7 +155,7 @@ fun ViewPatientProfileScreen(
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(6.dp))
-                    InfoRow(label = stringResource(R.string.date_of_birth), value = patient.dob)
+                    InfoRow(label = stringResource(R.string.date_of_birth), value = patient.dob.toString())
                     Spacer(modifier = Modifier.height(4.dp))
                     InfoRow(label = stringResource(R.string.gender), value = patient.gender)
                     Spacer(modifier = Modifier.height(4.dp))

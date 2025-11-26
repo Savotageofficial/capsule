@@ -1,71 +1,119 @@
-# Capsule
+# **Capsule – Smart Healthcare Platform**
 
-Capsule is a smart healthcare platform designed to connect patients and doctors in one seamless experience. Users can easily book appointments, consult with licensed medical professionals via chat, and receive electronic prescriptions that are barcode-enabled for instant pharmacy access.
-Fast, secure, and accessible—healthcare has never been this convenient.
+<img alt="Capsule Banner" src="assets/capsule_banner.png" title="Banner" />
 
-## Project Files
+<p align="center">
+  <img src="https://img.shields.io/badge/Platform-Android-blue" />
+  <img src="https://img.shields.io/badge/Tech-Kotlin%20%7C%20Compose-orange" />
+  <img src="https://img.shields.io/badge/Firebase-Enabled-yellow" />
+  <img src="https://img.shields.io/github/license/mashape/apistatus.svg" />
+</p>
 
-[Open in Google Drive] ---> (https://drive.google.com/drive/folders/12W6IqiuVX6UYnNunSWuwz5N-7RT2OoNY?usp=sharing)
+Capsule is a modern digital healthcare platform that connects **patients** and **doctors** through a seamless mobile experience.
+Book appointments, chat with licensed doctors, and receive electronic prescriptions — all in one place.
 
+---
 
-## Team Members
+## **Project Resources**
 
-Mohamed Safwat
+**Google Drive:**
+[https://drive.google.com/drive/folders/12W6IqiuVX6UYnNunSWuwz5N-7RT2OoNY?usp=sharing](https://drive.google.com/drive/folders/12W6IqiuVX6UYnNunSWuwz5N-7RT2OoNY?usp=sharing)
 
-Taher Magdy
+---
 
-Hamza Hesham
+## **Team Members**
 
-Yousef Ahmed
+* Mohamed Safwat
+* Taher Magdy
+* Hamza Hesham
+* Yousef Ahmed
+* Mohamed Hany
 
-Mohamed Hany
+---
 
+# **Core Features**
 
-## Completed Features
+## **Authentication**
 
-Authentication (Login & Registration)
-Full Firebase authentication for both patients and doctors.
+* Secure login & registration using Firebase Authentication
+* Supports both patient and doctor accounts
 
-User Type Detection
-Auto-route users based on whether they are patients or doctors.
+## **User Role Detection**
 
-Doctor Profile Module
-View doctor details, specialties, experience, clinic info, and ratings.
+* Auto-routing based on user type
+* Smooth onboarding flow
 
-Patient Profile Module
-Display patient medical information & basic details.
+## **Doctor Module**
 
-Doctor Dashboard
-Doctors can view upcoming appointments and their schedule.
+* Full doctor profile (specialty, experience, ratings, clinic info)
+* Real-time data fetched from Firestore
+* Dashboard with weekly schedule & upcoming appointments
 
-Patient Home
-Browse doctors, view categories, and navigate the main features.
+## **Patient Module**
 
-Firestore Integration
-Real-time data fetching and updates for all user types.
+* Patient profile with personal & medical details
+* Edit profile and manage personal information
 
-Single-Activity Architecture With Jetpack Compose Navigation
-Clean, scalable navigation structure.
+## **Patient Home**
 
-UI Enhancements
-Improved layout, animations, and consistent design across the app.
+* Browse doctors by category
+* Search and explore medical specialties
+* Modern Compose-based UI
 
-## What's Next
+## **Firestore Integration**
 
-The upcoming features planned for the Capsule App include:
+* Real-time reads/writes for all modules
+* Optimized for speed & performance
 
-Doctor–Patient Chat
-Real-time messaging between doctors and patients.
+## **UI/UX**
 
-Advanced Doctor Search
-Improve filtering and search accuracy for better doctor discovery.
+* Material 3 styling
+* Smooth animations
+* Single-activity Compose navigation
 
-Appointment Booking & User Schedule
-Enable booking appointments and completing the full scheduling flow.
+## **Real-Time Chat**
 
-Prescription Creation
-Allow doctors to create and manage patient prescriptions.
+* Patient–doctor messaging
+* Firestore-powered instant communication
+* Message threads and chat list support
 
-Complete Settings (Themes & Notifications)
-Finalize app settings, including theme customization and notification controls.
+## **Appointment Booking & Scheduling**
+
+* Bookable time slots from doctor profiles
+* Doctors can manage availability & schedules
+* Auto-confirmation with real-time updates
+
+## **Electronic Prescriptions**
+
+* Doctors create digital prescriptions
+* Patients can view prescription history anywhere
+
+## **Advanced Doctor Search**
+
+* Search by specialty, location, and availability
+* Filter by ratings or experience
+* Quick navigation to profiles and appointment booking
+
+---
+
+# **Upcoming Enhancements**
+
+* **Settings Module**
+
+  * Theme (Light/Dark)
+  * Notification control
+  * Privacy settings
+* **Performance Optimization** (caching, faster loading)
+
+---
+
+# **Tech Stack**
+
+* **Kotlin**
+* **Jetpack Compose**
+* **Material 3**
+* **Firebase Authentication**
+* **Firestore**
+* **Single-Activity Architecture**
+* **MVVM + Repository Pattern**
 

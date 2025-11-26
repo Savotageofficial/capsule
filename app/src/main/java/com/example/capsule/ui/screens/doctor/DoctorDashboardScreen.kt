@@ -38,7 +38,7 @@ import com.example.capsule.ui.theme.White
 
 @Composable
 fun DoctorDashboardScreen(
-    viewModel: DoctorProfileViewModel = viewModel(),
+    viewModel: DoctorViewModel = viewModel(),
     onProfileClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
     onPatientClick: (String) -> Unit = {},  // for later
@@ -47,15 +47,14 @@ fun DoctorDashboardScreen(
     onPrescriptionClick: () -> Unit = {}    // when presc finish
 ) {
     val doctor = viewModel.doctor.value
-    val appointments = viewModel.appointments.value // USE REAL APPOINTMENTS
-    val isLoading = viewModel.isLoading.value // USE LOADING STATE
+    val appointments = viewModel.appointments.value   // USE REAL APPOINTMENTS
+    val isLoading = viewModel.isLoading.value         // USE LOADING STATE
     val context = LocalContext.current
 
     // Load doctor data when screen opens
     LaunchedEffect(Unit) {
         viewModel.loadCurrentDoctorProfile()
     }
-
 
     // Show loading state
     if (doctor == null || isLoading) {
@@ -74,6 +73,9 @@ fun DoctorDashboardScreen(
         }
         return
     }
+
+    // Get first 3 appointments
+    val recentAppointments = appointments.take(3)
 
     Scaffold { padding ->
         Column(
@@ -240,9 +242,8 @@ fun DoctorDashboardScreen(
             // Make Prescription Button
             Button(
                 onClick = {
-                    onPrescriptionClick
+                    onPrescriptionClick()
                     Toast.makeText(context, "Wait for it!", Toast.LENGTH_SHORT).show()
-
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Blue),
                 shape = RoundedCornerShape(12.dp),
@@ -266,17 +267,16 @@ fun DoctorDashboardScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // Upcoming Section
-
-                Text(
-                    text = stringResource(R.string.upcoming),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 22.sp,
-                    modifier = Modifier.fillMaxWidth()
-                )
+            Text(
+                text = stringResource(R.string.upcoming),
+                fontWeight = FontWeight.Bold,
+                fontSize = 22.sp,
+                modifier = Modifier.fillMaxWidth()
+            )
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            if (appointments.isEmpty()) {
+            if (recentAppointments.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -304,24 +304,43 @@ fun DoctorDashboardScreen(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f),
+                        .heightIn(max = 300.dp), // Limit height for better UX
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(appointments) { appointment ->
+                    items(recentAppointments) { appointment ->
                         UpcomingCard(
                             name = appointment.patientName,
-                            details = "${appointment.time} - ${appointment.type}",
-                            // USE THE REAL patientId FROM STATE
+                            details = "${appointment.timeSlot} - ${appointment.type}",
                             onClick = {
-                                Toast.makeText(context, "Fake Appointment ", Toast.LENGTH_SHORT).show()
-                            //    onPatientClick(appointment.patientId)
-                                      },
+                                Toast.makeText(context, "Viewing ${appointment.patientName}'s appointment", Toast.LENGTH_SHORT).show()
+                                // onPatientClick(appointment.patientId)
+                            },
                             showMoreIcon = false
                         )
+                    }
+
+                    // Show "View All" message if there are more appointments
+                    if (appointments.size > 3) {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "View ${appointments.size - 3} more appointments in Schedule",
+                                    color = Blue,
+                                    fontSize = 14.sp,
+                                    modifier = Modifier.clickable { onScheduleClick() }
+                                )
+                            }
+                        }
                     }
                 }
             }
 
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }

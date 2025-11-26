@@ -1,10 +1,12 @@
-// NavGraph.kt (updated)
 package com.example.capsule.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.capsule.data.model.TimeSlot
 import com.example.capsule.ui.screens.patient.HomePage
 import com.example.capsule.ui.screens.features.Search
 import com.example.capsule.ui.screens.features.SettingsScreen
@@ -12,7 +14,10 @@ import com.example.capsule.ui.screens.doctor.DoctorDashboardScreen
 import com.example.capsule.ui.screens.doctor.DoctorEditProfileScreen
 import com.example.capsule.ui.screens.doctor.DoctorProfileScreen
 import com.example.capsule.ui.screens.doctor.DoctorScheduleScreen
+import com.example.capsule.ui.screens.doctor.DoctorViewModel
 import com.example.capsule.ui.screens.doctor.ViewDoctorProfileScreen
+import com.example.capsule.ui.screens.features.BookingConfirmationScreen
+import com.example.capsule.ui.screens.patient.PatientAppointmentsScreen
 import com.example.capsule.ui.screens.patient.PatientEditProfileScreen
 import com.example.capsule.ui.screens.patient.PatientProfileScreen
 import com.example.capsule.ui.screens.patient.ViewPatientProfileScreen
@@ -33,13 +38,20 @@ fun NavGraph(
                 onProfilePatientClick = { navController.navigate("patientProfile") },
                 onSearchClick = { navController.navigate("search") },
                 onSettingsClick = { navController.navigate("settings") },
-                )
+                onAppointmentsClick = { navController.navigate("patientAppointments") },
+                onChatsClick = { /* Later */ }
+            )
         }
 
         // Search Screen
         composable("search") {
             Search(
-                searchResults = listOf("mohamed safwat", "mohamed hany", "youssef ahmed", "hamza hesham"),
+                searchResults = listOf(
+                    "mohamed safwat",
+                    "mohamed hany",
+                    "youssef ahmed",
+                    "hamza hesham"
+                ),
                 onBackClick = { navController.popBackStack() }
             )
         }
@@ -103,11 +115,15 @@ fun NavGraph(
         }
 
         // View Doctor Profile
+        // In your search results or wherever you navigate to doctor profile
         composable("viewDoctorProfile/{doctorId}") { backStackEntry ->
             val doctorId = backStackEntry.arguments?.getString("doctorId")
             ViewDoctorProfileScreen(
                 doctorId = doctorId,
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                onBookingSuccess = { timestamp, slot, type ->
+                    navController.navigate("bookingConfirmation/${doctorId}/$timestamp/${slot.start}/${slot.end}/$type")
+                }
             )
         }
 
@@ -129,5 +145,71 @@ fun NavGraph(
                 }
             )
         }
+
+        // patient Schedule
+        composable("patientAppointments") {
+            PatientAppointmentsScreen(
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable("bookAppointment/{doctorId}") { backStackEntry ->
+            val doctorId = backStackEntry.arguments?.getString("doctorId")
+            ViewDoctorProfileScreen(
+                doctorId = doctorId,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable("viewDoctorProfile/{doctorId}") { backStackEntry ->
+            val doctorId = backStackEntry.arguments?.getString("doctorId")
+            ViewDoctorProfileScreen(
+                doctorId = doctorId,
+                onBackClick = { navController.popBackStack() },
+                onBookingSuccess = { timestamp, slot, type ->
+                    navController.navigate(
+                        "bookingConfirmation/${doctorId}/$timestamp/${slot.start}/${slot.end}/$type"
+                    )
+                }
+            )
+        }
+
+        composable(
+            route = "bookingConfirmation/{doctorId}/{timestamp}/{slotStart}/{slotEnd}/{type}"
+        ) { backStackEntry ->
+
+            val doctorId = backStackEntry.arguments?.getString("doctorId") ?: ""
+            val timestamp = backStackEntry.arguments?.getString("timestamp")?.toLongOrNull() ?: 0L
+            val slotStart = backStackEntry.arguments?.getString("slotStart") ?: ""
+            val slotEnd = backStackEntry.arguments?.getString("slotEnd") ?: ""
+            val type = backStackEntry.arguments?.getString("type") ?: "In-Person"
+
+            // -------- Replace HiltViewModel --------
+            val viewModel: DoctorViewModel = viewModel()
+
+            // Load doctor once
+            LaunchedEffect(doctorId) {
+                viewModel.loadDoctorProfileById(doctorId)
+            }
+
+            val doctor = viewModel.doctor.value
+
+            doctor?.let { doc ->
+                BookingConfirmationScreen(
+                    doctor = doc,
+                    selectedDate = timestamp,
+                    selectedSlot = TimeSlot(slotStart, slotEnd),
+                    appointmentType = type,
+                    onDone = {
+                        navController.popBackStack("viewDoctorProfile/$doctorId", false)
+                    },
+                    onBackToHome = {
+                        navController.popBackStack("patientHome", false)
+                    }
+                )
+            }
+        }
+
+
     }
 }

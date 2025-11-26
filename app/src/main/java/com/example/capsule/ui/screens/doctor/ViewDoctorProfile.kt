@@ -1,6 +1,7 @@
 package com.example.capsule.ui.screens.doctor
 
 import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,6 +16,10 @@ import androidx.compose.material3.*
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,6 +36,9 @@ import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.ui.components.InfoCard
 import com.example.capsule.R
+import com.example.capsule.data.model.TimeSlot
+import com.example.capsule.ui.components.BookingBottomSheet
+import com.example.capsule.ui.screens.patient.PatientViewModel
 import com.example.capsule.ui.theme.Blue
 import com.example.capsule.ui.theme.Gold
 import com.example.capsule.ui.theme.Green
@@ -41,9 +49,13 @@ import com.example.capsule.ui.theme.White
 fun ViewDoctorProfileScreen(
     doctorId: String? = null,
     onBackClick: () -> Unit = {},
-    viewModel: DoctorProfileViewModel = viewModel() // Use viewModel() instead of direct instantiation
+    onBookingSuccess: (Long, TimeSlot, String) -> Unit = { _, _, _ -> },
+    viewModel: DoctorViewModel = viewModel(),
+    patientViewModel: PatientViewModel = viewModel()
 ) {
     val doctor = viewModel.doctor.value
+    val patient = patientViewModel.patient.value // Patient data from HomePage
+    var showBookingSheet by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     // Load doctor data when screen opens
@@ -55,7 +67,7 @@ fun ViewDoctorProfileScreen(
         }
     }
 
-    // Show loading state
+    // Show loading state only for doctor
     if (doctor == null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
@@ -79,7 +91,7 @@ fun ViewDoctorProfileScreen(
                     IconButton(onClick = { /* Save Doctor */ }) {
                         Icon(
                             painter = painterResource(R.drawable.ic_bookmark),
-                            contentDescription = "Edit"
+                            contentDescription = "Bookmark"
                         )
                     }
                 }
@@ -95,14 +107,26 @@ fun ViewDoctorProfileScreen(
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     Button(
-                        onClick = { /* TODO: Handle booking */ },
+                        onClick = {
+                            if (patient == null) {
+                                // This should rarely happen if navigation is correct
+                                Toast.makeText(
+                                    context,
+                                    "Please go back to home screen first",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            } else {
+                                showBookingSheet = true
+                            }
+                        },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Green
                         ),
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier
                             .fillMaxSize()
-                            .weight(1f)
+                            .weight(1f),
+                        enabled = patient != null // Simple check
                     ) {
                         Text(
                             text = stringResource(R.string.book_appointment),
@@ -152,6 +176,16 @@ fun ViewDoctorProfileScreen(
                         .clip(CircleShape),
                     contentScale = ContentScale.Crop
                 )
+            } ?: run {
+                // Fallback image if profileImageRes is null
+                Image(
+                    painter = painterResource(id = R.drawable.doc_prof_unloaded),
+                    contentDescription = "Doctor Image",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(CircleShape)
+                )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -174,6 +208,12 @@ fun ViewDoctorProfileScreen(
                     text = "${doctor.rating}",
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "(${doctor.reviewsCount} reviews)",
+                    color = Color.Gray,
+                    fontSize = 14.sp
                 )
             }
 
@@ -213,8 +253,13 @@ fun ViewDoctorProfileScreen(
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.clickable {
-                            val intent = Intent(Intent.ACTION_VIEW, doctor.locationUrl.toUri())
-                            context.startActivity(intent)
+                            if (doctor.locationUrl.isBlank()) {
+                                Toast.makeText(context, "No location available", Toast.LENGTH_SHORT)
+                                    .show()
+                            } else {
+                                val intent = Intent(Intent.ACTION_VIEW, doctor.locationUrl.toUri())
+                                context.startActivity(intent)
+                            }
                         }
                     ) {
                         Icon(
@@ -232,11 +277,65 @@ fun ViewDoctorProfileScreen(
                 }
             }
 
+            // Availability Section
             InfoCard(title = stringResource(R.string.availability)) {
-                Text(doctor.availability, color = Color.Gray)
+                if (doctor.availability.isEmpty()) {
+                    Text("Availability not set", color = Color.Gray, fontSize = 15.sp)
+                } else {
+                    Column {
+                        doctor.availability.forEach { (day, slots) ->
+                            if (slots.isNotEmpty()) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = day,
+                                        fontWeight = FontWeight.Medium,
+                                        fontSize = 15.sp,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    Text(
+                                        text = slots.joinToString(", ")  // يدمج العناصر بفاصلة ومسافة
+                                        { "${it.start} - ${it.end}" },
+                                        color = Color.Gray,
+                                        fontSize = 14.sp,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                                if (day != doctor.availability.keys.lastOrNull()) {
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
+            Spacer(modifier = Modifier.height(16.dp))
 
+            if (showBookingSheet) {
+                BookingBottomSheet(
+                    doctor = doctor,
+                    onConfirm = { timestamp, slot, type ->
+                        patientViewModel.bookAppointment(
+                            doctor, timestamp, slot, type
+                        ) { success, message ->
+                            showBookingSheet = false
+                            if (success) {
+                                onBookingSuccess(timestamp, slot, type)
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    message ?: "Failed to book",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                    },
+                    onDismiss = { showBookingSheet = false }
+                )
+            }
         }
     }
 }
@@ -248,4 +347,3 @@ fun ViewDoctorProfileScreenPreview() {
         ViewDoctorProfileScreen()
     }
 }
-//ignore (by safwat)

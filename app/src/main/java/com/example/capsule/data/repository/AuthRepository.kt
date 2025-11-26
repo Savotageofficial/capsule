@@ -74,7 +74,7 @@ class AuthRepository {
             clinicName = "My Clinic",
             clinicAddress = "Address not set",
             locationUrl = "",
-            availability = "Monday - Friday, 9 AM - 5 PM"
+            availability = emptyMap()
         )
 
         ProfileRepository.getInstance().createDoctor(doctor) { success ->
@@ -92,7 +92,7 @@ class AuthRepository {
             name = name,
             email = email,
             userType = "Patient",
-            dob = "Not set",
+            dob = 0,
             gender = "Not set",
             contact = "Not set"
         )
