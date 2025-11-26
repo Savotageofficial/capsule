@@ -21,6 +21,9 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -47,8 +50,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
+import com.example.capsule.data.repository.SearchRepository
 import com.example.capsule.ui.theme.CapsuleTheme
 
+
+var textfield = ""
 @Composable
 fun Search(
     modifier: Modifier = Modifier,
@@ -107,6 +113,27 @@ fun Search(
             )
             MyDropDown(Specializations)
         }
+        Row(
+            modifier = modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Button(onClick = {
+                val searchRepository = SearchRepository()
+
+                searchRepository.getDoctorByName(textfield)
+            },
+                shape = RoundedCornerShape(5.dp),
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(30.dp),
+                colors = ButtonColors(contentColor = ButtonDefaults.buttonColors().contentColor , containerColor = Color(
+                    0xFF0CA7BA
+                ), disabledContentColor = ButtonDefaults.buttonColors().disabledContentColor , disabledContainerColor = ButtonDefaults.buttonColors().disabledContainerColor )
+
+            ) {
+                Text(text = "apply")
+            }
+        }
     }
 }
 
@@ -129,7 +156,7 @@ fun MySearchBar(
                     textFieldState = it
                 },
                 onSearch = {
-                    //                   TODO(search in the database)
+                    textfield = textFieldState
 
                     expanded = false
                 },
@@ -147,6 +174,7 @@ fun MySearchBar(
                             modifier = modifier.clickable {
                                 if (textFieldState.isNotEmpty()) {
                                     textFieldState = ""
+                                    textfield = textFieldState
                                 } else {
                                     expanded = false
                                 }
@@ -167,6 +195,7 @@ fun MySearchBar(
                     modifier = Modifier
                         .clickable {
                             textFieldState = resultText
+                            textfield = textFieldState
                             expanded = false
                             //                   TODO(search in the database)
                         }
