@@ -1,11 +1,7 @@
-Here is a **GitHub-optimized README** with badges, clean formatting, and sections designed for portfolio-quality presentation.
-(I added placeholder image paths — you can replace them with your actual screenshots.)
-
----
-
 # **Capsule – Smart Healthcare Platform**
 
-![Banner](assets/banner.png)
+![Banner](<img width="1280" height="320" alt="Capsule_Logo_Banner" src="https://github.com/user-attachments/assets/fe886cd1-0b6f-475f-92b6-cf2aa468cf2f" />
+)
 
 <p align="center">
   <img src="https://img.shields.io/badge/Platform-Android-blue" />
