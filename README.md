@@ -1,7 +1,6 @@
 # **Capsule – Smart Healthcare Platform**
 
-![Banner](<img width="1280" height="320" alt="Capsule_Logo_Banner" src="https://github.com/user-attachments/assets/fe886cd1-0b6f-475f-92b6-cf2aa468cf2f" />
-)
+<img alt="Capsule Banner" src="D:\DEPI\Final Project\capsule_banner.png" title="Banner"/>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Platform-Android-blue" />
