@@ -3,12 +3,12 @@ package com.example.capsule.data.model
 import com.example.capsule.util.formatAvailabilityForDisplay
 
 data class Doctor(
-    override val id: String = "",
-    override val name: String = "",
-    override val email: String = "",
-    override val userType: String = "Doctor",
+    override var id: String = "",
+    override var name: String = "",
+    override var email: String = "",
+    override var userType: String = "Doctor",
 
-    val specialty: String = "",
+    var specialty: String = "",
     val bio: String = "",
     val rating: Double = 0.0,
     val reviewsCount: Int = 0,

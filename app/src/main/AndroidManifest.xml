@@ -11,25 +11,26 @@
         android:roundIcon="@drawable/logo"
         android:supportsRtl="true"
         android:theme="@style/Theme.Capsule">
-<!--        <activity-->
-<!--            android:name=".ChatActivity"-->
-<!--            android:exported="false"-->
-<!--            android:label="@string/title_activity_chat"-->
-<!--            android:theme="@style/Theme.Capsule" />-->
-
+        <activity
+            android:name=".SearchResultsActivity"
+            android:exported="false"
+            android:label="@string/title_activity_search_results"
+            android:theme="@style/Theme.Capsule" />
+        <!-- <activity -->
+        <!-- android:name=".ChatActivity" -->
+        <!-- android:exported="false" -->
+        <!-- android:label="@string/title_activity_chat" -->
+        <!-- android:theme="@style/Theme.Capsule" /> -->
         <activity
             android:name=".MainActivity"
             android:exported="false"
             android:label="@string/title_activity_sign_up"
-            android:theme="@style/Theme.Capsule"/>
-
+            android:theme="@style/Theme.Capsule" />
         <activity
             android:name=".LoginActivity"
             android:exported="false"
             android:label="@string/title_activity_login"
-            android:theme="@style/Theme.Capsule" />
-
-        <!--    main launcher activity    -->
+            android:theme="@style/Theme.Capsule" /> <!-- main launcher activity -->
         <activity
             android:name=".SignUpActivity"
             android:exported="true"

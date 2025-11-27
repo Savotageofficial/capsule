@@ -1,5 +1,7 @@
 package com.example.capsule.ui.screens.features
 
+import android.content.Intent
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -43,6 +45,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -50,10 +53,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
+import com.example.capsule.SearchResultsActivity
 import com.example.capsule.data.repository.SearchRepository
 import com.example.capsule.ui.theme.CapsuleTheme
 
 
+
+var SelectedText = ""
 var textfield = ""
 @Composable
 fun Search(
@@ -61,6 +67,7 @@ fun Search(
     searchResults: List<String>,
     onBackClick: () -> Unit = {}
 ) {
+    val context = LocalContext.current
     Column(
         modifier = modifier
             .background(color = Color(0xFFf5f2f2))
@@ -119,8 +126,35 @@ fun Search(
         ) {
             Button(onClick = {
                 val searchRepository = SearchRepository()
+                val names = arrayListOf<String>()
+                val specialities = arrayListOf<String>()
+                val ids = arrayListOf<String>()
 
-                searchRepository.getDoctorByName(textfield)
+                searchRepository.getDoctorByName(textfield , Speciality = SelectedText ){ doctors ->
+                    for (doc in doctors) {
+                        names.add(doc.name)
+                        specialities.add(doc.specialty)
+                        ids.add(doc.id)
+                    }
+
+
+
+                    for (item in names){
+                        Log.d("trace" , item)
+                    }
+
+
+
+                    val myintent = Intent(context, SearchResultsActivity::class.java).apply {
+                        putExtra("names" , names)
+                        putExtra("specialities" , specialities)
+                        putExtra("ids" , ids)
+
+                    }
+
+                    context.startActivity(myintent)
+                }
+
             },
                 shape = RoundedCornerShape(5.dp),
                 modifier = modifier
@@ -154,6 +188,7 @@ fun MySearchBar(
                 query = textFieldState,
                 onQueryChange = {
                     textFieldState = it
+                    textfield = textFieldState
                 },
                 onSearch = {
                     textfield = textFieldState
@@ -284,6 +319,7 @@ fun MyDropDown(Specializations: List<String>) {
                     text = { Text(text = label) },
                     onClick = {
                         mSelectedText = label
+                        SelectedText = mSelectedText
                         mExpanded = false
                     }
                 )
