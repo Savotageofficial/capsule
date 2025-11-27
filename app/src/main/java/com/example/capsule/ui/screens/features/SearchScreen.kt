@@ -110,7 +110,7 @@ fun Search(
         Spacer(modifier = Modifier.height(24.dp))
 
         Row {
-            val Specializations = listOf(
+            val Specializations = listOf("All",
                 "Neurologist", "Allergist", "Anesthesiologist", "Cardiologists",
                 "Colon and Rectal Surgeon", "Critical Care Medicine Specialist",
                 "Dermatologist", "Endocrinologist", "Emergency Medicine Specialist",
@@ -319,7 +319,14 @@ fun MyDropDown(Specializations: List<String>) {
                     text = { Text(text = label) },
                     onClick = {
                         mSelectedText = label
-                        SelectedText = mSelectedText
+
+                        if (mSelectedText == "All"){
+                            SelectedText = ""
+                        }
+                        else{
+                            SelectedText = mSelectedText
+                        }
+
                         mExpanded = false
                     }
                 )
