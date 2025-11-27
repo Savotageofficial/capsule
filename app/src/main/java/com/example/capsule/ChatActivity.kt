@@ -77,6 +77,7 @@ class ChatActivity : ComponentActivity() {
         val auth =  FirebaseAuth.getInstance()
         val db = FirebaseFirestore.getInstance()
         setContent {
+            ChatApp()
 
 
 

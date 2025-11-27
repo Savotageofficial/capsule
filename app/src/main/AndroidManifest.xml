@@ -16,11 +16,11 @@
             android:exported="false"
             android:label="@string/title_activity_search_results"
             android:theme="@style/Theme.Capsule" />
-        <!-- <activity -->
-        <!-- android:name=".ChatActivity" -->
-        <!-- android:exported="false" -->
-        <!-- android:label="@string/title_activity_chat" -->
-        <!-- android:theme="@style/Theme.Capsule" /> -->
+         <activity
+         android:name=".ChatActivity"
+         android:exported="false"
+         android:label="@string/title_activity_chat"
+         android:theme="@style/Theme.Capsule" />
         <activity
             android:name=".MainActivity"
             android:exported="false"

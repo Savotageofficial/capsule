@@ -1,5 +1,6 @@
 package com.example.capsule.ui.screens.patient
 
+import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -51,7 +52,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.capsule.ChatActivity
 import com.example.capsule.R
+import com.example.capsule.SearchResultsActivity
 import com.example.capsule.data.model.OfferItem
 import com.example.capsule.data.model.Tip
 import com.example.capsule.ui.theme.Blue
@@ -180,7 +183,9 @@ fun HomePage(
                     label = "Chats",
                     onClick = {
                         onChatsClick()
-                        Toast.makeText(context, "Chat feature coming soon!", Toast.LENGTH_SHORT).show()
+                        val myintent = Intent(context, ChatActivity::class.java)
+                        context.startActivity(myintent)
+//                        Toast.makeText(context, "Chat feature coming soon!", Toast.LENGTH_SHORT).show()
                     }
                 )
             }
