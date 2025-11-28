@@ -10,6 +10,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +24,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
@@ -148,6 +155,7 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
+        // EMAIL FIELD (unchanged)
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
@@ -170,6 +178,9 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(14.dp))
 
+        // ✅ PASSWORD FIELD WITH VISIBILITY TOGGLE (same as SignUp)
+        var passwordVisible by remember { mutableStateOf(false) }
+
         // Password input
         OutlinedTextField(
             value = password,
@@ -186,7 +197,17 @@ fun LoginScreen(
             ),
             shape = RoundedCornerShape(20.dp),
             singleLine = true,
-            modifier = Modifier.fillMaxWidth().height(54.dp)
+            modifier = Modifier.fillMaxWidth().height(54.dp),
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            trailingIcon = {
+                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Icon(
+                        imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                        contentDescription = if (passwordVisible) "Hide password" else "Show password"
+                    )
+                }
+            }
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -232,7 +253,13 @@ fun LoginScreen(
         Text(
             buildAnnotatedString {
                 append("Don't have an account? ")
-                withStyle(SpanStyle(color = Color.White, fontWeight = FontWeight.Medium, textDecoration = TextDecoration.Underline)) {
+                withStyle(
+                    SpanStyle(
+                        color = Color.White,
+                        fontWeight = FontWeight.Medium,
+                        textDecoration = TextDecoration.Underline
+                    )
+                ) {
                     append("Sign Up")
                 }
             },
