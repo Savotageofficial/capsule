@@ -183,9 +183,8 @@ fun HomePage(
                     label = "Chats",
                     onClick = {
                         onChatsClick()
-                        val myintent = Intent(context, ChatActivity::class.java)
-                        context.startActivity(myintent)
-//                        Toast.makeText(context, "Chat feature coming soon!", Toast.LENGTH_SHORT).show()
+
+                        Toast.makeText(context, "Chat feature coming soon!", Toast.LENGTH_SHORT).show()
                     }
                 )
             }

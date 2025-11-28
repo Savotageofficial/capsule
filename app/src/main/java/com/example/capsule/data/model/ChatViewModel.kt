@@ -1,3 +1,12 @@
+import android.app.Application
+import android.content.Context
+import android.content.SharedPreferences
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
+import com.example.capsule.data.repository.Prefs
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+
 //package com.example.capsule.model
 //
 //import androidx.lifecycle.ViewModel
@@ -8,6 +17,25 @@
 //import kotlinx.coroutines.flow.StateFlow
 //import kotlinx.coroutines.launch
 //
+
+
+
+
+
+//class ChatViewModel(private val prefs: Prefs) : ViewModel() {
+//
+//    // StateFlow holds the current value and updates UI automatically
+//    private val _userName = MutableStateFlow(prefs.getName())
+//    val userName: StateFlow<String> = _userName
+//
+//    fun updateName(name: String) {
+//        prefs.saveName(name)       // save to SharedPreferences
+//        _userName.value = name     // update StateFlow so UI refreshes
+//    }
+//}
+
+
+
 //class ChatViewModel : ViewModel() {
 //
 //    private val db = FirebaseFirestore.getInstance()
