@@ -29,22 +29,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.capsule.data.repository.AuthRepository
 import com.google.firebase.auth.FirebaseAuth
 
-class SettingsActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
 
-        setContent {
-            SettingsScreen(
-                onBack = { finish() }
-            )
-        }
-    }
-}
 
 @Composable
-fun SettingsScreen(onBack: () -> Unit) {
+fun SettingsScreen(onBack: () -> Unit, onLogout: () -> Unit) {
 
     val authRepo = remember { AuthRepository() }
     val context = LocalContext.current
@@ -309,11 +300,8 @@ fun SettingsScreen(onBack: () -> Unit) {
                 Button(
                     onClick = {
                         authRepo.logout()
-                        context.startActivity(
-                            Intent(context, SignUpActivity::class.java).apply {
-                                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                            }
-                        )
+
+                        onLogout()
                     },
                     shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFE5E5)),

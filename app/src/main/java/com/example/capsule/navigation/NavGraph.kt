@@ -6,10 +6,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.capsule.SettingsScreen
 import com.example.capsule.data.model.TimeSlot
 import com.example.capsule.ui.screens.patient.HomePage
 import com.example.capsule.ui.screens.features.Search
-import com.example.capsule.ui.screens.features.SettingsScreen
 import com.example.capsule.ui.screens.doctor.DoctorDashboardScreen
 import com.example.capsule.ui.screens.doctor.DoctorEditProfileScreen
 import com.example.capsule.ui.screens.doctor.DoctorProfileScreen
