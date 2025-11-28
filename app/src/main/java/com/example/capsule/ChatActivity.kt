@@ -1,7 +1,9 @@
 // ChatActivity.kt
-/*package com.example.capsule
+package com.example.capsule
+
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -10,14 +12,19 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
@@ -26,11 +33,15 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.Button
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -39,12 +50,15 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,12 +66,185 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.capsule.model.ChatViewModel
-import com.example.capsule.model.Message
+import com.example.capsule.data.model.Message
+//import com.example.capsule.model.ChatViewModel
 import com.example.capsule.ui.theme.CapsuleTheme
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.launch
+
+class ChatActivity : ComponentActivity() {
+    @OptIn(ExperimentalMaterial3Api::class)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+
+        val docname = intent.getStringExtra("name")
+        val docId = intent.getStringExtra("Id")
+
+        val auth =  FirebaseAuth.getInstance()
+        val db = FirebaseFirestore.getInstance()
+        setContent {
+
+
+                ChatApp(name = docname , RecId = docId)
+
+
+
+
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ChatApp(modifier: Modifier = Modifier , name: String? , RecId : String?) {
+    var messageText by remember { mutableStateOf(TextFieldValue("")) }
+    var messages by remember { mutableStateOf(listOf<Message>()) }
+    val db = FirebaseFirestore.getInstance()
+    val auth = FirebaseAuth.getInstance()
+    val currentUser = auth.currentUser
+    val scope = rememberCoroutineScope()
+
+    // Fetch messages from Firestore
+    LaunchedEffect(Unit) {
+        db.collection("messages")
+            .orderBy("timestamp")
+            .addSnapshotListener { snapshot, e ->
+                if (e == null && snapshot != null) {
+                    val fetchedMessages = snapshot.documents.map {
+                        Message(
+                            message = it.getString("message") ?: "",
+                            senderId = it.getString("senderId") ?: "",
+                            timestamp = it.getTimestamp("timestamp")?.toDate().toString(),
+                            recieverId = it.getString("recieverId") ?: ""
+                        )
+                    }
+                    messages = fetchedMessages.filter{
+                        it.recieverId.equals(RecId)
+                    }
+
+                }
+            }
+    }
+
+    Column(modifier = Modifier.fillMaxSize().padding(8.dp)) {
+
+
+        CenterAlignedTopAppBar(
+            modifier = modifier.fillMaxWidth(),
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                titleContentColor = MaterialTheme.colorScheme.primary,
+            ),
+            windowInsets = WindowInsets.safeDrawing.only(
+                WindowInsetsSides.Vertical
+            ),
+            title = {
+                if (name != null) {
+                    Text(name, overflow = TextOverflow.Ellipsis)
+                }
+                else{
+                    Text("" , overflow = TextOverflow.Ellipsis)
+                }
+            }
+        )
+
+
+        LazyColumn(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+            contentPadding = PaddingValues(8.dp)
+        ) {
+            items(messages) { item ->
+                Log.d("trace" , item.recieverId)
+                Log.d("trace" , RecId!!)
+                MessageItem(
+                    message = item,
+                    isCurrentUser = item.senderId == currentUser?.uid
+                )
+            }
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            BasicTextField(
+                value = messageText,
+                onValueChange = { messageText = it },
+                modifier = Modifier
+                    .weight(1f)
+                    .background(Color.LightGray, CircleShape)
+                    .padding(12.dp)
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Button(
+                onClick = {
+                    if (messageText.text.isNotBlank()) {
+                        scope.launch {
+                            val messageData = mapOf(
+                                "message" to messageText.text,
+                                "senderId" to currentUser?.uid,
+                                "timestamp" to com.google.firebase.Timestamp.now(),
+                                "recieverId" to RecId
+                            )
+                            db.collection("messages").add(messageData)
+                            messageText = TextFieldValue("")
+                        }
+                    }
+                }
+            ) {
+                Text(text = "Send")
+            }
+        }
+    }
+
+}
+
+@Composable
+fun MessageItem(message: Message, isCurrentUser: Boolean) {
+    val alignment = if (isCurrentUser) Alignment.End else Alignment.Start
+    val backgroundColor = if (isCurrentUser) MaterialTheme.colorScheme.primary else Color.Gray
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        horizontalAlignment = alignment
+    ) {
+        Surface(
+            shape = MaterialTheme.shapes.medium,
+            shadowElevation = 1.dp,
+            color = backgroundColor
+        ) {
+            Text(
+                text = "${message.message}\n${message.timestamp}",
+                fontSize = 16.sp,
+                color = Color.White,
+                modifier = Modifier.padding(12.dp)
+            )
+        }
+    }
+}
+
+//data class Message(
+//    val message: String,
+//    val senderId: String,
+//    val timestamp: String
+//)
+/*
 
 class ChatActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

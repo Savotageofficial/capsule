@@ -73,6 +73,3 @@ fun UpcomingCard(
         }
     }
 }
-
-
-//ignore (by safwat)

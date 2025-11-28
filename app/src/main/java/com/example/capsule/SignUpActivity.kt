@@ -31,6 +31,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.capsule.data.repository.AuthRepository
 import com.example.capsule.ui.theme.CapsuleTheme
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -52,14 +53,15 @@ class SignUpActivity : ComponentActivity() {
 
                 if (showSplash) {
                     SplashScreen()
+                    // Run the check in background
                     LaunchedEffect(Unit) {
                         delay(1000)
                         checkUserStatus(
                             onUserFound = { userType ->
-                                val intent = if (userType == "Doctor") {
-                                    Intent(this@SignUpActivity, PatientHomePageActivity::class.java)
-                                } else {
-                                    Intent(this@SignUpActivity, PatientHomePageActivity::class.java)
+                                // Navigate to MainActivity for both user types
+                                val intent = Intent(this@SignUpActivity, MainActivity::class.java).apply {
+                                    putExtra("userType", userType)
+                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                                 }
                                 startActivity(intent)
                                 finish()
@@ -68,6 +70,7 @@ class SignUpActivity : ComponentActivity() {
                         )
                     }
                 } else {
+
                     var isLoading by remember { mutableStateOf(false) }
                     SignUpScreen(
                         onSignUpClick = { name, email, password, userType, specialization ->
@@ -93,6 +96,7 @@ class SignUpActivity : ComponentActivity() {
 
     private fun checkUserStatus(onUserFound: (String) -> Unit, onUserNotFound: () -> Unit) {
         val user = auth.currentUser
+
         if (user != null) {
             user.reload()
                 .addOnSuccessListener {
