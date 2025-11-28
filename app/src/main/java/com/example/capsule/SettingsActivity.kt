@@ -54,6 +54,27 @@ fun SettingsScreen(onBack: () -> Unit) {
     var aboutOpen by remember { mutableStateOf(false) }
     var securitySupportOpen by remember { mutableStateOf(false) }
 
+    // User info state
+    var userName by remember { mutableStateOf("User Name") }
+    var userEmail by remember { mutableStateOf("email@example.com") }
+
+
+    LaunchedEffect(Unit) {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        currentUser?.let {
+            userEmail = it.email ?: "email@example.com"
+            authRepo.getCurrentUserType { userType ->
+
+            }
+
+            val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+            db.collection("users").document(it.uid).get()
+                .addOnSuccessListener { doc ->
+                    userName = doc.getString("name") ?: "User Name"
+                }
+        }
+    }
+
     MaterialTheme(
         colorScheme = if (darkMode) darkColorScheme() else lightColorScheme()
     ) {
@@ -70,11 +91,10 @@ fun SettingsScreen(onBack: () -> Unit) {
                     .padding(20.dp)
             ) {
 
-
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp), // optional height for top bar
+                        .height(50.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -97,7 +117,7 @@ fun SettingsScreen(onBack: () -> Unit) {
 
                 Spacer(modifier = Modifier.height(25.dp))
 
-                // user card
+                // user card with live user info
                 Card(
                     shape = RoundedCornerShape(20.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -124,13 +144,13 @@ fun SettingsScreen(onBack: () -> Unit) {
 
                         Column {
                             Text(
-                                text = "User Name",
+                                text = userName,
                                 fontSize = 19.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF222222)
                             )
                             Text(
-                                text = "email@example.com",
+                                text = userEmail,
                                 fontSize = 15.sp,
                                 color = Color.Gray
                             )
