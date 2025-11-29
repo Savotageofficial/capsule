@@ -16,12 +16,12 @@ data class Doctor(
     val clinicName: String = "",
     val clinicAddress: String = "",
     val locationUrl: String = "",
-
+    override val msgHistory : List<String> = listOf<String>(),
     // Store real availability as: { "Monday": [ {start,end}, {start,end} ], ... }
     val availability: Map<String, List<TimeSlot>> = emptyMap(),
 
     val profileImageRes: Int? = null
-) : UserProfile(id = id, name = name, email = email, userType = userType) {
+) : UserProfile(id = id, name = name, email = email, userType = userType , msgHistory = msgHistory) {
 
     // Helper property for backward compatibility
     val availabilityMap: Map<String, List<TimeSlot>>

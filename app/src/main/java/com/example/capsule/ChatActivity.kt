@@ -126,8 +126,9 @@ fun ChatApp(modifier: Modifier = Modifier , name: String? , RecId : String?) {
                             recieverId = it.getString("recieverId") ?: ""
                         )
                     }
-                    messages = fetchedMessages.filter{
-                        it.recieverId.equals(RecId)
+                    messages = fetchedMessages.filter{ msg ->
+                        (msg.senderId == currentUser?.uid && msg.recieverId == RecId)|| (msg.senderId == RecId && msg.recieverId == currentUser?.uid)
+
                     }
 
                 }
