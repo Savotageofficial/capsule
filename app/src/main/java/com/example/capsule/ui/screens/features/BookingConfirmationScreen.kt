@@ -1,5 +1,6 @@
 package com.example.capsule.ui.screens.features
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -15,6 +16,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -23,11 +25,8 @@ import com.example.capsule.data.model.TimeSlot
 import com.example.capsule.ui.screens.doctor.DoctorViewModel
 import com.example.capsule.ui.theme.Blue
 import com.example.capsule.ui.theme.Green
+import com.example.capsule.ui.theme.WhiteSmoke
 import com.example.capsule.util.formatAppointmentDateTime
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookingConfirmationScreen(
@@ -49,7 +48,19 @@ fun BookingConfirmationScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Booking Confirmation") }
+                title = {
+                    Text(
+                        "Booking Confirmation",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        color = Color(0xFF0A3140)
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = WhiteSmoke,
+                    titleContentColor = Color(0xFF0A3140)
+                )
             )
         },
         bottomBar = {
@@ -72,7 +83,8 @@ fun BookingConfirmationScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(padding),
+                    .padding(padding)
+                    .background(WhiteSmoke),
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator()
@@ -80,6 +92,7 @@ fun BookingConfirmationScreen(
         } else {
             Column(
                 modifier = Modifier
+                    .background(WhiteSmoke)
                     .padding(padding)
                     .padding(24.dp)
                     .fillMaxSize(),

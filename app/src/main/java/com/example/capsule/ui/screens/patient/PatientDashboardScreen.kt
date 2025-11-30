@@ -22,9 +22,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
@@ -43,7 +41,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -54,12 +51,13 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.ChatActivity
 import com.example.capsule.R
-//import com.example.capsule.SearchResultsActivity
 import com.example.capsule.data.model.OfferItem
 import com.example.capsule.data.model.Tip
 import com.example.capsule.ui.theme.Blue
 import com.example.capsule.ui.theme.CapsuleTheme
+import com.example.capsule.ui.theme.Green
 import com.example.capsule.ui.theme.White
+import com.example.capsule.ui.theme.WhiteSmoke
 
 @Composable
 fun HomePage(
@@ -103,7 +101,7 @@ fun HomePage(
             modifier = modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(color = Color(0xFFf5f2f2))
+                .background(WhiteSmoke)
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -169,28 +167,129 @@ fun HomePage(
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // --- Dashboard Cards Row ---
             Row(
                 horizontalArrangement = Arrangement.SpaceAround,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp)
             ) {
-                NavBox(
-                    icon = Icons.Default.DateRange,
-                    label = "Appointments",
-                    onClick = onAppointmentsClick
-                )
-                NavBox(
-                    icon = Icons.AutoMirrored.Filled.Chat,
-                    label = "Chats",
+
+                // Appointment Card
+                Card(
+                    onClick = onAppointmentsClick,
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                    modifier = Modifier
+                        .padding(4.dp)
+                        .weight(1f)
+                        .height(120.dp)
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .size(36.dp)
+                                .background(Color(0xFFFFEAD8), CircleShape)
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_calendar),
+                                contentDescription = "Appointments",
+                                tint = Color(0xFFFF8728)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Text(
+                            text = "Appointments",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                // Chat Card
+                Card(
                     onClick = {
                         onMessagesClick()
                         val intent = Intent(context, ChatActivity::class.java)
                         context.startActivity(intent)
+                    },
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                    modifier = Modifier
+                        .padding(4.dp)
+                        .weight(1f)
+                        .height(120.dp)
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .size(36.dp)
+                                .background(Color(0xFFE4FBE4), CircleShape)
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_messages),
+                                contentDescription = "Chats",
+                                tint = Green
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Text(
+                            text = "Chats",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
                     }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+// ---------------- Prescription Button ----------------
+            Button(
+                onClick = {
+                    Toast.makeText(context, "Wait for it!", Toast.LENGTH_SHORT).show()
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Blue),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(55.dp)
+                    .padding(horizontal = 12.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_prescription),
+                    contentDescription = "Prescription",
+                    tint = White
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Prescriptions",
+                    fontSize = 18.sp,
+                    color = White
                 )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
+// ---------------- Offers Slider ----------------
             LazyRow(modifier = Modifier.fillMaxWidth()) {
                 val Offers = listOf(
                     OfferItem(
@@ -221,8 +320,9 @@ fun HomePage(
                 fontWeight = FontWeight.Bold
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
+// ---------------- Tips List ----------------
             LazyColumn(
                 modifier = Modifier.fillMaxSize()
             ) {
@@ -239,7 +339,11 @@ fun HomePage(
                     )
                 )
                 items(items = Tips) { item ->
-                    AdviceItem(Head = item.Head, Description = item.Description, Image = item.Image)
+                    AdviceItem(
+                        Head = item.Head,
+                        Description = item.Description,
+                        Image = item.Image
+                    )
                 }
             }
         }
@@ -271,13 +375,13 @@ fun SearchBar(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.Search,
-                    contentDescription = "SearchScreen",
+                    contentDescription = "Search Bar",
                     tint = Color.White,
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "SearchScreen for a Doctor",
+                    text = "Find Care",
                     color = Color.White.copy(alpha = 0.9f),
                     fontSize = 16.sp
                 )
@@ -286,51 +390,6 @@ fun SearchBar(
     }
 }
 
-@Composable
-fun NavBox(
-    icon: ImageVector,
-    label: String,
-    modifier: Modifier = Modifier.padding(12.dp),
-    onClick: () -> Unit = {}
-) {
-    Column(
-        modifier = modifier
-            .width(150.dp)
-            .height(120.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(Color.White)
-            .clickable { onClick() }
-            .padding(vertical = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Box(
-            modifier = Modifier
-                .size(48.dp)
-                .background(
-                    color = Color(0xFF4CAF50).copy(alpha = 0.15f),
-                    shape = CircleShape
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = label,
-                tint = Color(0xFF4CAF50),
-                modifier = Modifier.size(24.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = label,
-            color = Color.Black.copy(alpha = 0.8f),
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium
-        )
-    }
-}
 
 @Composable
 fun SliderItem(

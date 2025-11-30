@@ -37,6 +37,7 @@ import com.example.capsule.ui.theme.Blue
 import com.example.capsule.ui.theme.Green
 import com.example.capsule.ui.theme.Red
 import com.example.capsule.ui.theme.White
+import com.example.capsule.ui.theme.WhiteSmoke
 
 @Composable
 fun DoctorDashboardScreen(
@@ -82,11 +83,11 @@ fun DoctorDashboardScreen(
     Scaffold { padding ->
         Column(
             modifier = Modifier
+                .background(WhiteSmoke)
                 .fillMaxSize()
                 .padding(padding)
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
-                .background(White)
         ) {
 
             // Top Header

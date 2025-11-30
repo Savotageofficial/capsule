@@ -4,11 +4,9 @@ import com.example.capsule.data.model.Appointment
 import com.example.capsule.data.model.Doctor
 import com.example.capsule.data.model.Patient
 import com.example.capsule.data.model.TimeSlot
-import com.example.capsule.util.areTimeSlotsOverlapping
 import com.example.capsule.util.getDayNameFromTimestamp
 import com.example.capsule.util.getEndOfDay
 import com.example.capsule.util.getStartOfDay
-import com.example.capsule.util.sortTimeSlots
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
