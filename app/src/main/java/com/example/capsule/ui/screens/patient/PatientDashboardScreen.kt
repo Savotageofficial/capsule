@@ -54,7 +54,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.ChatActivity
 import com.example.capsule.R
-import com.example.capsule.SearchResultsActivity
+//import com.example.capsule.SearchResultsActivity
 import com.example.capsule.data.model.OfferItem
 import com.example.capsule.data.model.Tip
 import com.example.capsule.ui.theme.Blue
@@ -69,7 +69,7 @@ fun HomePage(
     onSettingsClick: () -> Unit = {},
     onProfilePatientClick: () -> Unit = {},
     onAppointmentsClick: () -> Unit = {},
-    onChatsClick: () -> Unit = {}
+    onMessagesClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val patient = viewModel.patient.value
@@ -182,9 +182,9 @@ fun HomePage(
                     icon = Icons.AutoMirrored.Filled.Chat,
                     label = "Chats",
                     onClick = {
-                        onChatsClick()
-
-                        Toast.makeText(context, "Chat feature coming soon!", Toast.LENGTH_SHORT).show()
+                        onMessagesClick()
+                        val intent = Intent(context, ChatActivity::class.java)
+                        context.startActivity(intent)
                     }
                 )
             }
@@ -271,13 +271,13 @@ fun SearchBar(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.Search,
-                    contentDescription = "Search",
+                    contentDescription = "SearchScreen",
                     tint = Color.White,
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Search for a Doctor",
+                    text = "SearchScreen for a Doctor",
                     color = Color.White.copy(alpha = 0.9f),
                     fontSize = 16.sp
                 )
@@ -439,7 +439,7 @@ fun HomepagePreview() {
             onSearchClick = {},
             onSettingsClick = {},
             onAppointmentsClick = {},
-            onChatsClick = {}
+            onMessagesClick = {}
         )
     }
 }

@@ -74,6 +74,7 @@ class AuthRepository {
             clinicName = "My Clinic",
             clinicAddress = "Address not set",
             locationUrl = "",
+            sessionPrice = 0.0,
             availability = emptyMap()
         )
 

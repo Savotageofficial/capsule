@@ -218,7 +218,28 @@ fun DoctorProfileScreen(
                 }
             }
 
-            // ✅ FIXED: Availability Section
+            // Add this section after the Location InfoCard and before Availability Section
+
+            InfoCard(title = "Session Price") {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Consultation Fee",
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 15.sp
+                    )
+                    Text(
+                        text = doctor.formattedSessionPrice,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        color = Blue
+                    )
+                }
+            }
+
             InfoCard(title = stringResource(R.string.availability)) {
                 if (doctor.availability.isEmpty()) {
                     Text("Not set", color = Color.Gray, fontSize = 15.sp)

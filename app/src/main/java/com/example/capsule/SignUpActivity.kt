@@ -32,6 +32,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.capsule.data.repository.AuthRepository
+import com.example.capsule.ui.components.SpecializationDropdown
 import com.example.capsule.ui.theme.CapsuleTheme
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -59,10 +60,12 @@ class SignUpActivity : ComponentActivity() {
                         checkUserStatus(
                             onUserFound = { userType ->
                                 // Navigate to MainActivity for both user types
-                                val intent = Intent(this@SignUpActivity, MainActivity::class.java).apply {
-                                    putExtra("userType", userType)
-                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                                }
+                                val intent =
+                                    Intent(this@SignUpActivity, MainActivity::class.java).apply {
+                                        putExtra("userType", userType)
+                                        flags =
+                                            Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                    }
                                 startActivity(intent)
                                 finish()
                             },
@@ -79,7 +82,8 @@ class SignUpActivity : ComponentActivity() {
                                 email, password, name, userType, specialization,
                                 onSuccess = {
                                     isLoading = false
-                                    Toast.makeText(this, "Check your email", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(this, "Check your email", Toast.LENGTH_SHORT)
+                                        .show()
                                 },
                                 onFailure = { error ->
                                     isLoading = false
@@ -279,8 +283,14 @@ fun SignUpScreen(
 
             if (userType == "Doctor") {
                 SpecializationDropdown(
-                    selected = specialization,
-                    onSelect = { specialization = it }
+                    selectedSpecialty = specialization,
+                    onSpecialtySelected = { specialization = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 0.dp),
+                    label = "Specialization",
+                    placeholder = "Select your specialization",
+                    isRequired = true
                 )
             }
 
@@ -297,15 +307,24 @@ fun SignUpScreen(
                         name.isBlank() -> {
                             Toast.makeText(context, "Please enter name", Toast.LENGTH_SHORT).show()
                         }
+
                         email.isBlank() -> {
                             Toast.makeText(context, "Please enter email", Toast.LENGTH_SHORT).show()
                         }
+
                         password.isBlank() -> {
-                            Toast.makeText(context, "Please enter password", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Please enter password", Toast.LENGTH_SHORT)
+                                .show()
                         }
-                        userType == "Doctor" && specialization.isBlank() -> {
-                            Toast.makeText(context, "Please select specialization", Toast.LENGTH_SHORT).show()
+
+                        userType == "Doctor" && (specialization.isBlank() || specialization == "Select your specialization") -> {
+                            Toast.makeText(
+                                context,
+                                "Please select specialization",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
+
                         else -> {
                             onSignUpClick(
                                 name,
@@ -412,76 +431,5 @@ fun PasswordField(
             }
         }
     )
-    Spacer(modifier = Modifier.height(14.dp))
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SpecializationDropdown(
-    selected: String,
-    onSelect: (String) -> Unit
-) {
-    val items = listOf(
-        "Cardiology", "Dermatology", "Neurology", "Pediatrics", "Psychiatry",
-        "Radiology", "Oncology", "Orthopedics", "General Surgery",
-        "Family Medicine", "Gynecology", "Endocrinology", "Urology",
-        "Ophthalmology"
-    )
-
-    var expanded by remember { mutableStateOf(false) }
-    var displayText by remember { mutableStateOf(selected) }
-
-
-    LaunchedEffect(selected) {
-        displayText = selected
-    }
-
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = !expanded }
-    ) {
-
-        OutlinedTextField(
-            value = displayText,
-            onValueChange = {},
-            readOnly = true,
-            placeholder = { Text("Specialization", color = Color(0xFF6098AA), fontSize = 16.sp) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(54.dp)
-                .menuAnchor(),
-            shape = RoundedCornerShape(20.dp),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color(0xFFDAE9EE),
-                unfocusedContainerColor = Color(0xFFDAE9EE),
-                cursorColor = Color(0xFF19CEFF),
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                focusedTextColor = Color.Black,
-                unfocusedTextColor = Color.Black
-            ),
-            trailingIcon = {
-                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-            }
-        )
-
-        ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier.heightIn(max = 250.dp)
-        ) {
-            items.forEach { item ->
-                DropdownMenuItem(
-                    text = { Text(item) },
-                    onClick = {
-                        displayText = item
-                        onSelect(item)
-                        expanded = false
-                    }
-                )
-            }
-        }
-    }
-
     Spacer(modifier = Modifier.height(14.dp))
 }

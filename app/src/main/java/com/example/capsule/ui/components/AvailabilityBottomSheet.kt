@@ -41,6 +41,14 @@ fun AvailabilityBottomSheet(
                 style = MaterialTheme.typography.titleLarge
             )
 
+            // Add instruction text
+            Text(
+                "Note: You can set only one time slot per day",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
             Spacer(Modifier.height(16.dp))
 
             val days = listOf(
@@ -114,32 +122,35 @@ fun DayAvailabilityCard(
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(day, fontSize = 18.sp, modifier = Modifier.weight(1f))
-                IconButton(onClick = onAddSlot) {
-                    Icon(Icons.Default.Add, contentDescription = "Add time slot")
+
+                // Only show add button if no slot exists
+                if (slots.isEmpty()) {
+                    IconButton(onClick = onAddSlot) {
+                        Icon(Icons.Default.Add, contentDescription = "Add time slot")
+                    }
                 }
             }
 
             if (slots.isEmpty()) {
                 Text(
-                    "No working hours",
+                    "No working hours - Click + to add",
                     color = Color.Gray,
                     fontSize = 14.sp,
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
             } else {
-                slots.forEachIndexed { index, slot ->
+                // Only show the first slot (there should be only one)
+                slots.firstOrNull()?.let { slot ->
                     TimeSlotEditor(
                         slot = slot,
-                        onChange = { onSlotUpdated(index, it) },
-                        onDelete = { onSlotDeleted(index) }
+                        onChange = { onSlotUpdated(0, it) },
+                        onDelete = { onSlotDeleted(0) }
                     )
-                    if (index < slots.size - 1) Spacer(Modifier.height(8.dp))
                 }
             }
         }
     }
 }
-
 @Composable
 fun TimeSlotEditor(
     slot: TimeSlot,

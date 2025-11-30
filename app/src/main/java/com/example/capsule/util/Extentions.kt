@@ -95,3 +95,12 @@ fun areTimeSlotsOverlapping(a: TimeSlot, b: TimeSlot): Boolean = runCatching {
     // Worst-case fallback: lexicographical compare
     a.start < b.end && a.end > b.start
 }
+
+fun formatAppointmentDateTime(timestamp: Long, slot: TimeSlot): String {
+    val dateTime = Instant.ofEpochMilli(timestamp)
+        .atZone(ZoneId.systemDefault())
+        .toLocalDateTime()
+
+    val dateFormatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy")
+    return "${dateTime.format(dateFormatter)} at ${slot.start} - ${slot.end}"
+}
