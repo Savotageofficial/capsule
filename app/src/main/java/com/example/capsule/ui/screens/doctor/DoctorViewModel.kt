@@ -86,8 +86,11 @@ class DoctorViewModel : ViewModel() {
     // -------------------------------------------------------------
 
     fun addSlot(day: String) {
-        availability.putIfAbsent(day, mutableListOf())
-        availability[day]?.add(TimeSlot("09:00", "17:00"))
+        // Only add if no slot exists for this day
+        if (availability[day].isNullOrEmpty()) {
+            availability.putIfAbsent(day, mutableListOf())
+            availability[day]?.add(TimeSlot("09:00", "17:00"))
+        }
     }
 
     fun updateSlot(day: String, index: Int, newSlot: TimeSlot) {
@@ -111,6 +114,10 @@ class DoctorViewModel : ViewModel() {
         }
     }
 
+    // Add a new function to replace the slot (for single slot logic)
+    fun setSingleSlot(day: String, slot: TimeSlot) {
+        availability[day] = mutableListOf(slot)
+    }
     // -------------------------------------------------------------
     // Save Availability to Firestore
     // -------------------------------------------------------------
@@ -145,6 +152,7 @@ class DoctorViewModel : ViewModel() {
                         clinicAddress = data["clinicAddress"] as? String
                             ?: _doctor.value!!.clinicAddress,
                         locationUrl = data["locationUrl"] as? String ?: _doctor.value!!.locationUrl,
+                        sessionPrice = data["sessionPrice"] as? Double ?: _doctor.value!!.sessionPrice,
                         availability = (data["availability"] as? Map<String, List<TimeSlot>>)
                             ?: _doctor.value!!.availability
                     )

@@ -1,41 +1,33 @@
-package com.example.capsule
+package com.example.capsule.ui.screens.features
 
-import android.content.Intent
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.capsule.data.repository.AuthRepository
-import com.google.firebase.auth.FirebaseAuth
-
-
 
 @Composable
-fun SettingsScreen(onBack: () -> Unit, onLogout: () -> Unit) {
+fun SettingsScreen(
+    onBack: () -> Unit,
+    onLogout: () -> Unit
+) {
 
     val authRepo = remember { AuthRepository() }
     val context = LocalContext.current
@@ -44,27 +36,6 @@ fun SettingsScreen(onBack: () -> Unit, onLogout: () -> Unit) {
     var notifications by remember { mutableStateOf(true) }
     var aboutOpen by remember { mutableStateOf(false) }
     var securitySupportOpen by remember { mutableStateOf(false) }
-
-    // User info state
-    var userName by remember { mutableStateOf("User Name") }
-    var userEmail by remember { mutableStateOf("email@example.com") }
-
-
-    LaunchedEffect(Unit) {
-        val currentUser = FirebaseAuth.getInstance().currentUser
-        currentUser?.let {
-            userEmail = it.email ?: "email@example.com"
-            authRepo.getCurrentUserType { userType ->
-
-            }
-
-            val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
-            db.collection("users").document(it.uid).get()
-                .addOnSuccessListener { doc ->
-                    userName = doc.getString("name") ?: "User Name"
-                }
-        }
-    }
 
     MaterialTheme(
         colorScheme = if (darkMode) darkColorScheme() else lightColorScheme()
@@ -85,11 +56,11 @@ fun SettingsScreen(onBack: () -> Unit, onLogout: () -> Unit) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp),
+                        .height(50.dp), // optional height for top bar
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        Icons.Default.ArrowBack,
+                        Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = null,
                         tint = Color.Black,
                         modifier = Modifier
@@ -108,56 +79,6 @@ fun SettingsScreen(onBack: () -> Unit, onLogout: () -> Unit) {
 
                 Spacer(modifier = Modifier.height(25.dp))
 
-                // user card with live user info
-                Card(
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {}
-                ) {
-
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-
-                        Image(
-                            painter = painterResource(id = R.drawable.user),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(70.dp)
-                                .clip(CircleShape),
-                            contentScale = ContentScale.Crop
-                        )
-
-                        Spacer(modifier = Modifier.width(16.dp))
-
-                        Column {
-                            Text(
-                                text = userName,
-                                fontSize = 19.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF222222)
-                            )
-                            Text(
-                                text = userEmail,
-                                fontSize = 15.sp,
-                                color = Color.Gray
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.weight(1f))
-
-                        Icon(
-                            Icons.Default.KeyboardArrowRight,
-                            contentDescription = null,
-                            tint = Color.Gray
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(30.dp))
 
                 Text(
                     text = "Preferences",
@@ -222,7 +143,7 @@ fun SettingsScreen(onBack: () -> Unit, onLogout: () -> Unit) {
                         Spacer(modifier = Modifier.weight(1f))
 
                         Icon(
-                            Icons.Default.KeyboardArrowRight,
+                            Icons.AutoMirrored.Filled.KeyboardArrowRight,
                             contentDescription = null,
                             tint = Color.Gray
                         )
@@ -275,7 +196,7 @@ fun SettingsScreen(onBack: () -> Unit, onLogout: () -> Unit) {
                         Spacer(modifier = Modifier.weight(1f))
 
                         Icon(
-                            Icons.Default.KeyboardArrowRight,
+                            Icons.AutoMirrored.Filled.KeyboardArrowRight,
                             contentDescription = null,
                             tint = Color.Gray
                         )
@@ -300,7 +221,7 @@ fun SettingsScreen(onBack: () -> Unit, onLogout: () -> Unit) {
                 Button(
                     onClick = {
                         authRepo.logout()
-
+                        // Instead of starting new activity, we'll handle this in MainActivity
                         onLogout()
                     },
                     shape = RoundedCornerShape(14.dp),
@@ -324,7 +245,7 @@ fun SettingsScreen(onBack: () -> Unit, onLogout: () -> Unit) {
 @Composable
 fun ToggleItem(
     title: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     checked: Boolean,
     onChange: (Boolean) -> Unit
 ) {

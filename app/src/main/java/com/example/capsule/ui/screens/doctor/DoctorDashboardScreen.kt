@@ -195,9 +195,8 @@ fun DoctorDashboardScreen(
                 Card(
                     onClick = {
                         onMessagesClick()
-                        val myintent = Intent(context, ChatActivity::class.java)
-                        context.startActivity(myintent)
-//                        Toast.makeText(context, "Wait for it!", Toast.LENGTH_SHORT).show()
+                        val intent = Intent(context, ChatActivity::class.java)
+                        context.startActivity(intent)
                     },
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(White),
@@ -308,7 +307,7 @@ fun DoctorDashboardScreen(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(max = 300.dp), // Limit height for better UX
+                        .heightIn(max = 400.dp), // Limit height for better UX
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(recentAppointments) { appointment ->
@@ -316,8 +315,7 @@ fun DoctorDashboardScreen(
                             name = appointment.patientName,
                             details = "${appointment.timeSlot} - ${appointment.type}",
                             onClick = {
-                                Toast.makeText(context, "Viewing ${appointment.patientName}'s appointment", Toast.LENGTH_SHORT).show()
-                                // onPatientClick(appointment.patientId)
+                                onPatientClick(appointment.patientId)
                             },
                             showMoreIcon = false
                         )

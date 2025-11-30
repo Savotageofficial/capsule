@@ -5,7 +5,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.navigation.NavOptions
 import androidx.navigation.compose.rememberNavController
 import com.example.capsule.navigation.NavGraph
 import com.example.capsule.ui.theme.CapsuleTheme
@@ -13,8 +15,6 @@ import com.example.capsule.ui.theme.CapsuleTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-
 
         val userType = intent.getStringExtra("userType") ?: "Patient"
 

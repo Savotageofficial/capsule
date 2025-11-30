@@ -1,5 +1,6 @@
 package com.example.capsule.ui.screens.patient
 
+import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -15,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -22,6 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.capsule.ChatActivity
 import com.example.capsule.ui.components.InfoRow
 import com.example.capsule.R
 import com.example.capsule.ui.theme.Blue
@@ -34,8 +37,11 @@ fun ViewPatientProfileScreen(
     patientId: String? = null,
     onBackClick: () -> Unit = {},
     viewModel: PatientViewModel = viewModel(),
+    onMessagesClick: () -> Unit = {},
+
 ) {
     val patient = viewModel.patient.value
+    val context = LocalContext.current
 
     // Load patient data when screen opens
     LaunchedEffect(patientId) {
@@ -101,7 +107,13 @@ fun ViewPatientProfileScreen(
                     Spacer(modifier = Modifier.width(16.dp))
 
                     Button(
-                        onClick = { /* TODO: Handle chat */ },
+                        onClick = {
+                            onMessagesClick()
+                            val intent = Intent(context, ChatActivity::class.java)
+                            intent.putExtra("Name",patient.name)
+                            intent.putExtra("Id",patient.id)
+                            context.startActivity(intent)
+                        },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Blue
                         ),

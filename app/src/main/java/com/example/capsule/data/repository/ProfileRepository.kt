@@ -165,18 +165,49 @@ class ProfileRepository {
             .addOnSuccessListener { onDone(true) }
             .addOnFailureListener { onDone(false) }
     }
-    // In ProfileRepository.kt - REPLACE the current bookAppointment method:
+
+    // Book appointment with conflict check
     fun bookAppointment(appointment: Appointment, onDone: (Boolean) -> Unit) {
-        db.collection("appointments")
-            .add(appointment)
-            .addOnSuccessListener {
-                onDone(true) // Just return success
+        // Check if slot is still available
+        getDoctorAppointmentsForDate(appointment.doctorId, appointment.dateTime) { existingAppointments ->
+            val isSlotTaken = existingAppointments.any { existing ->
+                existing.timeSlot.start == appointment.timeSlot.start &&
+                        existing.timeSlot.end == appointment.timeSlot.end
             }
-            .addOnFailureListener {
+
+            if (isSlotTaken) {
                 onDone(false)
+            } else {
+                db.collection("appointments")
+                    .add(appointment)
+                    .addOnSuccessListener { onDone(true) }
+                    .addOnFailureListener { onDone(false) }
             }
+        }
     }
 
+
+    // Get available time slots
+    fun getAvailableTimeSlots(
+        doctorId: String,
+        selectedDate: Long,
+        doctorAvailability: Map<String, List<TimeSlot>>,
+        onResult: (List<TimeSlot>) -> Unit
+    ) {
+        getDoctorAppointmentsForDate(doctorId, selectedDate) { existingAppointments ->
+            val dayOfWeek = getDayNameFromTimestamp(selectedDate)
+            val availableSlots = doctorAvailability[dayOfWeek] ?: emptyList()
+
+            // Since there's only one slot per day, simple check
+            val freeSlots = if (existingAppointments.isNotEmpty()) {
+                emptyList() // If there's any appointment, the slot is taken
+            } else {
+                availableSlots
+            }
+
+            onResult(freeSlots.sortedBy { it.start })
+        }
+    }
     fun updateAppointmentStatus(appointmentId: String, status: String, onDone: (Boolean) -> Unit) {
         db.collection("appointments")
             .document(appointmentId)
@@ -184,7 +215,7 @@ class ProfileRepository {
             .addOnSuccessListener { onDone(true) }
             .addOnFailureListener { onDone(false) }
     }
-    fun getDoctorAppointmentsForDate(doctorId: String, date: Long, onResult: (List<Appointment>) -> Unit) {
+    private fun getDoctorAppointmentsForDate(doctorId: String, date: Long, onResult: (List<Appointment>) -> Unit) {
         val startOfDay = getStartOfDay(date)
         val endOfDay = getEndOfDay(date)
 
@@ -205,28 +236,6 @@ class ProfileRepository {
             }
     }
 
-    fun getAvailableTimeSlots(
-        doctorId: String,
-        selectedDate: Long,
-        doctorAvailability: Map<String, List<TimeSlot>>,
-        onResult: (List<TimeSlot>) -> Unit
-    ) {
-        getDoctorAppointmentsForDate(doctorId, selectedDate) { existingAppointments ->
-            val dayOfWeek = getDayNameFromTimestamp(selectedDate)
-
-            val availableSlots = doctorAvailability[dayOfWeek] ?: emptyList()
-
-            // Filter out booked slots
-            val bookedSlots = existingAppointments.map { it.timeSlot }
-            val freeSlots = availableSlots.filter { slot ->
-                !bookedSlots.any { bookedSlot ->
-                    areTimeSlotsOverlapping(slot, bookedSlot)
-                }
-            }
-
-            onResult(sortTimeSlots(freeSlots)) // Return sorted slots
-        }
-    }
 
     companion object {
         // Singleton instance

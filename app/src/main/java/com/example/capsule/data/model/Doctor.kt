@@ -17,6 +17,8 @@ data class Doctor(
     val clinicAddress: String = "",
     val locationUrl: String = "",
     override val msgHistory : List<String> = listOf<String>(),
+    val sessionPrice: Double = 0.0,
+
     // Store real availability as: { "Monday": [ {start,end}, {start,end} ], ... }
     val availability: Map<String, List<TimeSlot>> = emptyMap(),
 
@@ -31,6 +33,9 @@ data class Doctor(
     val availabilityDisplay: String
         get() = formatAvailabilityForDisplay(availability)
 
+    // Formatted session price for display
+    val formattedSessionPrice: String
+        get() = "$${sessionPrice.toInt()}" // Or use currency formatting
 }
 
 data class TimeSlot(
@@ -38,7 +43,3 @@ data class TimeSlot(
     val end: String = ""
 )
 
-data class DayAvailability(
-    val day: String = "",
-    val slots: List<TimeSlot> = emptyList()
-)

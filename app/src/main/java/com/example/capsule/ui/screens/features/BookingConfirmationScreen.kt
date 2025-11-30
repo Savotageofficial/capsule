@@ -7,18 +7,23 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.R
-import com.example.capsule.data.model.Doctor
 import com.example.capsule.data.model.TimeSlot
+import com.example.capsule.ui.screens.doctor.DoctorViewModel
+import com.example.capsule.ui.theme.Blue
 import com.example.capsule.ui.theme.Green
+import com.example.capsule.util.formatAppointmentDateTime
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -26,249 +31,191 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookingConfirmationScreen(
-    doctor: Doctor,
+    doctorId: String,
     selectedDate: Long,
     selectedSlot: TimeSlot,
     appointmentType: String,
-    onDone: () -> Unit,
-    onBackToHome: () -> Unit
+    onBackToHome: () -> Unit,
+    doctorViewModel: DoctorViewModel = viewModel()
 ) {
+    val doctor by doctorViewModel.doctor
+
+    LaunchedEffect(doctorId) {
+        if (doctorId.isNotEmpty()) {
+            doctorViewModel.loadDoctorProfileById(doctorId)
+        }
+    }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = "Booking Confirmation",
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                }
+                title = { Text("Booking Confirmation") }
             )
         },
         bottomBar = {
             BottomAppBar(
                 containerColor = MaterialTheme.colorScheme.surface,
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
+                contentPadding = PaddingValues(16.dp)
             ) {
-                Row(
+                Button(
+                    onClick = onBackToHome,
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    colors = ButtonDefaults.buttonColors(containerColor = Green),
+                    shape = RoundedCornerShape(12.dp)
                 ) {
-                    Button(
-                        onClick = onDone,
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary
-                        ),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text("Book Another")
-                    }
-
-                    Button(
-                        onClick = onBackToHome,
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Green
-                        ),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text("Back to Home")
-                    }
+                    Text("Back to Home")
                 }
             }
         }
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .padding(24.dp)
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(24.dp)
-        ) {
-            // Success Icon
-            Icon(
-                imageVector = Icons.Default.CheckCircle,
-                contentDescription = "Success",
-                tint = Green,
-                modifier = Modifier.size(80.dp)
-            )
-
-            Text(
-                text = "Appointment Booked Successfully!",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = Green
-            )
-
-            // Appointment Details Card
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                shape = RoundedCornerShape(16.dp)
+        if (doctor == null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center
             ) {
-                Column(
-                    modifier = Modifier.padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                CircularProgressIndicator()
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .padding(padding)
+                    .padding(24.dp)
+                    .fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+
+                // Success Icon
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    tint = Green,
+                    modifier = Modifier.size(90.dp)
+                )
+
+                Text(
+                    text = "Appointment Booked Successfully!",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = Green
+                )
+
+                // Appointment Details
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
                 ) {
-                    // Doctor Info
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = "Doctor",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(24.dp)
+
+                        // Doctor Info
+                        DetailRow(
+                            icon = Icons.Default.Person,
+                            title = "Doctor",
+                            line1 = "Dr. ${doctor!!.name}",
+                            line2 = doctor!!.specialty
                         )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                text = "Doctor",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = Color.Gray
-                            )
-                            Text(
-                                text = "Dr. ${doctor.name}",
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.Medium
-                            )
-                            Text(
-                                text = doctor.specialty,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.Gray
-                            )
-                        }
-                    }
 
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Date & Time
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Schedule,
-                            contentDescription = "Time",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(24.dp)
+                        // Date & Time
+                        DetailRow(
+                            icon = Icons.Default.Schedule,
+                            title = "Date & Time",
+                            line1 = formatAppointmentDateTime(selectedDate, selectedSlot)
                         )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                text = "Date & Time",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = Color.Gray
-                            )
-                            Text(
-                                text = formatAppointmentDateTime(selectedDate, selectedSlot),
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.Medium
-                            )
-                        }
-                    }
 
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Appointment Type
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_appointment_type),
-                            contentDescription = "Type",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(24.dp)
+                        // Price
+                        DetailRow(
+                            painter = painterResource(R.drawable.ic_price),
+                            title = "Session Fee",
+                            line1 = doctor!!.formattedSessionPrice,
+                            tint = Blue
                         )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                text = "Appointment Type",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = Color.Gray
-                            )
-                            Text(
-                                text = appointmentType,
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.Medium
-                            )
-                        }
-                    }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                        // Appointment Type
+                        DetailRow(
+                            painter = painterResource(R.drawable.ic_appointment_type),
+                            title = "Appointment Type",
+                            line1 = appointmentType
+                        )
 
-                    // Location (for in-person appointments)
-                    if (appointmentType == "In-Person") {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_location),
-                                contentDescription = "Location",
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(24.dp)
+                        if (appointmentType == "In-Person") {
+                            DetailRow(
+                                painter = painterResource(R.drawable.ic_location),
+                                title = "Location",
+                                line1 = doctor!!.clinicName,
+                                line2 = doctor!!.clinicAddress
                             )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Column {
-                                Text(
-                                    text = "Location",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = Color.Gray
-                                )
-                                Text(
-                                    text = doctor.clinicName,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontWeight = FontWeight.Medium
-                                )
-                                Text(
-                                    text = doctor.clinicAddress,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = Color.Gray
-                                )
-                            }
                         }
                     }
                 }
-            }
 
-            // Additional Information
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                ),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
+                // Important Info
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
                 ) {
-                    Text(
-                        text = "Important Information",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
+                    Column(modifier = Modifier.padding(16.dp)) {
 
-                    Text(
-                        text = when (appointmentType) {
-                            "In-Person" -> "• Please arrive 15 minutes before your appointment\n• Bring your ID and insurance card\n• Cancel at least 24 hours in advance if needed"
-                            "Video Call" -> "• You will receive a video call link 15 minutes before your appointment\n• Ensure you have a stable internet connection\n• Find a quiet, private space for the call"
-                            else -> "• You will receive further instructions via email\n• Please check your email regularly"
-                        },
-                        style = MaterialTheme.typography.bodyMedium,
-                        lineHeight = 20.sp
-                    )
+                        Text(
+                            text = "Important Information",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Spacer(Modifier.height(8.dp))
+
+                        Text(
+                            text = when (appointmentType) {
+                                "In-Person" -> "• Arrive 15 minutes early\n• Bring ID & insurance\n• Cancel 24 hours early if needed"
+                                "Chat" -> "• Chat link arrives 15 minutes before\n• Ensure stable internet\n• Stay in a quiet place"
+                                else -> "• Follow instructions sent via email"
+                            },
+                            style = MaterialTheme.typography.bodyMedium,
+                            lineHeight = 20.sp
+                        )
+                    }
                 }
             }
         }
     }
 }
 
-private fun formatAppointmentDateTime(timestamp: Long, slot: TimeSlot): String {
-    val dateTime = Instant.ofEpochMilli(timestamp)
-        .atZone(ZoneId.systemDefault())
-        .toLocalDateTime()
+@Composable
+private fun DetailRow(
+    icon: ImageVector? = null,
+    painter: Painter? = null,
+    title: String,
+    line1: String,
+    line2: String? = null,
+    tint: Color = MaterialTheme.colorScheme.primary
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (icon != null) {
+            Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(24.dp))
+        } else if (painter != null) {
+            Icon(painter, contentDescription = null, tint = tint, modifier = Modifier.size(24.dp))
+        }
+        Spacer(Modifier.width(12.dp))
 
-    val dateFormatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy")
-    return "${dateTime.format(dateFormatter)} at ${slot.start} - ${slot.end}"
+        Column {
+            Text(title, style = MaterialTheme.typography.labelMedium, color = Color.Gray)
+            Text(line1, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
+            if (line2 != null) {
+                Text(line2, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+            }
+        }
+    }
 }
