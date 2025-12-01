@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.ChatActivity
+import com.example.capsule.ChatSelectionActivity
 import com.example.capsule.R
 //import com.example.capsule.SearchResultsActivity
 import com.example.capsule.data.model.OfferItem
@@ -183,7 +184,7 @@ fun HomePage(
                     label = "Chats",
                     onClick = {
                         onMessagesClick()
-                        val intent = Intent(context, ChatActivity::class.java)
+                        val intent = Intent(context, ChatSelectionActivity::class.java)
                         context.startActivity(intent)
                     }
                 )
