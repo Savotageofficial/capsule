@@ -8,8 +8,8 @@ val color: Color
 )
 
 data class Tip(
-    val Head: String ,
-    val Description: String ,
-    val Image : Int
+    val head: String,
+    val description: String,
+    val image : Int
 )
 

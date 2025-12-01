@@ -21,3 +21,4 @@ val Gold = Color(0xFFFFB700)
 
 val WhiteSmoke = Color(0xFFF5F5F5)
 val Teal = Color(0xFF0A3140)
+val Cyan = Color(0xFF0CA7BA)

@@ -1,4 +1,4 @@
-package com.example.capsule
+package com.example.capsule.activities
 
 import android.content.Intent
 import android.os.Bundle
@@ -31,6 +31,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.capsule.R
 import com.example.capsule.data.repository.AuthRepository
 import com.example.capsule.ui.theme.CapsuleTheme
 

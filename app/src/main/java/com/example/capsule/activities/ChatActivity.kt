@@ -1,4 +1,4 @@
-package com.example.capsule
+package com.example.capsule.activities
 
 
 import android.os.Bundle
@@ -24,6 +24,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -47,9 +48,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.capsule.data.model.Message
+import com.example.capsule.ui.theme.Cyan
 import com.example.capsule.ui.theme.Teal
 import com.example.capsule.ui.theme.WhiteSmoke
 import com.example.capsule.util.formatChatTime
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
@@ -132,7 +135,7 @@ fun ChatApp(
                 IconButton(onClick = onBackClick) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        tint = Color(0xFF0CA7BA),
+                        tint = Cyan,
                         contentDescription = "Back",
                         modifier = Modifier
                             .size(30.dp)
@@ -207,7 +210,7 @@ fun ChatApp(
                                 mapOf(
                                     "message" to messageText.text,
                                     "senderId" to currentUser?.uid,
-                                    "timestamp" to com.google.firebase.Timestamp.now(),
+                                    "timestamp" to Timestamp.now(),
                                     "receiverId" to RecId
                                 )
                             )
@@ -218,7 +221,7 @@ fun ChatApp(
                 modifier = Modifier
                     .padding(end = 4.dp),
                 shape = CircleShape,
-                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                colors = ButtonDefaults.buttonColors(
                     containerColor = Teal
                 )
             ) {

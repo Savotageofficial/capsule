@@ -2,12 +2,9 @@ package com.example.capsule.data.repository
 
 import android.util.Log
 import com.example.capsule.data.model.Doctor
-import com.example.capsule.data.model.Patient
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.getField
-import com.google.firebase.firestore.toObject
 
 class SearchRepository {
 
@@ -35,7 +32,7 @@ class SearchRepository {
                     val data = document.data
 //                    val doctor = document.toObject<Doctor>()
 
-                    if (doctor != null && doctor.name.contains(Name)){
+                    if (doctor.name.contains(Name)){
 
                         doctorlist.add(doctor)
                         
@@ -65,7 +62,7 @@ class SearchRepository {
                     val data = document.data
 //                    val doctor = document.toObject<Doctor>()
 
-                    if (doctor != null && doctor.name.contains(Name, ignoreCase = true) && doctor.specialty.contains(Speciality , ignoreCase = true)){
+                    if (doctor.name.contains(Name, ignoreCase = true) && doctor.specialty.contains(Speciality , ignoreCase = true)){
 
                         doctorlist.add(doctor)
 

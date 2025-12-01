@@ -3,10 +3,6 @@ package com.example.capsule.data.repository
 import com.example.capsule.data.model.Appointment
 import com.example.capsule.data.model.Doctor
 import com.example.capsule.data.model.Patient
-import com.example.capsule.data.model.TimeSlot
-import com.example.capsule.util.getDayNameFromTimestamp
-import com.example.capsule.util.getEndOfDay
-import com.example.capsule.util.getStartOfDay
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -156,6 +152,7 @@ class ProfileRepository {
                 onResult(emptyList())
             }
     }
+
     fun deleteAppointment(appointmentId: String, onDone: (Boolean) -> Unit) {
         db.collection("appointments")
             .document(appointmentId)
@@ -166,72 +163,19 @@ class ProfileRepository {
 
     // Book appointment with conflict check
     fun bookAppointment(appointment: Appointment, onDone: (Boolean) -> Unit) {
-        // Check if slot is still available
-        getDoctorAppointmentsForDate(appointment.doctorId, appointment.dateTime) { existingAppointments ->
-            val isSlotTaken = existingAppointments.any { existing ->
-                existing.timeSlot.start == appointment.timeSlot.start &&
-                        existing.timeSlot.end == appointment.timeSlot.end
-            }
-
-            if (isSlotTaken) {
-                onDone(false)
-            } else {
-                db.collection("appointments")
-                    .add(appointment)
-                    .addOnSuccessListener { onDone(true) }
-                    .addOnFailureListener { onDone(false) }
-            }
-        }
+        db.collection("appointments")
+            .add(appointment)
+            .addOnSuccessListener { onDone(true) }
+            .addOnFailureListener { onDone(false) }
     }
 
 
-    // Get available time slots
-    fun getAvailableTimeSlots(
-        doctorId: String,
-        selectedDate: Long,
-        doctorAvailability: Map<String, List<TimeSlot>>,
-        onResult: (List<TimeSlot>) -> Unit
-    ) {
-        getDoctorAppointmentsForDate(doctorId, selectedDate) { existingAppointments ->
-            val dayOfWeek = getDayNameFromTimestamp(selectedDate)
-            val availableSlots = doctorAvailability[dayOfWeek] ?: emptyList()
-
-            // Since there's only one slot per day, simple check
-            val freeSlots = if (existingAppointments.isNotEmpty()) {
-                emptyList() // If there's any appointment, the slot is taken
-            } else {
-                availableSlots
-            }
-
-            onResult(freeSlots.sortedBy { it.start })
-        }
-    }
     fun updateAppointmentStatus(appointmentId: String, status: String, onDone: (Boolean) -> Unit) {
         db.collection("appointments")
             .document(appointmentId)
             .update("status", status)
             .addOnSuccessListener { onDone(true) }
             .addOnFailureListener { onDone(false) }
-    }
-    private fun getDoctorAppointmentsForDate(doctorId: String, date: Long, onResult: (List<Appointment>) -> Unit) {
-        val startOfDay = getStartOfDay(date)
-        val endOfDay = getEndOfDay(date)
-
-        db.collection("appointments")
-            .whereEqualTo("doctorId", doctorId)
-            .whereEqualTo("status", "Upcoming")
-            .whereGreaterThanOrEqualTo("dateTime", startOfDay)
-            .whereLessThanOrEqualTo("dateTime", endOfDay)
-            .get()
-            .addOnSuccessListener { querySnapshot ->
-                val appointments = querySnapshot.documents.mapNotNull { doc ->
-                    doc.toObject(Appointment::class.java)?.copy(id = doc.id)
-                }
-                onResult(appointments)
-            }
-            .addOnFailureListener {
-                onResult(emptyList())
-            }
     }
 
 

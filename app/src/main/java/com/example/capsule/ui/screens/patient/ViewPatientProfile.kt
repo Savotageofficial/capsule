@@ -28,7 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.capsule.ChatActivity
+import com.example.capsule.activities.ChatActivity
 import com.example.capsule.ui.components.InfoRow
 import com.example.capsule.R
 import com.example.capsule.ui.theme.Blue

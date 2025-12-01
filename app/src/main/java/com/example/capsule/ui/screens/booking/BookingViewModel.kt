@@ -34,38 +34,32 @@ class BookingViewModel : ViewModel() {
     //                  LOAD DOCTOR SLOTS + APPLY FIREBASE FILTER
     // --------------------------------------------------------------------
 
+    // --------------------------------------------------------------------
+//                  LOAD DOCTOR SLOTS (NO FIREBASE FILTER)
+// --------------------------------------------------------------------
+
     fun loadSlots(doctor: Doctor) {
         isLoading.value = true
 
         viewModelScope.launch {
-
             val dayOfWeek = selectedDate.value.dayOfWeek.name.lowercase()
                 .replaceFirstChar { it.uppercase() }
 
             // Get the single slot for this day (if exists)
             val singleSlot = doctor.availability[dayOfWeek]?.firstOrNull()
 
-            // Since there's only one slot per day, either show it or empty list
+            // either show it or empty list
             allSlots.value = if (singleSlot != null) listOf(singleSlot) else emptyList()
 
-            val dateMillis = convertDateTimeToMillis(selectedDate.value, "00:00")
+            // All slots are considered available (no Firebase check)
+            availableSlots.value = allSlots.value
 
-            // Get available slots filtered by firebase bookings
-            repository.getAvailableTimeSlots(
-                doctorId = doctor.id,
-                selectedDate = dateMillis,
-                doctorAvailability = doctor.availability
-            ) { freeSlots ->
-                // Since there's only one slot, check if it's available
-                availableSlots.value = freeSlots
-
-                // Auto-select the slot if it's available and there's only one
-                if (freeSlots.size == 1 && selectedSlot.value == null) {
-                    selectedSlot.value = freeSlots.first()
-                }
-
-                isLoading.value = false
+            // Auto-select the slot if there's only one
+            if (allSlots.value.size == 1 && selectedSlot.value == null) {
+                selectedSlot.value = allSlots.value.first()
             }
+
+            isLoading.value = false
         }
     }
 
@@ -129,46 +123,4 @@ class BookingViewModel : ViewModel() {
         }
     }
 
-    // --------------------------------------------------------------------
-    //                      SIMPLIFIED SLOT SELECTION
-    // --------------------------------------------------------------------
-
-    /**
-     * Since there's only one slot per day, we can simplify slot selection
-     */
-    fun selectSlot(slot: TimeSlot) {
-        selectedSlot.value = slot
-    }
-
-    /**
-     * Check if a date has availability
-     */
-    fun hasAvailability(doctor: Doctor, date: LocalDate): Boolean {
-        val dayOfWeek = date.dayOfWeek.name.lowercase()
-            .replaceFirstChar { it.uppercase() }
-        return doctor.availability[dayOfWeek]?.isNotEmpty() == true
-    }
-
-    // --------------------------------------------------------------------
-    //                               RESET UI
-    // --------------------------------------------------------------------
-
-    fun reset() {
-        selectedDate.value = LocalDate.now()
-        selectedSlot.value = null
-        appointmentType.value = "In-Person"
-
-        allSlots.value = emptyList()
-        availableSlots.value = emptyList()
-
-        showConfirmation.value = false
-        showDatePicker.value = false
-    }
-
-    /**
-     * Reset only the slot selection (useful when changing dates)
-     */
-    fun resetSlotSelection() {
-        selectedSlot.value = null
-    }
 }

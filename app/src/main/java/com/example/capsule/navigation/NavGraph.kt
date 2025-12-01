@@ -12,10 +12,10 @@ import com.example.capsule.ui.screens.doctor.DoctorProfileScreen
 import com.example.capsule.ui.screens.doctor.DoctorScheduleScreen
 import com.example.capsule.ui.screens.doctor.DoctorViewModel
 import com.example.capsule.ui.screens.doctor.ViewDoctorProfileScreen
-import com.example.capsule.ui.screens.features.BookingConfirmationScreen
-import com.example.capsule.ui.screens.features.SearchScreen
-import com.example.capsule.ui.screens.features.SearchResultsScreen
-import com.example.capsule.ui.screens.features.SettingsScreen
+import com.example.capsule.ui.screens.booking.BookingConfirmationScreen
+import com.example.capsule.ui.screens.search.SearchScreen
+import com.example.capsule.ui.screens.search.SearchResultsScreen
+import com.example.capsule.ui.screens.settings.SettingsScreen
 import com.example.capsule.ui.screens.patient.HomePage
 import com.example.capsule.ui.screens.patient.PatientAppointmentsScreen
 import com.example.capsule.ui.screens.patient.PatientEditProfileScreen

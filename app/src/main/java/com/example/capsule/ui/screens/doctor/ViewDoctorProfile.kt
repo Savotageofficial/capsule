@@ -29,10 +29,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.capsule.ChatActivity
+import com.example.capsule.activities.ChatActivity
 import com.example.capsule.R
 import com.example.capsule.data.model.TimeSlot
-import com.example.capsule.ui.components.BookingBottomSheet
+import com.example.capsule.ui.screens.booking.BookingBottomSheet
 import com.example.capsule.ui.components.InfoCard
 import com.example.capsule.ui.screens.patient.PatientViewModel
 import com.example.capsule.ui.theme.Blue

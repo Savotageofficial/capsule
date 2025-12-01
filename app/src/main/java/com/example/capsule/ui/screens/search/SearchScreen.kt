@@ -1,4 +1,4 @@
-package com.example.capsule.ui.screens.features
+package com.example.capsule.ui.screens.search
 
 import android.content.Context
 import android.widget.Toast
@@ -49,6 +49,7 @@ import androidx.navigation.NavHostController
 import com.example.capsule.data.model.Doctor
 import com.example.capsule.data.repository.SearchRepository
 import com.example.capsule.ui.components.SpecializationDropdown
+import com.example.capsule.ui.theme.Cyan
 import com.example.capsule.ui.theme.WhiteSmoke
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,14 +73,13 @@ fun SearchScreen(
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
-                        color = Color(0xFF0A3140)
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            tint = Color(0xFF0CA7BA),
+                            tint = Cyan,
                             contentDescription = "Back",
                             modifier = Modifier
                                 .size(30.dp)

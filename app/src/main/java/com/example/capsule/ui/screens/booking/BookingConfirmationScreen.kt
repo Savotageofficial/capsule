@@ -1,8 +1,10 @@
-package com.example.capsule.ui.screens.features
+package com.example.capsule.ui.screens.booking
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Schedule
@@ -25,6 +27,7 @@ import com.example.capsule.data.model.TimeSlot
 import com.example.capsule.ui.screens.doctor.DoctorViewModel
 import com.example.capsule.ui.theme.Blue
 import com.example.capsule.ui.theme.Green
+import com.example.capsule.ui.theme.Teal
 import com.example.capsule.ui.theme.WhiteSmoke
 import com.example.capsule.util.formatAppointmentDateTime
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,12 +57,11 @@ fun BookingConfirmationScreen(
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
-                        color = Color(0xFF0A3140)
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = WhiteSmoke,
-                    titleContentColor = Color(0xFF0A3140)
+                    titleContentColor = Teal
                 )
             )
         },
@@ -82,9 +84,9 @@ fun BookingConfirmationScreen(
         if (doctor == null) {
             Box(
                 modifier = Modifier
+                    .background(WhiteSmoke)
                     .fillMaxSize()
-                    .padding(padding)
-                    .background(WhiteSmoke),
+                    .padding(padding),
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator()
@@ -95,7 +97,8 @@ fun BookingConfirmationScreen(
                     .background(WhiteSmoke)
                     .padding(padding)
                     .padding(24.dp)
-                    .fillMaxSize(),
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {

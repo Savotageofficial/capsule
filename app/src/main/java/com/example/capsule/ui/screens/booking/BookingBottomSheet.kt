@@ -1,4 +1,4 @@
-package com.example.capsule.ui.components
+package com.example.capsule.ui.screens.booking
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -10,8 +10,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,10 +27,8 @@ import com.example.capsule.data.model.Doctor
 import com.example.capsule.data.model.Patient
 import com.example.capsule.data.model.TimeSlot
 import com.example.capsule.ui.components.DatePickerDialog as CapsuleDatePickerDialog
-import com.example.capsule.ui.screens.booking.BookingViewModel
 import java.time.Instant
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -48,7 +44,6 @@ fun BookingBottomSheet(
     // Observe state
     val selectedDate by bookingViewModel.selectedDate
     val allSlots by bookingViewModel.allSlots
-    val availableSlots by bookingViewModel.availableSlots
     val selectedSlot by bookingViewModel.selectedSlot
     val appointmentType by bookingViewModel.appointmentType
     val isLoading by bookingViewModel.isLoading
@@ -169,31 +164,17 @@ fun BookingBottomSheet(
             } else {
                 // Since there's only one slot per day, display it prominently
                 allSlots.firstOrNull()?.let { slot ->
-                    val isAvailable = availableSlots.any { it.start == slot.start }
                     val isSelected = selectedSlot == slot
 
                     SingleTimeSlotDisplay(
                         slot = slot,
-                        isAvailable = isAvailable,
                         isSelected = isSelected,
                         onSlotClick = {
-                            if (isAvailable) {
-                                bookingViewModel.selectedSlot.value = slot
-                            }
+                            bookingViewModel.selectedSlot.value = slot // Always clickable
                         }
                     )
 
-                    // Show booking status message
-                    if (!isAvailable) {
-                        Text(
-                            "This time slot is already booked",
-                            color = MaterialTheme.colorScheme.error,
-                            fontSize = 14.sp,
-                            modifier = Modifier
-                                .padding(top = 8.dp)
-                                .align(Alignment.CenterHorizontally)
-                        )
-                    } else if (isSelected) {
+                    if (isSelected) {
                         Text(
                             "Time slot selected - Ready to book",
                             color = MaterialTheme.colorScheme.primary,
@@ -239,7 +220,6 @@ fun BookingBottomSheet(
 @Composable
 private fun SingleTimeSlotDisplay(
     slot: TimeSlot,
-    isAvailable: Boolean,
     isSelected: Boolean,
     onSlotClick: () -> Unit
 ) {
@@ -247,21 +227,17 @@ private fun SingleTimeSlotDisplay(
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = when {
-                isSelected && isAvailable -> MaterialTheme.colorScheme.primary
-                isAvailable -> MaterialTheme.colorScheme.primaryContainer
-                else -> MaterialTheme.colorScheme.surfaceVariant
+                isSelected -> MaterialTheme.colorScheme.primary
+                else -> MaterialTheme.colorScheme.primaryContainer
             }
         ),
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(enabled = isAvailable, onClick = onSlotClick)
+            .clickable(enabled = true, onClick = onSlotClick) // Always enabled
             .border(
                 width = if (isSelected) 2.dp else 1.dp,
-                color = when {
-                    isSelected -> MaterialTheme.colorScheme.primary
-                    isAvailable -> MaterialTheme.colorScheme.outline
-                    else -> MaterialTheme.colorScheme.error.copy(alpha = 0.5f)
-                },
+                color = if (isSelected) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.outline,
                 shape = RoundedCornerShape(12.dp)
             )
     ) {
@@ -276,68 +252,27 @@ private fun SingleTimeSlotDisplay(
                 Text(
                     "Time Slot",
                     style = MaterialTheme.typography.labelMedium,
-                    color = when {
-                        isSelected && isAvailable -> MaterialTheme.colorScheme.onPrimary
-                        isAvailable -> MaterialTheme.colorScheme.onPrimaryContainer
-                        else -> MaterialTheme.colorScheme.onSurfaceVariant
-                    }
+                    color = if (isSelected) MaterialTheme.colorScheme.onPrimary
+                    else MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Text(
                     "${slot.start} - ${slot.end}",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = when {
-                        isSelected && isAvailable -> MaterialTheme.colorScheme.onPrimary
-                        isAvailable -> MaterialTheme.colorScheme.onPrimaryContainer
-                        else -> MaterialTheme.colorScheme.onSurfaceVariant
-                    }
+                    color = if (isSelected) MaterialTheme.colorScheme.onPrimary
+                    else MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
 
-            // Status indicator
+            // Status indicator - always green/blue since always available
             Box(
                 modifier = Modifier
                     .size(12.dp)
                     .clip(CircleShape)
                     .background(
-                        color = when {
-                            isAvailable && isSelected -> Color.Green
-                            isAvailable -> Color.Blue
-                            else -> Color.Red
-                        }
+                        color = if (isSelected) Color.Green else Color.Blue
                     )
             )
-        }
-    }
-}
-
-@Composable
-private fun TimeSlotChip(
-    slot: TimeSlot,
-    isAvailable: Boolean,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    Surface(
-        shape = RoundedCornerShape(8.dp),
-        color = when {
-            isSelected -> MaterialTheme.colorScheme.primary
-            isAvailable -> MaterialTheme.colorScheme.primaryContainer
-            else -> MaterialTheme.colorScheme.surfaceVariant
-        },
-        modifier = Modifier
-            .clickable(enabled = isAvailable, onClick = onClick)
-            .border(
-                width = if (isSelected) 2.dp else 0.dp,
-                color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
-                shape = RoundedCornerShape(8.dp)
-            )
-    ) {
-        Row(Modifier.padding(12.dp)) {
-            if (!isAvailable) {
-                Icon(Icons.Default.Close, "Unavailable", modifier = Modifier.size(14.dp))
-            }
-            Text("${slot.start} - ${slot.end}")
         }
     }
 }

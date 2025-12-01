@@ -1,4 +1,4 @@
-package com.example.capsule.ui.screens.features
+package com.example.capsule.ui.screens.search
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.capsule.data.model.Doctor
 import com.example.capsule.ui.components.DoctorResultCard
+import com.example.capsule.ui.theme.Cyan
+import com.example.capsule.ui.theme.Teal
 import com.example.capsule.ui.theme.WhiteSmoke
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,7 +70,7 @@ fun SearchResultsScreen(
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            tint = Color(0xFF0CA7BA),
+                            tint = Cyan,
                             contentDescription = "Back",
                             modifier = Modifier
                                 .size(30.dp)
@@ -77,7 +79,7 @@ fun SearchResultsScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = WhiteSmoke,
-                    titleContentColor = Color(0xFF0A3140)
+                    titleContentColor = Teal
                 )
             )
         }
@@ -87,7 +89,6 @@ fun SearchResultsScreen(
                 .background(WhiteSmoke)
                 .padding(padding)
                 .fillMaxSize()
-                .background(Color(0xFFF5F5F5))
         ) {
             // Show number of results with proper padding
             if (doctors.isNotEmpty()) {

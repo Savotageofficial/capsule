@@ -24,10 +24,6 @@ data class Doctor(
     val profileImageRes: Int? = null
 ) : UserProfile(id = id, name = name, email = email, userType = userType) {
 
-    // Helper property for backward compatibility
-    val availabilityMap: Map<String, List<TimeSlot>>
-        get() = availability
-
     // Formatted availability string for display
     val availabilityDisplay: String
         get() = formatAvailabilityForDisplay(availability)
