@@ -1,5 +1,6 @@
 package com.example.capsule.ui.screens.doctor
 
+import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -29,12 +30,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.capsule.activities.ChatActivity
 import com.example.capsule.R
+import com.example.capsule.ui.components.DashboardCard
 import com.example.capsule.ui.components.UpcomingCard
 import com.example.capsule.ui.theme.Blue
 import com.example.capsule.ui.theme.Green
-import com.example.capsule.ui.theme.Red
 import com.example.capsule.ui.theme.White
+import com.example.capsule.ui.theme.WhiteSmoke
 
 @Composable
 fun DoctorDashboardScreen(
@@ -80,11 +83,11 @@ fun DoctorDashboardScreen(
     Scaffold { padding ->
         Column(
             modifier = Modifier
+                .background(WhiteSmoke)
                 .fillMaxSize()
                 .padding(padding)
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
-                .background(White)
         ) {
 
             // Top Header
@@ -151,90 +154,30 @@ fun DoctorDashboardScreen(
                     .padding(top = 4.dp)
             ) {
                 // Schedule card
-                Card(
+                DashboardCard(
+                    title = stringResource(R.string.schedule),
+                    icon = R.drawable.ic_calendar,
+                    bgColor = Color(0xFFFFEAD8),
+                    iconColor = Color(0xFFFF8728),
                     onClick = onScheduleClick,
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                    modifier = Modifier
-                        .padding(4.dp)
-                        .weight(1f)
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .fillMaxWidth()
-                    ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .size(36.dp)
-                                .background(Color(0xFFFFEAD8), CircleShape)
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_calendar),
-                                tint = Color(0xFFFF8728),
-                                contentDescription = "Schedule"
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            stringResource(R.string.schedule),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
-                        )
-                    }
-                }
+                    modifier = Modifier.weight(1f)
+                )
 
                 Spacer(modifier = Modifier.width(8.dp))
 
                 // Messages card
-                Card(
+                DashboardCard(
+                    title = stringResource(R.string.messages),
+                    icon = R.drawable.ic_messages,
+                    bgColor = Color(0xFFE4FBE4),
+                    iconColor = Green,
                     onClick = {
                         onMessagesClick()
-                        Toast.makeText(context, "Wait for it!", Toast.LENGTH_SHORT).show()
+                        val intent = Intent(context, ChatActivity::class.java)
+                        context.startActivity(intent)
                     },
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                    modifier = Modifier
-                        .padding(4.dp)
-                        .weight(1f)
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .fillMaxWidth()
-                    ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .size(36.dp)
-                                .background(Color(0xFFE4FBE4), CircleShape)
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_messages),
-                                tint = Green,
-                                contentDescription = "Messages"
-                            )
-                            // Unread message indicator
-                            Box(
-                                modifier = Modifier
-                                    .size(14.dp)
-                                    .background(Red, CircleShape)
-                                    .align(Alignment.TopEnd)
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            stringResource(R.string.messages),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
-                        )
-                    }
-                }
+                    modifier = Modifier.weight(1f)
+                )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -304,7 +247,7 @@ fun DoctorDashboardScreen(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(max = 300.dp), // Limit height for better UX
+                        .heightIn(max = 400.dp), // Limit height for better UX
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(recentAppointments) { appointment ->
@@ -312,8 +255,7 @@ fun DoctorDashboardScreen(
                             name = appointment.patientName,
                             details = "${appointment.timeSlot} - ${appointment.type}",
                             onClick = {
-                                Toast.makeText(context, "Viewing ${appointment.patientName}'s appointment", Toast.LENGTH_SHORT).show()
-                                // onPatientClick(appointment.patientId)
+                                onPatientClick(appointment.patientId)
                             },
                             showMoreIcon = false
                         )

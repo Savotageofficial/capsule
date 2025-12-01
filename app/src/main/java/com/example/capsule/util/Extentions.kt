@@ -4,6 +4,8 @@ import com.example.capsule.data.model.TimeSlot
 import java.time.*
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import java.text.SimpleDateFormat
+import java.util.*
 
 // ---------------- DATE FORMATTERS ----------------
 
@@ -79,19 +81,45 @@ fun formatAvailabilityForDisplay(map: Map<String, List<TimeSlot>>): String {
     return text.ifBlank { "Set Availability" }
 }
 
-fun sortTimeSlots(slots: List<TimeSlot>): List<TimeSlot> =
-    slots.sortedBy {
-        runCatching { LocalTime.parse(it.start).toSecondOfDay() }.getOrDefault(0)
+fun formatAppointmentDateTime(timestamp: Long, slot: TimeSlot): String {
+    val dateTime = Instant.ofEpochMilli(timestamp)
+        .atZone(ZoneId.systemDefault())
+        .toLocalDateTime()
+
+    val dateFormatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy")
+    return "${dateTime.format(dateFormatter)} at ${slot.start} - ${slot.end}"
+}
+
+
+fun formatChatTime(rawDate: String): String {
+    return try {
+        val date = SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH)
+            .parse(rawDate)
+
+        if (date != null) {
+            val now = Date()
+            val diff = now.time - date.time
+
+            val oneDay = 24 * 60 * 60 * 1000
+
+            return when {
+                diff < oneDay -> {
+                    // Today
+                    SimpleDateFormat("hh:mm a", Locale.ENGLISH).format(date)
+                }
+                diff < 2 * oneDay -> {
+                    // Yesterday
+                    "Yesterday • " + SimpleDateFormat("hh:mm a", Locale.ENGLISH).format(date)
+                }
+                else -> {
+                    // Older dates
+                    SimpleDateFormat("MMM dd • hh:mm a", Locale.ENGLISH).format(date)
+                }
+            }
+        }
+
+        rawDate
+    } catch (_: Exception) {
+        rawDate
     }
-
-fun areTimeSlotsOverlapping(a: TimeSlot, b: TimeSlot): Boolean = runCatching {
-    val aStart = parseTimeSafe(a.start)
-    val aEnd = parseTimeSafe(a.end)
-    val bStart = parseTimeSafe(b.start)
-    val bEnd = parseTimeSafe(b.end)
-
-    aStart < bEnd && aEnd > bStart
-}.getOrElse {
-    // Worst-case fallback: lexicographical compare
-    a.start < b.end && a.end > b.start
 }

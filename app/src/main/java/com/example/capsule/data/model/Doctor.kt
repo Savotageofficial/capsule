@@ -3,12 +3,12 @@ package com.example.capsule.data.model
 import com.example.capsule.util.formatAvailabilityForDisplay
 
 data class Doctor(
-    override val id: String = "",
-    override val name: String = "",
-    override val email: String = "",
-    override val userType: String = "Doctor",
+    override var id: String = "",
+    override var name: String = "",
+    override var email: String = "",
+    override var userType: String = "Doctor",
 
-    val specialty: String = "",
+    var specialty: String = "",
     val bio: String = "",
     val rating: Double = 0.0,
     val reviewsCount: Int = 0,
@@ -16,6 +16,7 @@ data class Doctor(
     val clinicName: String = "",
     val clinicAddress: String = "",
     val locationUrl: String = "",
+    val sessionPrice: Double = 0.0,
 
     // Store real availability as: { "Monday": [ {start,end}, {start,end} ], ... }
     val availability: Map<String, List<TimeSlot>> = emptyMap(),
@@ -23,14 +24,13 @@ data class Doctor(
     val profileImageRes: Int? = null
 ) : UserProfile(id = id, name = name, email = email, userType = userType) {
 
-    // Helper property for backward compatibility
-    val availabilityMap: Map<String, List<TimeSlot>>
-        get() = availability
-
     // Formatted availability string for display
     val availabilityDisplay: String
         get() = formatAvailabilityForDisplay(availability)
 
+    // Formatted session price for display
+    val formattedSessionPrice: String
+        get() = "$${sessionPrice.toInt()}" // Or use currency formatting
 }
 
 data class TimeSlot(
@@ -38,7 +38,3 @@ data class TimeSlot(
     val end: String = ""
 )
 
-data class DayAvailability(
-    val day: String = "",
-    val slots: List<TimeSlot> = emptyList()
-)

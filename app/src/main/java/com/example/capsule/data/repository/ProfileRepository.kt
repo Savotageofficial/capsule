@@ -3,12 +3,6 @@ package com.example.capsule.data.repository
 import com.example.capsule.data.model.Appointment
 import com.example.capsule.data.model.Doctor
 import com.example.capsule.data.model.Patient
-import com.example.capsule.data.model.TimeSlot
-import com.example.capsule.util.areTimeSlotsOverlapping
-import com.example.capsule.util.getDayNameFromTimestamp
-import com.example.capsule.util.getEndOfDay
-import com.example.capsule.util.getStartOfDay
-import com.example.capsule.util.sortTimeSlots
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -158,6 +152,7 @@ class ProfileRepository {
                 onResult(emptyList())
             }
     }
+
     fun deleteAppointment(appointmentId: String, onDone: (Boolean) -> Unit) {
         db.collection("appointments")
             .document(appointmentId)
@@ -165,17 +160,15 @@ class ProfileRepository {
             .addOnSuccessListener { onDone(true) }
             .addOnFailureListener { onDone(false) }
     }
-    // In ProfileRepository.kt - REPLACE the current bookAppointment method:
+
+    // Book appointment with conflict check
     fun bookAppointment(appointment: Appointment, onDone: (Boolean) -> Unit) {
         db.collection("appointments")
             .add(appointment)
-            .addOnSuccessListener {
-                onDone(true) // Just return success
-            }
-            .addOnFailureListener {
-                onDone(false)
-            }
+            .addOnSuccessListener { onDone(true) }
+            .addOnFailureListener { onDone(false) }
     }
+
 
     fun updateAppointmentStatus(appointmentId: String, status: String, onDone: (Boolean) -> Unit) {
         db.collection("appointments")
@@ -184,49 +177,7 @@ class ProfileRepository {
             .addOnSuccessListener { onDone(true) }
             .addOnFailureListener { onDone(false) }
     }
-    fun getDoctorAppointmentsForDate(doctorId: String, date: Long, onResult: (List<Appointment>) -> Unit) {
-        val startOfDay = getStartOfDay(date)
-        val endOfDay = getEndOfDay(date)
 
-        db.collection("appointments")
-            .whereEqualTo("doctorId", doctorId)
-            .whereEqualTo("status", "Upcoming")
-            .whereGreaterThanOrEqualTo("dateTime", startOfDay)
-            .whereLessThanOrEqualTo("dateTime", endOfDay)
-            .get()
-            .addOnSuccessListener { querySnapshot ->
-                val appointments = querySnapshot.documents.mapNotNull { doc ->
-                    doc.toObject(Appointment::class.java)?.copy(id = doc.id)
-                }
-                onResult(appointments)
-            }
-            .addOnFailureListener {
-                onResult(emptyList())
-            }
-    }
-
-    fun getAvailableTimeSlots(
-        doctorId: String,
-        selectedDate: Long,
-        doctorAvailability: Map<String, List<TimeSlot>>,
-        onResult: (List<TimeSlot>) -> Unit
-    ) {
-        getDoctorAppointmentsForDate(doctorId, selectedDate) { existingAppointments ->
-            val dayOfWeek = getDayNameFromTimestamp(selectedDate)
-
-            val availableSlots = doctorAvailability[dayOfWeek] ?: emptyList()
-
-            // Filter out booked slots
-            val bookedSlots = existingAppointments.map { it.timeSlot }
-            val freeSlots = availableSlots.filter { slot ->
-                !bookedSlots.any { bookedSlot ->
-                    areTimeSlotsOverlapping(slot, bookedSlot)
-                }
-            }
-
-            onResult(sortTimeSlots(freeSlots)) // Return sorted slots
-        }
-    }
 
     companion object {
         // Singleton instance

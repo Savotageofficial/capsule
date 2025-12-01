@@ -1,4 +1,4 @@
-package com.example.capsule.ui.screens.features
+package com.example.capsule.ui.screens.settings
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -10,7 +10,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -53,7 +52,6 @@ fun SettingsScreen(
                     .fillMaxSize()
                     .padding(20.dp)
             ) {
-
 
                 Box(
                     modifier = Modifier

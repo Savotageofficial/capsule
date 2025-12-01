@@ -1,25 +1,31 @@
 package com.example.capsule.ui.screens.doctor
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.R
 import com.example.capsule.ui.components.AvailabilityBottomSheet
+import com.example.capsule.ui.components.SpecializationDropdown
 import com.example.capsule.ui.theme.Blue
+import com.example.capsule.ui.theme.WhiteSmoke
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,17 +55,9 @@ fun DoctorEditProfileScreen(
     var clinicName by remember { mutableStateOf(TextFieldValue(doctor.clinicName)) }
     var clinicAddress by remember { mutableStateOf(TextFieldValue(doctor.clinicAddress)) }
     var locationUrl by remember { mutableStateOf(TextFieldValue(doctor.locationUrl)) }
-
+    var sessionPrice by remember { mutableStateOf(TextFieldValue(doctor.sessionPrice.toString())) }
     var specialty by remember { mutableStateOf(doctor.specialty) }
 
-    val specializations = listOf(
-        "Neurologist", "Allergist", "Anesthesiologist", "Cardiologists",
-        "Colon and Rectal Surgeon", "Critical Care Medicine Specialist",
-        "Dermatologist", "Endocrinologist", "Emergency Medicine Specialist",
-        "Family Physician", "Gastroenterologist", "Geriatric Medicine Specialist",
-        "Hematologist", "Nephrologist", "Oncologist", "Ophthalmologist",
-        "Pathologist", "Otolaryngologist", "Physiatrist", "Psychiatrist"
-    )
 
     var showAvailabilitySheet by remember { mutableStateOf(false) }
     var showErrorDialog by remember { mutableStateOf(false) }
@@ -69,17 +67,34 @@ fun DoctorEditProfileScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(stringResource(R.string.edit_profile)) },
+                title = { Text(
+                    stringResource(R.string.edit_profile),
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                ) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            tint = Color(0xFF0CA7BA),
+                            contentDescription = "Back",
+                            modifier = Modifier
+                                .size(30.dp)
+                                .clickable { onBackClick() }
+                        )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = WhiteSmoke,
+                    titleContentColor = Color(0xFF0A3140)
+                )
             )
         }
     ) { padding ->
         Column(
             modifier = Modifier
+                .background(WhiteSmoke)
                 .padding(padding)
                 .padding(horizontal = 16.dp)
                 .verticalScroll(scrollState)
@@ -102,15 +117,15 @@ fun DoctorEditProfileScreen(
                         singleLine = true
                     )
 
-
                     Spacer(Modifier.height(12.dp))
 
-                    SpecialtyDropdown(
-                        selected = specialty,
-                        onSelected = { specialty = it },
-                        specialties = specializations
+                    SpecializationDropdown(
+                        selectedSpecialty = specialty,
+                        onSpecialtySelected = { specialty = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = "Specialization",
+                        placeholder = "Select specialty"
                     )
-
 
                     Spacer(Modifier.height(12.dp))
 
@@ -165,6 +180,22 @@ fun DoctorEditProfileScreen(
                         singleLine = true
                     )
 
+                    Spacer(Modifier.height(12.dp))
+
+                    OutlinedTextField(
+                        value = sessionPrice,
+                        onValueChange = {
+                            // Allow only numbers and decimal point
+                            if (it.text.matches(Regex("^\\d*\\.?\\d*$"))) {
+                                sessionPrice = it
+                            }
+                        },
+                        label = { Text("Session Price ($)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        prefix = { Text("$") }
+                    )
 
                     Spacer(Modifier.height(12.dp))
 
@@ -198,6 +229,7 @@ fun DoctorEditProfileScreen(
                         "clinicName" to clinicName.text,
                         "clinicAddress" to clinicAddress.text,
                         "locationUrl" to locationUrl.text,
+                        "sessionPrice" to sessionPrice.text.toDouble()
                     )
 
                     viewModel.updateDoctorProfile(updatedData) { success ->
@@ -250,59 +282,10 @@ fun DoctorEditProfileScreen(
         )
     }
 
-
     // Availability Bottom Sheet
     AvailabilityBottomSheet(
         show = showAvailabilitySheet,
         viewModel = viewModel,
         onDismiss = { showAvailabilitySheet = false }
     )
-
 }
-
-@Composable
-fun SpecialtyDropdown(
-    selected: String,
-    onSelected: (String) -> Unit,
-    specialties: List<String>
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    // Box to properly anchor the dropdown menu
-    Box(modifier = Modifier.fillMaxWidth()) {
-        OutlinedTextField(
-            value = selected,
-            onValueChange = { }, // disable typing
-            readOnly = true,
-            label = { Text("Specialization") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { expanded = true },
-            trailingIcon = {
-                Icon(
-                    imageVector = if (expanded) Icons.Default.KeyboardArrowUp
-                    else Icons.Default.KeyboardArrowDown,
-                    contentDescription = null
-                )
-            }
-        )
-
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier.fillMaxWidth() // make menu full width
-        ) {
-            specialties.forEach { item ->
-                DropdownMenuItem(
-                    text = { Text(item) },
-                    onClick = {
-                        onSelected(item)
-                        expanded = false
-                    }
-                )
-            }
-        }
-    }
-}
-
-

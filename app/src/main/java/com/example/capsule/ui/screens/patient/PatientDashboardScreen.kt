@@ -1,5 +1,6 @@
 package com.example.capsule.ui.screens.patient
 
+import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -7,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,9 +23,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
@@ -42,7 +42,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -51,12 +50,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.capsule.activities.ChatActivity
 import com.example.capsule.R
 import com.example.capsule.data.model.OfferItem
 import com.example.capsule.data.model.Tip
+import com.example.capsule.ui.components.DashboardCard
 import com.example.capsule.ui.theme.Blue
 import com.example.capsule.ui.theme.CapsuleTheme
+import com.example.capsule.ui.theme.Green
 import com.example.capsule.ui.theme.White
+import com.example.capsule.ui.theme.WhiteSmoke
 
 @Composable
 fun HomePage(
@@ -66,18 +69,16 @@ fun HomePage(
     onSettingsClick: () -> Unit = {},
     onProfilePatientClick: () -> Unit = {},
     onAppointmentsClick: () -> Unit = {},
-    onChatsClick: () -> Unit = {}
+    onMessagesClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val patient = viewModel.patient.value
     val isLoading = viewModel.isLoading.value
 
-    // Load patient data when screen opens
     LaunchedEffect(Unit) {
         viewModel.loadCurrentPatientProfile()
     }
 
-    // Show loading state
     if (patient == null || isLoading) {
         Box(
             modifier = Modifier
@@ -85,12 +86,7 @@ fun HomePage(
                 .background(White),
             contentAlignment = Alignment.Center
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                CircularProgressIndicator(color = Blue)
-            }
+            CircularProgressIndicator(color = Blue)
         }
         return
     }
@@ -100,147 +96,198 @@ fun HomePage(
             modifier = modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(color = Color(0xFFf5f2f2))
+                .background(WhiteSmoke)
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Updated Header to match doctor dashboard
+            // ---------------- HEADER ----------------
             Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .clickable { onProfilePatientClick() }
+                    .padding(horizontal = 20.dp)
+                    .clickable { onProfilePatientClick() },
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
+
+                // User avatar
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    patient.profileImageRes?.let {
-                        Image(
-                            painter = painterResource(id = it),
-                            contentDescription = "Patient Image",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .size(50.dp)
-                                .clip(CircleShape)
-                        )
-                    } ?: run {
-                        // Fallback image if profileImageRes is null
-                        Image(
-                            painter = painterResource(id = R.drawable.patient_profile),
-                            contentDescription = "Patient Image",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .size(50.dp)
-                                .clip(CircleShape)
-                        )
-                    }
+                    Image(
+                        painter = painterResource(
+                            id = patient.profileImageRes ?: R.drawable.patient_profile
+                        ),
+                        contentDescription = "",
+                        modifier = Modifier
+                            .size(55.dp)
+                            .clip(CircleShape)
+                            .shadow(4.dp, CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
 
                     Spacer(modifier = Modifier.width(12.dp))
+
                     Column {
+                        Text("Welcome back", color = Color.Gray, fontSize = 13.sp)
                         Text(
-                            text = "Welcome back",
-                            color = Color.Gray,
-                            fontSize = 14.sp
-                        )
-                        Text(
-                            text = patient.name,
+                            patient.name,
+                            fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp
+                            color = Color.Black
                         )
                     }
                 }
+
                 IconButton(onClick = onSettingsClick) {
                     Icon(
                         Icons.Default.Settings,
-                        contentDescription = "Settings",
-                        tint = Color.Gray
+                        contentDescription = "",
+                        tint = Color.DarkGray,
+                        modifier = Modifier.size(26.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(22.dp))
 
-            Row {
-                SearchBar(onClick = onSearchClick)
-            }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            // ---------------- SEARCH BAR ----------------
+            SearchBar(
+                onClick = onSearchClick,
+                color = Color(0xFF4CAF50),
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
 
+            Spacer(modifier = Modifier.height(18.dp))
+
+
+            // ---------------- QUICK CARDS ----------------
             Row(
-                horizontalArrangement = Arrangement.SpaceAround,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 14.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                NavBox(
-                    icon = Icons.Default.DateRange,
-                    label = "Appointments",
-                    onClick = onAppointmentsClick
+
+                DashboardCard(
+                    title = "Appointments",
+                    icon = R.drawable.ic_calendar,
+                    bgColor = Color(0xFFFFEAD8),
+                    iconColor = Color(0xFFFF8728),
+                    onClick = onAppointmentsClick,
+                    modifier = Modifier.weight(1f)
                 )
-                NavBox(
-                    icon = Icons.AutoMirrored.Filled.Chat,
-                    label = "Chats",
+
+                DashboardCard(
+                    title = "Chats",
+                    icon = R.drawable.ic_messages,
+                    bgColor = Color(0xFFE4FBE4),
+                    iconColor = Green,
                     onClick = {
-                        onChatsClick()
-                        Toast.makeText(context, "Chat feature coming soon!", Toast.LENGTH_SHORT).show()
-                    }
+                        onMessagesClick()
+                        context.startActivity(Intent(context, ChatActivity::class.java))
+                    },
+                    modifier = Modifier.weight(1f)
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(22.dp))
 
-            LazyRow(modifier = Modifier.fillMaxWidth()) {
-                val Offers = listOf(
+
+            // ---------------- PRESCRIPTIONS BUTTON ----------------
+            Button(
+                onClick = {
+                    Toast.makeText(context, "Wait for it!", Toast.LENGTH_SHORT).show()
+                },
+                modifier = Modifier
+                    .padding(horizontal = 14.dp)
+                    .height(55.dp)
+                    .fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(Blue),
+                shape = RoundedCornerShape(14.dp),
+                elevation = ButtonDefaults.buttonElevation(6.dp)
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_prescription),
+                    contentDescription = "",
+                    tint = White,
+                    modifier = Modifier.size(22.dp)
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Text("Prescriptions", fontSize = 17.sp, color = White)
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+
+            // ---------------- OFFERS ----------------
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(horizontal = 14.dp)
+            ) {
+                val offers = listOf(
                     OfferItem(
-                        title = "Get 20% off your next consultation",
+                        title = "✨ 20% off your next consultation",
                         color = Color(0xFF4CAF50)
                     ),
                     OfferItem(
-                        title = "Introduce Yourself to a New way of vaccination",
+                        title = "💉 A new way of vaccination",
                         color = Color(0xFF347deb)
                     )
                 )
 
-                items(items = Offers) { item ->
+                items(offers) { item ->
                     SliderItem(
                         Title = item.title,
-                        Description = "Limited Time offer",
+                        Description = "Limited Time Offer",
                         backgroundColor = item.color
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
+
+            // ---------------- TIPS TITLE ----------------
             Text(
                 text = "Health Tips",
                 fontSize = 24.sp,
-                modifier = Modifier.padding(horizontal = 12.dp),
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(horizontal = 16.dp)
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
+
+            // ---------------- TIPS LIST ----------------
             LazyColumn(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(bottom = 100.dp)
             ) {
-                val Tips = listOf(
+                val tips = listOf(
                     Tip(
-                        Head = "5 Tips for a Healthier Life",
-                        Description = "Simple Lifestyle Changes can make a big difference for your heart health.",
-                        Image = R.drawable.medical_headphones
+                        head = "5 Tips for a Healthy Life",
+                        description = "Small lifestyle changes can greatly improve heart health.",
+                        image = R.drawable.medical_headphones
                     ),
                     Tip(
-                        Head = "Understanding Your Blood Pressure",
-                        Description = "Learn what the numbers mean and how to manage them.",
-                        Image = R.drawable.medical_gauge
+                        head = "Understanding Blood Pressure",
+                        description = "Learn what the numbers mean and how to manage them.",
+                        image = R.drawable.medical_gauge
                     )
                 )
-                items(items = Tips) { item ->
-                    AdviceItem(Head = item.Head, Description = item.Description, Image = item.Image)
+
+                items(tips) { item ->
+                    AdviceItem(
+                        Head = item.head,
+                        Description = item.description,
+                        Image = item.image
+                    )
                 }
             }
         }
     }
 }
+
 
 @Composable
 fun SearchBar(
@@ -267,13 +314,13 @@ fun SearchBar(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.Search,
-                    contentDescription = "Search",
+                    contentDescription = "Search Bar",
                     tint = Color.White,
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Search for a Doctor",
+                    text = "Find Care",
                     color = Color.White.copy(alpha = 0.9f),
                     fontSize = 16.sp
                 )
@@ -282,51 +329,6 @@ fun SearchBar(
     }
 }
 
-@Composable
-fun NavBox(
-    icon: ImageVector,
-    label: String,
-    modifier: Modifier = Modifier.padding(12.dp),
-    onClick: () -> Unit = {}
-) {
-    Column(
-        modifier = modifier
-            .width(150.dp)
-            .height(120.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(Color.White)
-            .clickable { onClick() }
-            .padding(vertical = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Box(
-            modifier = Modifier
-                .size(48.dp)
-                .background(
-                    color = Color(0xFF4CAF50).copy(alpha = 0.15f),
-                    shape = CircleShape
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = label,
-                tint = Color(0xFF4CAF50),
-                modifier = Modifier.size(24.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = label,
-            color = Color.Black.copy(alpha = 0.8f),
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium
-        )
-    }
-}
 
 @Composable
 fun SliderItem(
@@ -435,7 +437,7 @@ fun HomepagePreview() {
             onSearchClick = {},
             onSettingsClick = {},
             onAppointmentsClick = {},
-            onChatsClick = {}
+            onMessagesClick = {}
         )
     }
 }

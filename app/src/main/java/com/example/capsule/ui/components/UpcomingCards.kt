@@ -35,11 +35,11 @@ fun UpcomingCard(
             .clickable { onClick() }
     ) {
         Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .padding(16.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .fillMaxWidth()
         ) {
 
             Column {

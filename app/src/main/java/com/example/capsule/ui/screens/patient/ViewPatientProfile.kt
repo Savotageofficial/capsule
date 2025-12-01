@@ -1,6 +1,9 @@
 package com.example.capsule.ui.screens.patient
 
+import android.content.Intent
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -14,19 +17,24 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.capsule.activities.ChatActivity
 import com.example.capsule.ui.components.InfoRow
 import com.example.capsule.R
 import com.example.capsule.ui.theme.Blue
 import com.example.capsule.ui.theme.Green
 import com.example.capsule.ui.theme.White
+import com.example.capsule.ui.theme.WhiteSmoke
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,8 +42,11 @@ fun ViewPatientProfileScreen(
     patientId: String? = null,
     onBackClick: () -> Unit = {},
     viewModel: PatientViewModel = viewModel(),
+    onMessagesClick: () -> Unit = {},
+
 ) {
     val patient = viewModel.patient.value
+    val context = LocalContext.current
 
     // Load patient data when screen opens
     LaunchedEffect(patientId) {
@@ -60,14 +71,20 @@ fun ViewPatientProfileScreen(
                 title = {
                     Text(
                         text = stringResource(R.string.profile_title),
-                        style = MaterialTheme.typography.titleLarge
-                    )
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        color = Color(0xFF0A3140)                    )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            tint = Color(0xFF0CA7BA),
+                            contentDescription = "Back",
+                            modifier = Modifier
+                                .size(30.dp)
+                                .clickable { onBackClick() }
                         )
                     }
                 }
@@ -101,7 +118,13 @@ fun ViewPatientProfileScreen(
                     Spacer(modifier = Modifier.width(16.dp))
 
                     Button(
-                        onClick = { /* TODO: Handle chat */ },
+                        onClick = {
+                            onMessagesClick()
+                            val intent = Intent(context, ChatActivity::class.java)
+                            intent.putExtra("Name",patient.name)
+                            intent.putExtra("Id",patient.id)
+                            context.startActivity(intent)
+                        },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Blue
                         ),
@@ -127,6 +150,7 @@ fun ViewPatientProfileScreen(
                 .padding(padding)
                 .padding(horizontal = 16.dp)
                 .padding(vertical = 20.dp)
+                .background(WhiteSmoke)
                 .fillMaxSize()
                 .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally

@@ -69,44 +69,6 @@ class PatientViewModel : ViewModel() {
         }
     }
 
-    // Enhanced bookAppointment method
-    fun bookAppointment(
-        doctor: Doctor,
-        dateTime: Long,
-        slot: TimeSlot,
-        type: String,
-        onDone: (Boolean, String?) -> Unit // Returns success status and optional appointment ID
-    ) {
-        val currentPatient = _patient.value
-        if (currentPatient == null) {
-            onDone(false, "Patient not loaded")
-            return
-        }
-
-        val appointment = Appointment(
-            doctorId = doctor.id,
-            patientId = currentPatient.id,
-            doctorName = doctor.name,
-            patientName = currentPatient.name,
-            dateTime = dateTime,
-            timeSlot = slot,
-            type = type,
-            status = "Upcoming"
-        )
-
-        viewModelScope.launch {
-            repo.bookAppointment(appointment) { success ->
-                if (success) {
-                    // Refresh appointments list
-                    loadPatientAppointments()
-                    onDone(true, appointment.id)
-                } else {
-                    onDone(false, "Failed to book appointment")
-                }
-            }
-        }
-    }
-
     fun cancelAppointment(appointmentId: String) {
         viewModelScope.launch {
             repo.updateAppointmentStatus(appointmentId, "Cancelled") { success ->

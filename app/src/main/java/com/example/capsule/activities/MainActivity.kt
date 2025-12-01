@@ -1,4 +1,4 @@
-package com.example.capsule
+package com.example.capsule.activities
 
 import android.content.Intent
 import android.os.Bundle
@@ -13,8 +13,6 @@ import com.example.capsule.ui.theme.CapsuleTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-
 
         val userType = intent.getStringExtra("userType") ?: "Patient"
 

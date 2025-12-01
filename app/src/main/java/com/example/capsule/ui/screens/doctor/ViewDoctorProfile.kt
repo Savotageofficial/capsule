@@ -3,6 +3,7 @@ package com.example.capsule.ui.screens.doctor
 import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -13,13 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
-import androidx.compose.material3.BottomAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,45 +24,48 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.capsule.ui.components.InfoCard
+import com.example.capsule.activities.ChatActivity
 import com.example.capsule.R
 import com.example.capsule.data.model.TimeSlot
-import com.example.capsule.ui.components.BookingBottomSheet
+import com.example.capsule.ui.screens.booking.BookingBottomSheet
+import com.example.capsule.ui.components.InfoCard
 import com.example.capsule.ui.screens.patient.PatientViewModel
 import com.example.capsule.ui.theme.Blue
 import com.example.capsule.ui.theme.Gold
 import com.example.capsule.ui.theme.Green
-import com.example.capsule.ui.theme.White
+import com.example.capsule.ui.theme.WhiteSmoke
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ViewDoctorProfileScreen(
     doctorId: String? = null,
     onBackClick: () -> Unit = {},
+    onMessagesClick: () -> Unit = {},
     onBookingSuccess: (Long, TimeSlot, String) -> Unit = { _, _, _ -> },
-    viewModel: DoctorViewModel = viewModel(),
+    doctorViewModel: DoctorViewModel = viewModel(),
     patientViewModel: PatientViewModel = viewModel()
 ) {
-    val doctor = viewModel.doctor.value
-    val patient = patientViewModel.patient.value // Patient data from HomePage
+    val doctor = doctorViewModel.doctor.value
+    val patient = patientViewModel.patient.value
     var showBookingSheet by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
-    // Load doctor data when screen opens
+    // Load doctor and patient data
     LaunchedEffect(doctorId) {
         if (doctorId == null) {
-            viewModel.loadCurrentDoctorProfile()
+            doctorViewModel.loadCurrentDoctorProfile()
         } else {
-            viewModel.loadDoctorProfileById(doctorId)
+            doctorViewModel.loadDoctorProfileById(doctorId)
         }
+        patientViewModel.loadCurrentPatientProfile()
     }
 
-    // Show loading state only for doctor
+    // Show loading state
     if (doctor == null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
@@ -78,55 +76,62 @@ fun ViewDoctorProfileScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(stringResource(R.string.profile_title)) },
+                title = {
+                    Text(
+                        stringResource(R.string.profile_title),
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        color = Color(0xFF0A3140)
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            tint = Color(0xFF0CA7BA),
+                            contentDescription = "Back",
+                            modifier = Modifier
+                                .size(30.dp)
+                                .clickable { onBackClick() }
                         )
                     }
                 },
-                actions = {
-                    IconButton(onClick = { /* Save Doctor */ }) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_bookmark),
-                            contentDescription = "Bookmark"
-                        )
-                    }
-                }
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = WhiteSmoke,
+                    titleContentColor = Color(0xFF0A3140)
+                )
             )
         },
         bottomBar = {
             BottomAppBar(
-                containerColor = White,
+                containerColor = WhiteSmoke,
                 contentPadding = PaddingValues(horizontal = 24.dp, vertical = 8.dp)
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Button(
                         onClick = {
                             if (patient == null) {
-                                // This should rarely happen if navigation is correct
                                 Toast.makeText(
                                     context,
-                                    "Please go back to home screen first",
-                                    Toast.LENGTH_LONG
+                                    "Loading patient data...",
+                                    Toast.LENGTH_SHORT
                                 ).show()
                             } else {
                                 showBookingSheet = true
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Green
-                        ),
+                        colors = ButtonDefaults.buttonColors(containerColor = Green),
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier
-                            .fillMaxSize()
-                            .weight(1f),
-                        enabled = patient != null // Simple check
+                            .weight(1f)
+                            .fillMaxHeight(),
+                        enabled = patient != null
                     ) {
                         Text(
                             text = stringResource(R.string.book_appointment),
@@ -134,68 +139,57 @@ fun ViewDoctorProfileScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.width(16.dp))
-
                     Button(
-                        onClick = { /* TODO: Handle chat */ },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Blue
-                        ),
+                        onClick = {
+                            onMessagesClick()
+                            val intent = Intent(context, ChatActivity::class.java)
+                            intent.putExtra("Name", doctor.name)
+                            intent.putExtra("Id", doctor.id)
+                            context.startActivity(intent)
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Blue),
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier
-                            .fillMaxSize()
                             .weight(1f)
+                            .fillMaxHeight()
                     ) {
                         Text(
                             text = stringResource(R.string.start_chat),
-                            fontSize = 20.sp
+                            fontSize = 18.sp
                         )
                     }
                 }
             }
         }
     ) { padding ->
-
-        val scrollState = rememberScrollState()
-
         Column(
             modifier = Modifier
+                .background(WhiteSmoke)
                 .padding(padding)
                 .padding(8.dp)
                 .fillMaxSize()
-                .verticalScroll(scrollState),
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Profile Image
-            doctor.profileImageRes?.let {
-                Image(
-                    painter = painterResource(id = it),
-                    contentDescription = "Doctor Image",
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop
-                )
-            } ?: run {
-                // Fallback image if profileImageRes is null
-                Image(
-                    painter = painterResource(id = R.drawable.doc_prof_unloaded),
-                    contentDescription = "Doctor Image",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape)
-                )
-            }
+            Image(
+                painter = painterResource(
+                    id = doctor.profileImageRes ?: R.drawable.doc_prof_unloaded
+                ),
+                contentDescription = "Doctor Image",
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop
+            )
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // Name and Specialty
             Text(doctor.name, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-            Text(
-                text = doctor.specialty,
-                fontSize = 16.sp,
-                color = Blue
-            )
+            Text(text = doctor.specialty, fontSize = 16.sp, color = Blue)
+
+            // Rating
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_star),
@@ -219,10 +213,12 @@ fun ViewDoctorProfileScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // About Section
             InfoCard(title = stringResource(R.string.about)) {
                 Text(text = doctor.bio, fontSize = 15.sp)
             }
 
+            // License & Specialization
             InfoCard(title = stringResource(R.string.license_specialization)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Image(
@@ -244,6 +240,7 @@ fun ViewDoctorProfileScreen(
                 }
             }
 
+            // Location
             InfoCard(title = stringResource(R.string.location)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
@@ -254,19 +251,18 @@ fun ViewDoctorProfileScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.clickable {
                             if (doctor.locationUrl.isBlank()) {
-                                Toast.makeText(context, "No location available", Toast.LENGTH_SHORT)
-                                    .show()
+                                Toast.makeText(
+                                    context,
+                                    "No location available",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             } else {
                                 val intent = Intent(Intent.ACTION_VIEW, doctor.locationUrl.toUri())
                                 context.startActivity(intent)
                             }
                         }
                     ) {
-                        Icon(
-                            Icons.Default.LocationOn,
-                            contentDescription = null,
-                            tint = Blue
-                        )
+                        Icon(Icons.Default.LocationOn, contentDescription = null, tint = Blue)
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = stringResource(R.string.view_on_map),
@@ -274,6 +270,28 @@ fun ViewDoctorProfileScreen(
                             fontSize = 14.sp
                         )
                     }
+                }
+            }
+
+            // Add this section after the Location InfoCard and before Availability Section
+
+            InfoCard(title = "Session Price") {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Consultation Fee",
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 15.sp
+                    )
+                    Text(
+                        text = doctor.formattedSessionPrice,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        color = Blue
+                    )
                 }
             }
 
@@ -296,8 +314,9 @@ fun ViewDoctorProfileScreen(
                                         modifier = Modifier.weight(1f)
                                     )
                                     Text(
-                                        text = slots.joinToString(", ")  // يدمج العناصر بفاصلة ومسافة
-                                        { "${it.start} - ${it.end}" },
+                                        text = slots.joinToString(", ") {
+                                            "${it.start} - ${it.end}"
+                                        },
                                         color = Color.Gray,
                                         fontSize = 14.sp,
                                         modifier = Modifier.weight(1f)
@@ -313,37 +332,24 @@ fun ViewDoctorProfileScreen(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-
-            if (showBookingSheet) {
-                BookingBottomSheet(
-                    doctor = doctor,
-                    onConfirm = { timestamp, slot, type ->
-                        patientViewModel.bookAppointment(
-                            doctor, timestamp, slot, type
-                        ) { success, message ->
-                            showBookingSheet = false
-                            if (success) {
-                                onBookingSuccess(timestamp, slot, type)
-                            } else {
-                                Toast.makeText(
-                                    context,
-                                    message ?: "Failed to book",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        }
-                    },
-                    onDismiss = { showBookingSheet = false }
-                )
-            }
         }
     }
-}
 
-@Preview(showBackground = true)
-@Composable
-fun ViewDoctorProfileScreenPreview() {
-    MaterialTheme {
-        ViewDoctorProfileScreen()
+    // Booking Bottom Sheet
+    if (showBookingSheet && patient != null) {
+        BookingBottomSheet(
+            doctor = doctor,
+            patient = patient,
+            onBookingConfirmed = { timestamp, slot, type ->
+                showBookingSheet = false
+                onBookingSuccess(timestamp, slot, type)
+                Toast.makeText(
+                    context,
+                    "Appointment booked successfully!",
+                    Toast.LENGTH_SHORT
+                ).show()
+            },
+            onDismiss = { showBookingSheet = false }
+        )
     }
 }

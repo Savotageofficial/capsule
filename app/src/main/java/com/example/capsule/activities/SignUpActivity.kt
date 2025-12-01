@@ -1,4 +1,4 @@
-package com.example.capsule
+package com.example.capsule.activities
 
 import android.content.Intent
 import android.os.Bundle
@@ -9,7 +9,13 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,13 +26,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.capsule.R
 import com.example.capsule.data.repository.AuthRepository
+import com.example.capsule.ui.components.SpecializationDropdown
 import com.example.capsule.ui.theme.CapsuleTheme
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.*
+import kotlinx.coroutines.delay
 
 class SignUpActivity : ComponentActivity() {
 
@@ -50,16 +61,16 @@ class SignUpActivity : ComponentActivity() {
                         checkUserStatus(
                             onUserFound = { userType ->
                                 // Navigate to MainActivity for both user types
-                                val intent = Intent(this@SignUpActivity, MainActivity::class.java).apply {
-                                    putExtra("userType", userType)
-                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                                }
+                                val intent =
+                                    Intent(this@SignUpActivity, MainActivity::class.java).apply {
+                                        putExtra("userType", userType)
+                                        flags =
+                                            Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                    }
                                 startActivity(intent)
                                 finish()
                             },
-                            onUserNotFound = {
-                                showSplash = false
-                            }
+                            onUserNotFound = { showSplash = false }
                         )
                     }
                 } else {
@@ -68,11 +79,12 @@ class SignUpActivity : ComponentActivity() {
                     SignUpScreen(
                         onSignUpClick = { name, email, password, userType, specialization ->
                             isLoading = true
-                            createAccount(
-                                name, email, password, userType, specialization,
+                            repository.createAccount(
+                                email, password, name, userType, specialization,
                                 onSuccess = {
                                     isLoading = false
-                                    Toast.makeText(this, "Check your email", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(this, "Check your email", Toast.LENGTH_SHORT)
+                                        .show()
                                 },
                                 onFailure = { error ->
                                     isLoading = false
@@ -89,48 +101,39 @@ class SignUpActivity : ComponentActivity() {
 
     private fun checkUserStatus(onUserFound: (String) -> Unit, onUserNotFound: () -> Unit) {
         val user = auth.currentUser
+
         if (user != null) {
-            user.reload().addOnSuccessListener {
-                if (auth.currentUser != null && auth.currentUser!!.isEmailVerified) {
-                    db.collection("users").document(auth.currentUser!!.uid)
-                        .get()
-                        .addOnSuccessListener { document ->
-                            if (document.exists()) {
-                                val userType = document.getString("userType") ?: "Patient"
-                                // Navigate to MainActivity
-                                val intent = Intent(this@SignUpActivity, MainActivity::class.java).apply {
-                                    putExtra("userType", userType)
-                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            user.reload()
+                .addOnSuccessListener {
+                    if (auth.currentUser != null && auth.currentUser!!.isEmailVerified) {
+                        db.collection("users").document(auth.currentUser!!.uid)
+                            .get()
+                            .addOnSuccessListener { document ->
+                                if (document.exists()) {
+                                    val userType = document.getString("userType") ?: "Patient"
+                                    onUserFound(userType)
+                                } else {
+                                    auth.signOut()
+                                    onUserNotFound()
                                 }
-                                startActivity(intent)
-                                finish()
-                            } else {
+                            }
+                            .addOnFailureListener {
                                 auth.signOut()
                                 onUserNotFound()
                             }
-                        }
-                } else {
+                    } else {
+                        auth.signOut()
+                        onUserNotFound()
+                    }
+                }
+                .addOnFailureListener {
                     auth.signOut()
                     onUserNotFound()
                 }
-            }
-        } else {
-            onUserNotFound()
-        }
-    }
-
-    private fun createAccount(
-        name: String,
-        email: String,
-        password: String,
-        userType: String,
-        specialization: String?,
-        onSuccess: () -> Unit,
-        onFailure: (String) -> Unit
-    ) {
-        repository.createAccount(email, password, name, userType, specialization, onSuccess, onFailure)
+        } else onUserNotFound()
     }
 }
+
 @Composable
 fun SplashScreen() {
     val gradientBrush = Brush.verticalGradient(
@@ -186,8 +189,11 @@ fun SignUpScreen(
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
         ) {
+
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "Logo",
@@ -208,7 +214,11 @@ fun SignUpScreen(
                         .fillMaxHeight()
                         .clip(RoundedCornerShape(30.dp))
                         .background(if (userType == "Patient") toggleSelectedBg else Color.Transparent)
-                        .clickable { userType = "Patient" },
+                        .clickable {
+                            userType = "Patient"
+                            // clear specialization when switching to Patient
+                            specialization = ""
+                        },
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -271,23 +281,61 @@ fun SignUpScreen(
             Spacer(modifier = Modifier.height(40.dp))
 
             InputField("Name", name) { name = it }
+
             if (userType == "Doctor") {
-                InputField("Specialization", specialization) { specialization = it }
+                SpecializationDropdown(
+                    selectedSpecialty = specialization,
+                    onSpecialtySelected = { specialization = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 0.dp),
+                    label = "Specialization",
+                    placeholder = "Select your specialization",
+                    isRequired = true
+                )
             }
+
             InputField("Email", email) { email = it }
-            InputField("Password", password) { password = it }
+
+            PasswordField("Password", password) { password = it }
 
             Spacer(modifier = Modifier.height(20.dp))
 
             Button(
                 onClick = {
-                    onSignUpClick(
-                        name,
-                        email,
-                        password,
-                        userType,
-                        if (userType == "Doctor") specialization else null
-                    )
+                    // Validation before calling sign up
+                    when {
+                        name.isBlank() -> {
+                            Toast.makeText(context, "Please enter name", Toast.LENGTH_SHORT).show()
+                        }
+
+                        email.isBlank() -> {
+                            Toast.makeText(context, "Please enter email", Toast.LENGTH_SHORT).show()
+                        }
+
+                        password.isBlank() -> {
+                            Toast.makeText(context, "Please enter password", Toast.LENGTH_SHORT)
+                                .show()
+                        }
+
+                        userType == "Doctor" && (specialization.isBlank() || specialization == "Select your specialization") -> {
+                            Toast.makeText(
+                                context,
+                                "Please select specialization",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+
+                        else -> {
+                            onSignUpClick(
+                                name,
+                                email,
+                                password,
+                                userType,
+                                if (userType == "Doctor") specialization else null
+                            )
+                        }
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -343,6 +391,46 @@ fun InputField(
         ),
         shape = RoundedCornerShape(20.dp),
         singleLine = true,
+    )
+    Spacer(modifier = Modifier.height(14.dp))
+}
+
+@Composable
+fun PasswordField(
+    placeholder: String,
+    text: String,
+    onValueChange: (String) -> Unit
+) {
+    var visible by remember { mutableStateOf(false) }
+
+    OutlinedTextField(
+        value = text,
+        onValueChange = onValueChange,
+        placeholder = { Text(placeholder, color = Color(0xFF6098AA), fontSize = 16.sp) },
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(54.dp),
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = Color(0xFFDAE9EE),
+            unfocusedContainerColor = Color(0xFFDAE9EE),
+            cursorColor = Color(0xFF19CEFF),
+            focusedTextColor = Color.Black,
+            unfocusedTextColor = Color.Black,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent
+        ),
+        shape = RoundedCornerShape(20.dp),
+        singleLine = true,
+        visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+        trailingIcon = {
+            IconButton(onClick = { visible = !visible }) {
+                Icon(
+                    imageVector = if (visible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                    contentDescription = if (visible) "Hide password" else "Show password"
+                )
+            }
+        }
     )
     Spacer(modifier = Modifier.height(14.dp))
 }

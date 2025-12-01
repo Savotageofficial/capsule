@@ -3,6 +3,7 @@ package com.example.capsule.ui.screens.doctor
 import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -24,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -33,6 +35,7 @@ import com.example.capsule.ui.theme.Blue
 import com.example.capsule.ui.theme.Gold
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.capsule.ui.theme.WhiteSmoke
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,12 +75,24 @@ fun DoctorProfileScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(stringResource(R.string.profile_title)) },
+                title = {
+                    Text(
+                        stringResource(R.string.profile_title),
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        color = Color(0xFF0A3140)
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            tint = Color(0xFF0CA7BA),
+                            contentDescription = "Back",
+                            modifier = Modifier
+                                .size(30.dp)
+                                .clickable { onBackClick() }
                         )
                     }
                 },
@@ -88,7 +103,11 @@ fun DoctorProfileScreen(
                             contentDescription = "Edit"
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = WhiteSmoke,
+                    titleContentColor = Color(0xFF0A3140)
+                )
             )
         }
     ) { padding ->
@@ -97,6 +116,7 @@ fun DoctorProfileScreen(
 
         Column(
             modifier = Modifier
+                .background(WhiteSmoke)
                 .padding(padding)
                 .padding(8.dp)
                 .fillMaxSize()
@@ -218,7 +238,28 @@ fun DoctorProfileScreen(
                 }
             }
 
-            // ✅ FIXED: Availability Section
+            // Add this section after the Location InfoCard and before Availability Section
+
+            InfoCard(title = "Session Price") {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Consultation Fee",
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 15.sp
+                    )
+                    Text(
+                        text = doctor.formattedSessionPrice,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        color = Blue
+                    )
+                }
+            }
+
             InfoCard(title = stringResource(R.string.availability)) {
                 if (doctor.availability.isEmpty()) {
                     Text("Not set", color = Color.Gray, fontSize = 15.sp)
