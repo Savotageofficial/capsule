@@ -1,10 +1,9 @@
-package com.example.capsule.ui.screens.features
+package com.example.capsule.ui.screens.search
 
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -23,11 +21,15 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,7 +49,10 @@ import androidx.navigation.NavHostController
 import com.example.capsule.data.model.Doctor
 import com.example.capsule.data.repository.SearchRepository
 import com.example.capsule.ui.components.SpecializationDropdown
+import com.example.capsule.ui.theme.Cyan
+import com.example.capsule.ui.theme.WhiteSmoke
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
     modifier: Modifier = Modifier,
@@ -59,89 +64,100 @@ fun SearchScreen(
     val context = LocalContext.current
     var selectedSpecialty by remember { mutableStateOf("") }
     var searchQuery by remember { mutableStateOf("") }
-
-    Column(
-        modifier = modifier
-            .background(Color(0xFFF5F5F5))
-            .fillMaxSize()
-            .padding(16.dp) // Consistent padding for the entire screen
-    ) {
-        // Header - remove individual padding and use parent padding
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Back",
-                modifier = Modifier
-                    .size(30.dp)
-                    .clickable { onBackClick() },
-                tint = Color(0xFF0CA7BA)
-            )
-            Text(
-                "Find Care",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                color = Color(0xFF0A3140)
-            )
-            Spacer(modifier = Modifier.width(30.dp)) // Keep for balance
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Search Bar - remove individual padding
-        MySearchBar(
-            searchResults = searchResults,
-            currentQuery = searchQuery,
-            onQueryChange = { searchQuery = it },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Dropdown for Speciality
-        SpecializationDropdown(
-            selectedSpecialty = selectedSpecialty,
-            onSpecialtySelected = { selectedSpecialty = it },
-            modifier = Modifier.fillMaxWidth(),
-            label = "Specialization",
-            placeholder = "Select specialty"
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Search Button - adjust padding
-        Button(
-            onClick = {
-                performSearch(context, searchQuery, selectedSpecialty) { doctors ->
-                    val names = ArrayList(doctors.map { it.name })
-                    val ids = ArrayList(doctors.map { it.id })
-                    val specialities = ArrayList(doctors.map { it.specialty })
-
-                    navController.currentBackStackEntry?.savedStateHandle?.set("names", names)
-                    navController.currentBackStackEntry?.savedStateHandle?.set("ids", ids)
-                    navController.currentBackStackEntry?.savedStateHandle?.set(
-                        "specialities",
-                        specialities
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        "Find Care",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
                     )
-
-                    navController.navigate("searchResults")
-                }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0CA7BA))
-        ) {
-            Text("Search", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            tint = Cyan,
+                            contentDescription = "Back",
+                            modifier = Modifier
+                                .size(30.dp)
+                                .clickable { onBackClick() }
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = WhiteSmoke,
+                    titleContentColor = Color(0xFF0A3140)
+                )
+            )
         }
+    ) { padding ->
+        Column(
+            modifier = modifier
+                .background(WhiteSmoke)
+                .padding(padding)
+                .padding(16.dp)
+                .fillMaxSize()
 
-        Spacer(modifier = Modifier.height(20.dp))
+        ) {
+
+
+            MySearchBar(
+                searchResults = searchResults,
+                currentQuery = searchQuery,
+                onQueryChange = { searchQuery = it },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Dropdown for Speciality
+            SpecializationDropdown(
+                selectedSpecialty = selectedSpecialty,
+                onSpecialtySelected = { selectedSpecialty = it },
+                modifier = Modifier.fillMaxWidth(),
+                label = "Specialization",
+                placeholder = "Select specialty"
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Search Button - adjust padding
+            Button(
+                onClick = {
+                    performSearch(context, searchQuery, selectedSpecialty) { doctors ->
+                        val names = ArrayList(doctors.map { it.name })
+                        val ids = ArrayList(doctors.map { it.id })
+                        val specialities = ArrayList(doctors.map { it.specialty })
+
+                        navController.currentBackStackEntry?.savedStateHandle?.set("names", names)
+                        navController.currentBackStackEntry?.savedStateHandle?.set("ids", ids)
+                        navController.currentBackStackEntry?.savedStateHandle?.set(
+                            "specialities",
+                            specialities
+                        )
+
+                        navController.navigate("searchResults")
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0CA7BA))
+            ) {
+                Text(
+                    "Search",
+                    color = Color.White,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+        }
     }
 }
 

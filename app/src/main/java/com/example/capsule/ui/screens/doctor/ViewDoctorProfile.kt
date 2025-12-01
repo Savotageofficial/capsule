@@ -3,6 +3,7 @@ package com.example.capsule.ui.screens.doctor
 import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -23,14 +24,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.capsule.ChatActivity
+import com.example.capsule.activities.ChatActivity
 import com.example.capsule.R
 import com.example.capsule.data.model.TimeSlot
-import com.example.capsule.ui.components.BookingBottomSheet
+import com.example.capsule.ui.screens.booking.BookingBottomSheet
 import com.example.capsule.ui.components.InfoCard
 import com.example.capsule.ui.screens.patient.PatientViewModel
 import com.example.capsule.ui.theme.Blue
@@ -40,6 +42,7 @@ import com.example.capsule.ui.theme.White
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.getField
+import com.example.capsule.ui.theme.WhiteSmoke
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -80,17 +83,36 @@ fun ViewDoctorProfileScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(stringResource(R.string.profile_title)) },
+                title = {
+                    Text(
+                        stringResource(R.string.profile_title),
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        color = Color(0xFF0A3140)
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            tint = Color(0xFF0CA7BA),
+                            contentDescription = "Back",
+                            modifier = Modifier
+                                .size(30.dp)
+                                .clickable { onBackClick() }
+                        )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = WhiteSmoke,
+                    titleContentColor = Color(0xFF0A3140)
+                )
             )
         },
         bottomBar = {
             BottomAppBar(
-                containerColor = White,
+                containerColor = WhiteSmoke,
                 contentPadding = PaddingValues(horizontal = 24.dp, vertical = 8.dp)
             ) {
                 Row(
@@ -158,8 +180,8 @@ fun ViewDoctorProfileScreen(
 
 
                             val intent = Intent(context, ChatActivity::class.java)
-                            intent.putExtra("Name",doctor.name)
-                            intent.putExtra("Id",doctor.id)
+                            intent.putExtra("Name", doctor.name)
+                            intent.putExtra("Id", doctor.id)
                             context.startActivity(intent)
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Blue),
@@ -179,6 +201,7 @@ fun ViewDoctorProfileScreen(
     ) { padding ->
         Column(
             modifier = Modifier
+                .background(WhiteSmoke)
                 .padding(padding)
                 .padding(8.dp)
                 .fillMaxSize()
