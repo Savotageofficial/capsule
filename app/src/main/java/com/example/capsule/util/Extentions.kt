@@ -21,31 +21,6 @@ fun formatDateOfBirth(dob: Long): String = runCatching {
         .format(dobFormatter)
 }.getOrElse { "Not set" }
 
-fun getDayNameFromTimestamp(timestamp: Long): String =
-    Instant.ofEpochMilli(timestamp)
-        .atZone(ZoneId.systemDefault())
-        .dayOfWeek
-        .name
-        .lowercase()
-        .replaceFirstChar { it.uppercase() }   // Converts "monday" → "Monday"
-
-// Clean start/end of day
-fun getStartOfDay(timestamp: Long): Long =
-    Instant.ofEpochMilli(timestamp)
-        .atZone(ZoneId.systemDefault())
-        .toLocalDate()
-        .atStartOfDay(ZoneId.systemDefault())
-        .toInstant()
-        .toEpochMilli()
-
-fun getEndOfDay(timestamp: Long): Long =
-    Instant.ofEpochMilli(timestamp)
-        .atZone(ZoneId.systemDefault())
-        .toLocalDate()
-        .atTime(23, 59, 59)
-        .atZone(ZoneId.systemDefault())
-        .toInstant()
-        .toEpochMilli()
 
 // ---------------- TIME HELPERS ----------------
 
