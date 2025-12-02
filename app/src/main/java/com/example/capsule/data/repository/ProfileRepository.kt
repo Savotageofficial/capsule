@@ -121,37 +121,37 @@ class ProfileRepository {
         }
     }
 
-    fun getDoctorAppointments(doctorId: String, onResult: (List<Appointment>) -> Unit) {
-        db.collection("appointments")
-            .whereEqualTo("doctorId", doctorId)
-            .whereEqualTo("status", "Upcoming")
-            .get()
-            .addOnSuccessListener { querySnapshot -> // the documents from firebase
-                val appointments = querySnapshot.documents.mapNotNull { doc ->
-                    doc.toObject(Appointment::class.java)?.copy(id = doc.id)
-                }
-                onResult(appointments)
-            }
-            .addOnFailureListener {
-                onResult(emptyList())
-            }
-    }
+//    fun getDoctorAppointments(doctorId: String, onResult: (List<Appointment>) -> Unit) {
+//        db.collection("appointments")
+//            .whereEqualTo("doctorId", doctorId)
+//            .whereEqualTo("status", "Upcoming")
+//            .get()
+//            .addOnSuccessListener { querySnapshot -> // the documents from firebase
+//                val appointments = querySnapshot.documents.mapNotNull { doc ->
+//                    doc.toObject(Appointment::class.java)?.copy(id = doc.id)
+//                }
+//                onResult(appointments)
+//            }
+//            .addOnFailureListener {
+//                onResult(emptyList())
+//            }
+//    }
 
-    fun getPatientAppointments(patientId: String, onResult: (List<Appointment>) -> Unit) {
-        db.collection("appointments")
-            .whereEqualTo("patientId", patientId)
-            .whereEqualTo("status", "Upcoming")
-            .get()
-            .addOnSuccessListener { querySnapshot ->
-                val appointments = querySnapshot.documents.mapNotNull { doc ->
-                    doc.toObject(Appointment::class.java)?.copy(id = doc.id)
-                }.sortedBy { it.dateTime }
-                onResult(appointments)
-            }
-            .addOnFailureListener {
-                onResult(emptyList())
-            }
-    }
+//    fun getPatientAppointments(patientId: String, onResult: (List<Appointment>) -> Unit) {
+//        db.collection("appointments")
+//            .whereEqualTo("patientId", patientId)
+//            .whereEqualTo("status", "Upcoming")
+//            .get()
+//            .addOnSuccessListener { querySnapshot ->
+//                val appointments = querySnapshot.documents.mapNotNull { doc ->
+//                    doc.toObject(Appointment::class.java)?.copy(id = doc.id)
+//                }.sortedBy { it.dateTime }
+//                onResult(appointments)
+//            }
+//            .addOnFailureListener {
+//                onResult(emptyList())
+//            }
+//    }
 
     fun deleteAppointment(appointmentId: String, onDone: (Boolean) -> Unit) {
         db.collection("appointments")
@@ -177,6 +177,44 @@ class ProfileRepository {
             .addOnSuccessListener { onDone(true) }
             .addOnFailureListener { onDone(false) }
     }
+
+    // Add to ProfileRepository.kt for real-time updates
+    fun getPatientAppointments(patientId: String, onResult: (List<Appointment>) -> Unit) {
+        db.collection("appointments")
+            .whereEqualTo("patientId", patientId)
+            .whereEqualTo("status", "Upcoming")
+            .addSnapshotListener { querySnapshot, error ->
+                if (error != null) {
+                    onResult(emptyList())
+                    return@addSnapshotListener
+                }
+
+                val appointments = querySnapshot?.documents?.mapNotNull { doc ->
+                    doc.toObject(Appointment::class.java)?.copy(id = doc.id)
+                }?.sortedBy { it.dateTime } ?: emptyList()
+
+                onResult(appointments)
+            }
+    }
+
+    fun getDoctorAppointments(doctorId: String, onResult: (List<Appointment>) -> Unit) {
+        db.collection("appointments")
+            .whereEqualTo("doctorId", doctorId)
+            .whereEqualTo("status", "Upcoming")
+            .addSnapshotListener { querySnapshot, error ->
+                if (error != null) {
+                    onResult(emptyList())
+                    return@addSnapshotListener
+                }
+
+                val appointments = querySnapshot?.documents?.mapNotNull { doc ->
+                    doc.toObject(Appointment::class.java)?.copy(id = doc.id)
+                } ?: emptyList()
+
+                onResult(appointments)
+            }
+    }
+
 
 
     companion object {

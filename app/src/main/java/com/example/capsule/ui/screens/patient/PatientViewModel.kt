@@ -4,9 +4,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.capsule.data.model.Appointment
-import com.example.capsule.data.model.Doctor
 import com.example.capsule.data.model.Patient
-import com.example.capsule.data.model.TimeSlot
 import com.example.capsule.data.repository.ProfileRepository
 import kotlinx.coroutines.launch
 
@@ -22,12 +20,20 @@ class PatientViewModel : ViewModel() {
     private val _appointments = mutableStateOf(emptyList<Appointment>())
     val appointments = _appointments
 
+    private val _errorMessage = mutableStateOf<String?>(null)
+    val errorMessage = _errorMessage
+
     fun loadCurrentPatientProfile() {
         _isLoading.value = true
         viewModelScope.launch {
-            repo.getCurrentPatient {
-                _patient.value = it
-                _isLoading.value = false
+            repo.getCurrentPatient { patient ->
+                _patient.value = patient
+                if (patient != null) {
+                    loadPatientAppointments()
+                } else {
+                    _isLoading.value = false
+                    _errorMessage.value = "Failed to load patient profile"
+                }
             }
         }
     }
@@ -35,9 +41,12 @@ class PatientViewModel : ViewModel() {
     fun loadPatientProfileById(patientId: String) {
         _isLoading.value = true
         viewModelScope.launch {
-            repo.getPatientById(patientId) {
-                _patient.value = it
+            repo.getPatientById(patientId) { patient ->
+                _patient.value = patient
                 _isLoading.value = false
+                if (patient == null) {
+                    _errorMessage.value = "Patient not found"
+                }
             }
         }
     }
@@ -61,11 +70,19 @@ class PatientViewModel : ViewModel() {
 
     fun loadPatientAppointments() {
         _patient.value?.id?.let { patientId ->
+            _isLoading.value = true
             viewModelScope.launch {
                 repo.getPatientAppointments(patientId) { appointments ->
                     _appointments.value = appointments
+                    _isLoading.value = false
+                    if (appointments.isEmpty()) {
+                        _errorMessage.value = "No appointments found"
+                    }
                 }
             }
+        } ?: run {
+            _errorMessage.value = "Patient ID not available"
+            _isLoading.value = false
         }
     }
 
@@ -73,10 +90,17 @@ class PatientViewModel : ViewModel() {
         viewModelScope.launch {
             repo.updateAppointmentStatus(appointmentId, "Cancelled") { success ->
                 if (success) {
-                    // Remove from local list
+                    // Update local state by filtering out the cancelled appointment
                     _appointments.value = _appointments.value.filter { it.id != appointmentId }
+                } else {
+                    _errorMessage.value = "Failed to cancel appointment"
                 }
             }
         }
+    }
+
+    // when add refresh
+    fun refreshAppointments() {
+        loadPatientAppointments()
     }
 }

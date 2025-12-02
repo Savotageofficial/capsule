@@ -113,11 +113,6 @@ class DoctorViewModel : ViewModel() {
             }
         }
     }
-
-    // Add a new function to replace the slot (for single slot logic)
-    fun setSingleSlot(day: String, slot: TimeSlot) {
-        availability[day] = mutableListOf(slot)
-    }
     // -------------------------------------------------------------
     // Save Availability to Firestore
     // -------------------------------------------------------------
