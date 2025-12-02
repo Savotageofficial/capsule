@@ -2,9 +2,7 @@ package com.example.capsule
 
 import ChatHistoryViewModel
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Bundle
-import android.widget.ImageButton
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -22,18 +20,14 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -50,20 +44,16 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.capsule.activities.ChatActivity
 import com.example.capsule.data.model.Doctor
-import com.example.capsule.ui.theme.Blue
 import com.example.capsule.ui.theme.CapsuleTheme
-import com.example.capsule.ui.theme.Gold
-import com.example.capsule.ui.theme.Green
 import com.example.capsule.ui.theme.White
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.getField
 
 class ChatSelectionActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -96,7 +86,7 @@ fun ChatSelection(
 
 
     LaunchedEffect(Unit) {
-        viewModel.loadChatHistory()
+        viewModel.loadPatientChatHistory()
     }
 
 //    val currentpatient = db.collection("patients").document(currentUser?.uid!!)
@@ -126,40 +116,40 @@ fun ChatSelection(
 
     Column {
 
-            TopAppBar(
-                modifier = modifier.fillMaxWidth(),
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xff5782b3),
-                    titleContentColor = White,
-                ),
-                windowInsets = WindowInsets.safeDrawing.only(
-                    WindowInsetsSides.Vertical
-                ),
-                title = {
+        TopAppBar(
+            modifier = modifier.fillMaxWidth(),
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = Color(0xff5782b3),
+                titleContentColor = White,
+            ),
+            windowInsets = WindowInsets.safeDrawing.only(
+                WindowInsetsSides.Vertical
+            ),
+            title = {
 //                        Text("Capsule" , overflow = TextOverflow.Ellipsis)
-                    Image(painter = painterResource(id = R.drawable.capsuletext) , contentDescription = null, modifier.size(120.dp))
-
-                }
-            )
-            LazyColumn(
-                modifier = modifier.fillMaxSize()
-                    .padding(top = 50.dp)
-            ) {
-                items(doctors) { doc ->
-        //            ChatItem(R.drawable.doc_prof_unloaded ,//here will be the doctor icon
-        //                title = doc.name,
-        //                modifier = modifier.padding(top = 30.dp)
-        //            )
-                    DoctorResultCard(doctor = doc , {
-                        val intent = Intent(context, ChatActivity::class.java)
-                        intent.putExtra("Name",doc.name)
-                        intent.putExtra("Id",doc.id)
-                        context.startActivity(intent)
-                        }
-                    )
-                }
+                Image(painter = painterResource(id = R.drawable.capsuletext) , contentDescription = null, modifier.size(120.dp))
 
             }
+        )
+        LazyColumn(
+            modifier = modifier.fillMaxSize()
+                .padding(top = 50.dp)
+        ) {
+            items(doctors) { doc ->
+                //            ChatItem(R.drawable.doc_prof_unloaded ,//here will be the doctor icon
+                //                title = doc.name,
+                //                modifier = modifier.padding(top = 30.dp)
+                //            )
+                DoctorResultCard(doctor = doc , {
+                    val intent = Intent(context, ChatActivity::class.java)
+                    intent.putExtra("Name",doc.name)
+                    intent.putExtra("Id",doc.id)
+                    context.startActivity(intent)
+                }
+                )
+            }
+
+        }
     }
 
 }
@@ -192,7 +182,7 @@ fun ChatItem(image: Int, title : String, modifier: Modifier = Modifier) {
                 fontSize = 25.sp,
                 fontWeight = FontWeight.ExtraBold,
 
-            )
+                )
         }
 //        Column(
 //

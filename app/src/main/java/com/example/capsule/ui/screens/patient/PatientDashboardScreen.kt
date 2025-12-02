@@ -50,8 +50,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.capsule.activities.ChatActivity
-import com.example.capsule.ChatActivity
 import com.example.capsule.ChatSelectionActivity
 import com.example.capsule.R
 import com.example.capsule.data.model.OfferItem
@@ -186,13 +184,15 @@ fun HomePage(
                     iconColor = Green,
                     onClick = {
                         onMessagesClick()
-                        val intent = Intent(context, ChatSelectionActivity::class.java)
-                        context.startActivity(intent)
-                    }
+                        context.startActivity(Intent(context, ChatSelectionActivity::class.java))
+                    },
+                    modifier = Modifier.weight(1f)
                 )
-                Spacer(modifier = Modifier.width(10.dp))
-                Text("Prescriptions", fontSize = 17.sp, color = White)
             }
+
+            Spacer(modifier = Modifier.height(22.dp))
+
+
             // ---------------- PRESCRIPTIONS BUTTON ----------------
             Button(
                 onClick = {
@@ -212,6 +212,9 @@ fun HomePage(
                     tint = White,
                     modifier = Modifier.size(22.dp)
                 )
+                Spacer(modifier = Modifier.width(10.dp))
+                Text("Prescriptions", fontSize = 17.sp, color = White)
+            }
 
             Spacer(modifier = Modifier.height(20.dp))
 

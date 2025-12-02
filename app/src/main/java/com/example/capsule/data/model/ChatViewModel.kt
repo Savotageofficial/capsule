@@ -41,7 +41,7 @@ class ChatHistoryViewModel : ViewModel() {
     private val _doctors = MutableStateFlow<List<Doctor>>(emptyList())
     val doctors = _doctors.asStateFlow()
 
-    fun loadChatHistory() {
+    fun loadPatientChatHistory() {
         val currentUid = auth.currentUser?.uid ?: return
 
         db.collection("patients")
