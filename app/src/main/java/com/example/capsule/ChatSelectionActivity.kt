@@ -27,6 +27,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -60,7 +61,6 @@ import com.example.capsule.ui.theme.CapsuleTheme
 import com.example.capsule.ui.theme.White
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.tasks.await
 import kotlin.math.log
 
 class ChatSelectionActivity : ComponentActivity() {
@@ -85,127 +85,85 @@ fun ChatSelection(
 ) {
     val db = FirebaseFirestore.getInstance()
     val auth = FirebaseAuth.getInstance()
-    val currentUser = auth.currentUser
-    val scope = rememberCoroutineScope()
-    var messageHistory = mutableListOf<String>()
+    val context = LocalContext.current
+
     val doctors by viewModel.doctors.collectAsState()
     val patients by viewModel.patient.collectAsState()
-    var user: List<UserProfile>
-    val context = LocalContext.current
-    var userType: String? by remember { mutableStateOf("") }
 
+    var userType by remember { mutableStateOf<String?>(null) }  // null = still loading
 
+    val uid = auth.currentUser!!.uid
 
-
-    LaunchedEffect(Unit) {
-        val uid = FirebaseAuth.getInstance().currentUser!!.uid
-        val db = FirebaseFirestore.getInstance()
-
-        try {
-            // This will SUSPEND until Firestore returns (NO callback)
-            val doc = db.collection("users").document(uid).get().await()
-            userType = doc.getString("userType")
-
-            if (userType == "patient") {
-                viewModel.loadPatientChatHistory()
-            } else {
-                viewModel.loadDoctorChatHistory(uid)
+    // FIX: This runs only once & not on every recomposition
+    LaunchedEffect(uid) {
+        db.collection("users").document(uid).get()
+            .addOnSuccessListener { doc ->
+                userType = doc.getString("userType")    // triggers recomposition
+                if (userType == "patient") {
+                    viewModel.loadPatientChatHistory()
+                } else if (userType == "doctor") {
+                    viewModel.loadDoctorChatHistory(uid)
+                }
             }
-
-        } catch (e: Exception) {
-            Log.e("ChatDebug", "Failed to load user type", e)
-        }
     }
 
-
-//
-//
-//    currentpatient.get().addOnSuccessListener { document ->
-//        val fetchedHistory = document.get("msgHistory") as? MutableList<String>
-//
-//
-//        for (docID in fetchedHistory!!){
-//            var doctor = db.collection("doctors").document(docID)
-//            doctor.get().addOnSuccessListener {
-//                val doctorid = document.id
-//                val doctorspecialization = document.getField<String>("specialty")
-//                val doctorname = document.getField<String>("name")
-//                val doctor = Doctor(id = doctorid , name = doctorname!! , specialty = doctorspecialization!!)
-//                val data = document.data
-//
-//            }
-//
-//        }
-//
-//
-//    }
-
-
-
-
     Column {
-
         TopAppBar(
             modifier = modifier.fillMaxWidth(),
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = Color(0xff5782b3),
                 titleContentColor = White,
             ),
-            windowInsets = WindowInsets.safeDrawing.only(
-                WindowInsetsSides.Vertical
-            ),
             title = {
-//                        Text("Capsule" , overflow = TextOverflow.Ellipsis)
-                Image(painter = painterResource(id = R.drawable.capsuletext) , contentDescription = null, modifier.size(120.dp))
-
+                Image(
+                    painter = painterResource(id = R.drawable.capsuletext),
+                    contentDescription = null,
+                    modifier = Modifier.size(120.dp)
+                )
             }
         )
-        if (userType == "patient"){
+
+        // 👇 While userType is still null → show loading instead of empty UI
+        if (userType == null) {
+            CircularProgressIndicator(modifier = Modifier.padding(50.dp))
+            return@Column
+        }
+
+        Log.d("trace" , "chattype : $userType")
+        Log.d("trace" , "patientlist : ${patients.size}")
+        if (userType == "Doctor") {
             LazyColumn(
-                modifier = modifier.fillMaxSize()
-                    .padding(top = 50.dp)
+                modifier = modifier.fillMaxSize().padding(top = 50.dp)
             ) {
                 items(patients) { doc ->
-                    //            ChatItem(R.drawable.doc_prof_unloaded ,//here will be the doctor icon
-                    //                title = doc.name,
-                    //                modifier = modifier.padding(top = 30.dp)
-                    //            )
-
-                    PatientResultCard(patient = doc , {
+                    Log.d("trace" , "chattype : ${doc.name}")
+                    PatientResultCard(patient = doc) {
                         val intent = Intent(context, ChatActivity::class.java)
-                        intent.putExtra("Name",doc.name)
-                        intent.putExtra("Id",doc.id)
+                        intent.putExtra("Name", doc.name)
+                        intent.putExtra("Id", doc.id)
                         context.startActivity(intent)
                     }
-                    )
                 }
-
             }
-        }else if (userType == "doctor"){
+
+        } else if (userType == "Patient") {
+
             LazyColumn(
-                modifier = modifier.fillMaxSize()
-                    .padding(top = 50.dp)
+                modifier = modifier.fillMaxSize().padding(top = 50.dp)
             ) {
                 items(doctors) { doc ->
-                    //            ChatItem(R.drawable.doc_prof_unloaded ,//here will be the doctor icon
-                    //                title = doc.name,
-                    //                modifier = modifier.padding(top = 30.dp)
-                    //            )
-
-                    DoctorResultCard(doctor = doc , {
+                    DoctorResultCard(doctor = doc) {
                         val intent = Intent(context, ChatActivity::class.java)
-                        intent.putExtra("Name",doc.name)
-                        intent.putExtra("Id",doc.id)
+                        intent.putExtra("Name", doc.name)
+                        intent.putExtra("Id", doc.id)
                         context.startActivity(intent)
                     }
-                    )
                 }
-
             }
         }
     }
-
 }
+
 
 
 @Composable
