@@ -45,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.capsule.data.model.Message
@@ -66,6 +67,7 @@ class ChatActivity : ComponentActivity() {
         val ReceiverName = intent.getStringExtra("Name")
         val RecieverID = intent.getStringExtra("Id")
 
+        //unused variables (delete)
         val auth = FirebaseAuth.getInstance()
         val db = FirebaseFirestore.getInstance()
         setContent {
@@ -264,5 +266,4 @@ fun MessageItem(message: Message, isCurrentUser: Boolean) {
         }
     }
 }
-
 

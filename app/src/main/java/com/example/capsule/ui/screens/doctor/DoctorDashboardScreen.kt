@@ -30,6 +30,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.capsule.ChatSelection
+import com.example.capsule.ChatSelectionActivity
 import com.example.capsule.activities.ChatActivity
 import com.example.capsule.R
 import com.example.capsule.ui.components.DashboardCard
@@ -173,7 +175,7 @@ fun DoctorDashboardScreen(
                     iconColor = Green,
                     onClick = {
                         onMessagesClick()
-                        val intent = Intent(context, ChatActivity::class.java)
+                        val intent = Intent(context, ChatSelectionActivity::class.java)
                         context.startActivity(intent)
                     },
                     modifier = Modifier.weight(1f)

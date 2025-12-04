@@ -3,6 +3,7 @@ package com.example.capsule
 import ChatHistoryViewModel
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -54,11 +55,13 @@ import com.example.capsule.ui.theme.CapsuleTheme
 import com.example.capsule.ui.theme.White
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlin.math.log
 
 class ChatSelectionActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
             CapsuleTheme {
                 ChatSelection()
@@ -86,10 +89,29 @@ fun ChatSelection(
 
 
     LaunchedEffect(Unit) {
-        viewModel.loadPatientChatHistory()
+        val uid = FirebaseAuth.getInstance().currentUser!!.uid
+        Log.d("ChatDebug", "Current UID: $uid")
+        val db = FirebaseFirestore.getInstance()
+
+        db.collection("users").document(uid).get()
+            .addOnSuccessListener { doc ->
+                val userType = doc.getString("userType")
+                Log.d("ChatDebug", "User type from Firestore: $userType")
+                if (userType == "patient") {
+                    viewModel.loadPatientChatHistory()
+                    Log.d("ChatDebug", "Called loadPatientChatHistory()")
+                    Log.d("Chat", "Chat is loaded!")
+                } else {
+                    viewModel.loadDoctorChatHistory(uid)
+                    Log.d("ChatDebug", "Called loadDoctorChatHistory()")
+                } //is a doctor or an alien
+            }
+            .addOnFailureListener { e ->
+                Log.e("ChatDebug", "Failed to get user type", e)
+            }//delete me, i am a debugging tool, i want to be deleted yaaaay!
     }
 
-//    val currentpatient = db.collection("patients").document(currentUser?.uid!!)
+//
 //
 //    currentpatient.get().addOnSuccessListener { document ->
 //        val fetchedHistory = document.get("msgHistory") as? MutableList<String>
