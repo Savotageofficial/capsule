@@ -36,7 +36,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -88,6 +91,7 @@ fun ChatSelection(
     val patients by viewModel.patient.collectAsState()
     var user: List<UserProfile>
     val context = LocalContext.current
+    var userType: String? by remember { mutableStateOf("") }
 
 
 
@@ -100,7 +104,7 @@ fun ChatSelection(
 
         db.collection("users").document(uid).get()
             .addOnSuccessListener { doc ->
-                val userType = doc.getString("userType")
+                userType = doc.getString("userType")
                 Log.d("ChatDebug", "User type from Firestore: $userType")
                 if (userType == "patient") {
                     viewModel.loadPatientChatHistory()
@@ -160,25 +164,48 @@ fun ChatSelection(
 
             }
         )
-        LazyColumn(
-            modifier = modifier.fillMaxSize()
-                .padding(top = 50.dp)
-        ) {
-            items(user) { doc ->
-                //            ChatItem(R.drawable.doc_prof_unloaded ,//here will be the doctor icon
-                //                title = doc.name,
-                //                modifier = modifier.padding(top = 30.dp)
-                //            )
+        if (userType == "patient"){
+            LazyColumn(
+                modifier = modifier.fillMaxSize()
+                    .padding(top = 50.dp)
+            ) {
+                items(patients) { doc ->
+                    //            ChatItem(R.drawable.doc_prof_unloaded ,//here will be the doctor icon
+                    //                title = doc.name,
+                    //                modifier = modifier.padding(top = 30.dp)
+                    //            )
 
-                DoctorResultCard(doctor = doc , {
-                    val intent = Intent(context, ChatActivity::class.java)
-                    intent.putExtra("Name",doc.name)
-                    intent.putExtra("Id",doc.id)
-                    context.startActivity(intent)
+                    PatientResultCard(patient = doc , {
+                        val intent = Intent(context, ChatActivity::class.java)
+                        intent.putExtra("Name",doc.name)
+                        intent.putExtra("Id",doc.id)
+                        context.startActivity(intent)
+                    }
+                    )
                 }
-                )
-            }
 
+            }
+        }else if (userType == "doctor"){
+            LazyColumn(
+                modifier = modifier.fillMaxSize()
+                    .padding(top = 50.dp)
+            ) {
+                items(doctors) { doc ->
+                    //            ChatItem(R.drawable.doc_prof_unloaded ,//here will be the doctor icon
+                    //                title = doc.name,
+                    //                modifier = modifier.padding(top = 30.dp)
+                    //            )
+
+                    DoctorResultCard(doctor = doc , {
+                        val intent = Intent(context, ChatActivity::class.java)
+                        intent.putExtra("Name",doc.name)
+                        intent.putExtra("Id",doc.id)
+                        context.startActivity(intent)
+                    }
+                    )
+                }
+
+            }
         }
     }
 
