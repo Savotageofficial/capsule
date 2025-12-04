@@ -51,6 +51,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.activities.ChatActivity
 import com.example.capsule.data.model.Doctor
+import com.example.capsule.data.model.Patient
+import com.example.capsule.data.model.UserProfile
 import com.example.capsule.ui.theme.CapsuleTheme
 import com.example.capsule.ui.theme.White
 import com.google.firebase.auth.FirebaseAuth
@@ -83,6 +85,8 @@ fun ChatSelection(
     val scope = rememberCoroutineScope()
     var messageHistory = mutableListOf<String>()
     val doctors by viewModel.doctors.collectAsState()
+    val patients by viewModel.patient.collectAsState()
+    var user: List<UserProfile>
     val context = LocalContext.current
 
 
@@ -93,16 +97,19 @@ fun ChatSelection(
         Log.d("ChatDebug", "Current UID: $uid")
         val db = FirebaseFirestore.getInstance()
 
+
         db.collection("users").document(uid).get()
             .addOnSuccessListener { doc ->
                 val userType = doc.getString("userType")
                 Log.d("ChatDebug", "User type from Firestore: $userType")
                 if (userType == "patient") {
                     viewModel.loadPatientChatHistory()
+                    user = patients
                     Log.d("ChatDebug", "Called loadPatientChatHistory()")
                     Log.d("Chat", "Chat is loaded!")
                 } else {
                     viewModel.loadDoctorChatHistory(uid)
+                    user = doctors
                     Log.d("ChatDebug", "Called loadDoctorChatHistory()")
                 } //is a doctor or an alien
             }
@@ -157,11 +164,12 @@ fun ChatSelection(
             modifier = modifier.fillMaxSize()
                 .padding(top = 50.dp)
         ) {
-            items(doctors) { doc ->
+            items(user) { doc ->
                 //            ChatItem(R.drawable.doc_prof_unloaded ,//here will be the doctor icon
                 //                title = doc.name,
                 //                modifier = modifier.padding(top = 30.dp)
                 //            )
+
                 DoctorResultCard(doctor = doc , {
                     val intent = Intent(context, ChatActivity::class.java)
                     intent.putExtra("Name",doc.name)
@@ -284,6 +292,59 @@ fun DoctorResultCard(
                     maxLines = 2
                 )
 
+
+                // -------- RATING & PRICE -------
+            }
+        }
+    }
+}
+
+@Composable
+fun PatientResultCard(
+    patient: Patient,
+    onClick: () -> Unit
+) {
+    Card(
+        onClick = onClick,
+        modifier = Modifier
+            .padding(horizontal = 14.dp, vertical = 10.dp)
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.cardElevation(6.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(20.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(18.dp)
+        ) {
+
+            // Circular doctor image
+            Image(
+                painter = painterResource(R.drawable.patient_profile),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(86.dp)
+                    .clip(CircleShape)
+            )
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+
+                // -------- NAME --------
+                Text(
+                    text = "Dr. ${patient.name}",
+                    style = MaterialTheme.typography.titleLarge,   // Larger text
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Spacer(Modifier.height(2.dp))
 
                 // -------- RATING & PRICE -------
             }

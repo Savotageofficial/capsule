@@ -74,13 +74,14 @@ class ChatHistoryViewModel : ViewModel() {
                             recieverId = it.getString("receiverId") ?: ""
                         )
                     }
+                    Log.d("ChatDebug", "Received messages: $snapshot", e)
                     messages = fetchedMessages.filter {it.recieverId == doctorId}
 
                     for (message in messages){
                         if (!senderIds.contains(message.senderId)){
                             senderIds.add(message.senderId)
                         }
-
+                        Log.d("ChatDebug", "Received messages: ${message.message}, senderId: ${message.senderId}")
                     }
                     viewModelScope.launch {
                         fetchPatients(senderIds)
@@ -88,19 +89,6 @@ class ChatHistoryViewModel : ViewModel() {
 
                 }
             }
-
-//        db.collection("messages")
-//            .orderBy("timestamp")
-//            .get()
-//            .addOnSuccessListener { backshots ->
-//                val receivedMessages = backshots.documents.mapNotNull { doc ->
-//                    doc.toObject(Message::class.java)//cast data to data class
-//                }
-//                Log.d("ChatDebug", "Received messages: $receivedMessages")
-//            }
-//            .addOnFailureListener { exception ->
-//                Log.e("ChatDebug", "Failed to fetch messages", exception)
-//            }
     }
 
     private suspend fun fetchDoctors(ids: List<String>) {
@@ -126,6 +114,7 @@ class ChatHistoryViewModel : ViewModel() {
     private suspend fun fetchPatients(ids: List<String>) {
         val patientList = mutableListOf<Patient>()
 
+
         ids.forEach { id ->
             val docSnapshot = db.collection("patients")
                 .document(id).get().await()
@@ -136,6 +125,7 @@ class ChatHistoryViewModel : ViewModel() {
                 //speciality = shit Blood when i Fart
             )
             patientList.add(patient)
+            Log.d("ChatDebug", "list: $patientList")
         }
 
         _patients.value = patientList
