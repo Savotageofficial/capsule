@@ -63,15 +63,15 @@ class ChatActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val doctorName = intent.getStringExtra("Name")
-        val doctorId = intent.getStringExtra("Id")
+        val ReceiverName = intent.getStringExtra("Name")
+        val RecieverID = intent.getStringExtra("Id")
 
         val auth = FirebaseAuth.getInstance()
         val db = FirebaseFirestore.getInstance()
         setContent {
             ChatApp(
-                name = doctorName,
-                RecId = doctorId,
+                name = ReceiverName,
+                RecId = RecieverID,
                 onBackClick = { finish() }
             )
         }
@@ -108,7 +108,7 @@ fun ChatApp(
                             recieverId = it.getString("receiverId") ?: ""
                         )
                     }
-                    messages = fetchedMessages.filter { it.recieverId == RecId }
+                    messages = fetchedMessages.filter {(it.recieverId == RecId && it.senderId == currentUser?.uid) || (it.recieverId == currentUser?.uid && it.senderId == RecId)}
                 }
             }
     }
