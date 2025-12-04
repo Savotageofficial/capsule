@@ -60,6 +60,7 @@ import com.example.capsule.ui.theme.CapsuleTheme
 import com.example.capsule.ui.theme.White
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 import kotlin.math.log
 
 class ChatSelectionActivity : ComponentActivity() {
@@ -98,29 +99,24 @@ fun ChatSelection(
 
     LaunchedEffect(Unit) {
         val uid = FirebaseAuth.getInstance().currentUser!!.uid
-        Log.d("ChatDebug", "Current UID: $uid")
         val db = FirebaseFirestore.getInstance()
 
+        try {
+            // This will SUSPEND until Firestore returns (NO callback)
+            val doc = db.collection("users").document(uid).get().await()
+            userType = doc.getString("userType")
 
-        db.collection("users").document(uid).get()
-            .addOnSuccessListener { doc ->
-                userType = doc.getString("userType")
-                Log.d("ChatDebug", "User type from Firestore: $userType")
-                if (userType == "patient") {
-                    viewModel.loadPatientChatHistory()
-                    user = patients
-                    Log.d("ChatDebug", "Called loadPatientChatHistory()")
-                    Log.d("Chat", "Chat is loaded!")
-                } else {
-                    viewModel.loadDoctorChatHistory(uid)
-                    user = doctors
-                    Log.d("ChatDebug", "Called loadDoctorChatHistory()")
-                } //is a doctor or an alien
+            if (userType == "patient") {
+                viewModel.loadPatientChatHistory()
+            } else {
+                viewModel.loadDoctorChatHistory(uid)
             }
-            .addOnFailureListener { e ->
-                Log.e("ChatDebug", "Failed to get user type", e)
-            }//delete me, i am a debugging tool, i want to be deleted yaaaay!
+
+        } catch (e: Exception) {
+            Log.e("ChatDebug", "Failed to load user type", e)
+        }
     }
+
 
 //
 //
