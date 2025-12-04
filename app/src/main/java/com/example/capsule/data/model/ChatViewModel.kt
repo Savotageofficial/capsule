@@ -35,6 +35,7 @@ class ChatHistoryViewModel : ViewModel() {
     private val _doctors = MutableStateFlow<List<Doctor>>(emptyList())
     val doctors = _doctors.asStateFlow()
     private val _patients = MutableStateFlow<List<Patient>>(emptyList())
+
     val patient = _patients.asStateFlow()
 
     fun loadPatientChatHistory() {
@@ -54,17 +55,52 @@ class ChatHistoryViewModel : ViewModel() {
     }
 
     fun loadDoctorChatHistory(doctorId: String) {
+        //.whereEqualTo("receiverId", doctorId)
+        var messages: List<Message>
+
+        var senderIds = mutableListOf<String>()
+
+
+
         db.collection("messages")
-            .whereEqualTo("receiverId", doctorId).orderBy("timestamp")
-            .get().addOnSuccessListener { backshots ->
-                val receivedMessages = backshots.documents.mapNotNull { doc ->
-                    doc.toObject(Message::class.java)//cast data to data class
+            .orderBy("timestamp")
+            .addSnapshotListener { snapshot, e ->
+                if (e == null && snapshot != null) {
+                    val fetchedMessages = snapshot.documents.map {
+                        Message(
+                            message = it.getString("message") ?: "",
+                            senderId = it.getString("senderId") ?: "",
+                            timestamp = it.getTimestamp("timestamp")?.toDate().toString(),
+                            recieverId = it.getString("receiverId") ?: ""
+                        )
+                    }
+                    messages = fetchedMessages.filter {it.recieverId == doctorId}
+
+                    for (message in messages){
+                        if (!senderIds.contains(message.senderId)){
+                            senderIds.add(message.senderId)
+                        }
+
+                    }
+                    viewModelScope.launch {
+                        fetchPatients(senderIds)
+                    }
+
                 }
-                Log.d("ChatDebug", "Received messages: $receivedMessages")
             }
-            .addOnFailureListener { exception ->
-                Log.e("ChatDebug", "Failed to fetch messages", exception)
-            }
+
+//        db.collection("messages")
+//            .orderBy("timestamp")
+//            .get()
+//            .addOnSuccessListener { backshots ->
+//                val receivedMessages = backshots.documents.mapNotNull { doc ->
+//                    doc.toObject(Message::class.java)//cast data to data class
+//                }
+//                Log.d("ChatDebug", "Received messages: $receivedMessages")
+//            }
+//            .addOnFailureListener { exception ->
+//                Log.e("ChatDebug", "Failed to fetch messages", exception)
+//            }
     }
 
     private suspend fun fetchDoctors(ids: List<String>) {
