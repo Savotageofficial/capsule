@@ -18,7 +18,8 @@ class AuthRepository {
         userType: String,
         specialization: String? = null,
         onSuccess: () -> Unit,
-        onFailure: (String) -> Unit
+        onFailure: (String) -> Unit,
+        msgHistory : List<String> = listOf<String>()
     ) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
@@ -29,7 +30,8 @@ class AuthRepository {
                             "name" to name,
                             "email" to email,
                             "userType" to userType,
-                            "specialization" to specialization
+                            "specialization" to specialization,
+                            "msgHistory" to msgHistory
                         )
 
                         db.collection("users").document(user.uid)

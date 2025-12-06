@@ -38,6 +38,10 @@ import com.example.capsule.ui.screens.patient.PatientViewModel
 import com.example.capsule.ui.theme.Blue
 import com.example.capsule.ui.theme.Gold
 import com.example.capsule.ui.theme.Green
+import com.example.capsule.ui.theme.White
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.getField
 import com.example.capsule.ui.theme.WhiteSmoke
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,6 +58,9 @@ fun ViewDoctorProfileScreen(
     val patient = patientViewModel.patient.value
     var showBookingSheet by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    val db = FirebaseFirestore.getInstance()
+    val auth = FirebaseAuth.getInstance()
+    val currentUser = auth.currentUser
 
     // Load doctor and patient data
     LaunchedEffect(doctorId) {
@@ -141,7 +148,37 @@ fun ViewDoctorProfileScreen(
 
                     Button(
                         onClick = {
-                            onMessagesClick()
+                            val docref = db.collection("patients").document(currentUser?.uid!!)
+
+                            docref.get().addOnSuccessListener { document ->
+                                if (document != null && document.exists()) {
+                                    // 1. FIX THE CRASH: Use .get() and cast it safely
+                                    // We expect an ArrayList, so we cast it to MutableList<String>
+                                    val fetchedHistory = document.get("msgHistory") as? MutableList<String>
+
+                                    // If the field doesn't exist yet, create a new list
+                                    val msgHistory = fetchedHistory ?: mutableListOf()
+
+                                    // 2. FIX THE LOGIC: Do the check and update INSIDE this block
+                                    if (doctorId != null && !msgHistory.contains(doctorId)) {
+                                        msgHistory.add(doctorId)
+
+                                        // Perform the update strictly after we know the data is modified
+                                        docref.update("msgHistory", msgHistory)
+                                            .addOnSuccessListener {
+                                                // Success message here
+                                            }
+                                            .addOnFailureListener { e ->
+                                                // Handle update failure
+                                            }
+                                    }
+                                }
+                            }.addOnFailureListener { exception ->
+                                // Handle get() failure
+                            }
+
+
+
                             val intent = Intent(context, ChatActivity::class.java)
                             intent.putExtra("Name", doctor.name)
                             intent.putExtra("Id", doctor.id)

@@ -2,9 +2,12 @@ package com.example.capsule.data.repository
 
 import com.example.capsule.data.model.Appointment
 import com.example.capsule.data.model.Doctor
+import com.example.capsule.data.model.Medication
 import com.example.capsule.data.model.Patient
+import com.example.capsule.data.model.Prescription
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 
 class ProfileRepository {
 
@@ -121,38 +124,6 @@ class ProfileRepository {
         }
     }
 
-    fun getDoctorAppointments(doctorId: String, onResult: (List<Appointment>) -> Unit) {
-        db.collection("appointments")
-            .whereEqualTo("doctorId", doctorId)
-            .whereEqualTo("status", "Upcoming")
-            .get()
-            .addOnSuccessListener { querySnapshot -> // the documents from firebase
-                val appointments = querySnapshot.documents.mapNotNull { doc ->
-                    doc.toObject(Appointment::class.java)?.copy(id = doc.id)
-                }
-                onResult(appointments)
-            }
-            .addOnFailureListener {
-                onResult(emptyList())
-            }
-    }
-
-    fun getPatientAppointments(patientId: String, onResult: (List<Appointment>) -> Unit) {
-        db.collection("appointments")
-            .whereEqualTo("patientId", patientId)
-            .whereEqualTo("status", "Upcoming")
-            .get()
-            .addOnSuccessListener { querySnapshot ->
-                val appointments = querySnapshot.documents.mapNotNull { doc ->
-                    doc.toObject(Appointment::class.java)?.copy(id = doc.id)
-                }.sortedBy { it.dateTime }
-                onResult(appointments)
-            }
-            .addOnFailureListener {
-                onResult(emptyList())
-            }
-    }
-
     fun deleteAppointment(appointmentId: String, onDone: (Boolean) -> Unit) {
         db.collection("appointments")
             .document(appointmentId)
@@ -178,6 +149,200 @@ class ProfileRepository {
             .addOnFailureListener { onDone(false) }
     }
 
+    // Add to ProfileRepository.kt for real-time updates
+    fun getPatientAppointments(patientId: String, onResult: (List<Appointment>) -> Unit) {
+        db.collection("appointments")
+            .whereEqualTo("patientId", patientId)
+            .whereEqualTo("status", "Upcoming")
+            .addSnapshotListener { querySnapshot, error ->
+                if (error != null) {
+                    onResult(emptyList())
+                    return@addSnapshotListener
+                }
+
+                val appointments = querySnapshot?.documents?.mapNotNull { doc ->
+                    doc.toObject(Appointment::class.java)?.copy(id = doc.id)
+                }?.sortedBy { it.dateTime } ?: emptyList()
+
+                onResult(appointments)
+            }
+    }
+
+    fun getDoctorAppointments(doctorId: String, onResult: (List<Appointment>) -> Unit) {
+        db.collection("appointments")
+            .whereEqualTo("doctorId", doctorId)
+            .whereEqualTo("status", "Upcoming")
+            .addSnapshotListener { querySnapshot, error ->
+                if (error != null) {
+                    onResult(emptyList())
+                    return@addSnapshotListener
+                }
+
+                val appointments = querySnapshot?.documents?.mapNotNull { doc ->
+                    doc.toObject(Appointment::class.java)?.copy(id = doc.id)
+                } ?: emptyList()
+
+                onResult(appointments)
+            }
+    }
+
+    // PRESCRIPTION CRUD OPERATIONS
+    fun createPrescription(prescription: Prescription, onDone: (Boolean, String?) -> Unit) {
+        db.collection("prescriptions")
+            .add(prescription.toMap())
+            .addOnSuccessListener { documentReference ->
+                onDone(true, documentReference.id)
+            }
+            .addOnFailureListener {
+                onDone(false, null)
+            }
+    }
+
+// In ProfileRepository.kt, update the getPrescriptionsByPatient function:
+
+    fun getPrescriptionsByPatient(patientId: String, onResult: (List<Prescription>) -> Unit) {
+        db.collection("prescriptions")
+            .whereEqualTo("patientId", patientId)
+            .orderBy("date", Query.Direction.DESCENDING)
+            .addSnapshotListener { querySnapshot, error ->
+                if (error != null) {
+                    onResult(emptyList())
+                    return@addSnapshotListener
+                }
+
+                val prescriptions = querySnapshot?.documents?.mapNotNull { doc ->
+                    val data = doc.data ?: return@mapNotNull null
+                    try {
+                        val medsMap = (data["medications"] as? Map<String, Map<String, Any>>)?.mapValues { entry ->
+                            Medication(
+                                name = entry.value["name"] as? String ?: "",
+                                dosage = entry.value["dosage"] as? String ?: "",
+                                frequency = entry.value["frequency"] as? String ?: "",
+                                duration = entry.value["duration"] as? String ?: "",
+                                instructions = entry.value["instructions"] as? String ?: ""
+                            )
+                        } ?: emptyMap()
+
+                        Prescription(
+                            id = doc.id,
+                            patientId = data["patientId"] as? String ?: "",
+                            patientName = data["patientName"] as? String ?: "",
+                            doctorId = data["doctorId"] as? String ?: "",
+                            doctorName = data["doctorName"] as? String ?: "",
+                            date = (data["date"] as? Long) ?: (data["date"] as? Double)?.toLong() ?: 0L,
+                            medications = medsMap,
+                            notes = data["notes"] as? String ?: "",
+                            qrCodeUrl = data["qrCodeUrl"] as? String ?: ""
+                        )
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        null
+                    }
+                } ?: emptyList()
+
+                onResult(prescriptions)
+            }
+    }
+    fun getPrescriptionsByDoctor(doctorId: String, onResult: (List<Prescription>) -> Unit) {
+        db.collection("prescriptions")
+            .whereEqualTo("doctorId", doctorId)
+            .orderBy("date", Query.Direction.DESCENDING)
+            .addSnapshotListener { querySnapshot, error ->
+                if (error != null) {
+                    onResult(emptyList())
+                    return@addSnapshotListener
+                }
+
+                val prescriptions = mutableListOf<Prescription>()
+                querySnapshot?.documents?.forEach { doc ->
+                    val data = doc.data ?: return@forEach
+                    try {
+                        val medsMap =
+                            (data["medications"] as? Map<String, Map<String, Any>>)?.mapValues { entry ->
+                                Medication(
+                                    name = entry.value["name"] as? String ?: "",
+                                    dosage = entry.value["dosage"] as? String ?: "",
+                                    frequency = entry.value["frequency"] as? String ?: "",
+                                    duration = entry.value["duration"] as? String ?: "",
+                                    instructions = entry.value["instructions"] as? String ?: ""
+                                )
+                            } ?: emptyMap()
+
+                        val prescription = Prescription(
+                            id = doc.id,
+                            patientId = data["patientId"] as? String ?: "",
+                            patientName = data["patientName"] as? String ?: "",
+                            doctorId = data["doctorId"] as? String ?: "",
+                            doctorName = data["doctorName"] as? String ?: "",
+                            date = (data["date"] as? Long) ?: (data["date"] as? Double)?.toLong()
+                            ?: 0L,
+                            medications = medsMap,
+                            notes = data["notes"] as? String ?: "",
+                            qrCodeUrl = data["qrCodeUrl"] as? String ?: ""
+                        )
+                        prescriptions.add(prescription)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+                onResult(prescriptions)
+            }
+    }
+
+    fun deletePrescription(prescriptionId: String, onDone: (Boolean) -> Unit) {
+        db.collection("prescriptions")
+            .document(prescriptionId)
+            .delete()
+            .addOnSuccessListener { onDone(true) }
+            .addOnFailureListener { onDone(false) }
+    }
+
+    fun getPrescriptionById(prescriptionId: String, onResult: (Prescription?) -> Unit) {
+        db.collection("prescriptions")
+            .document(prescriptionId)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val data = document.data
+                    val prescription = Prescription(
+                        id = document.id,
+                        patientId = data?.get("patientId") as? String ?: "",
+                        patientName = data?.get("patientName") as? String ?: "",
+                        doctorId = data?.get("doctorId") as? String ?: "",
+                        doctorName = data?.get("doctorName") as? String ?: "",
+                        date = (data?.get("date") as? Long)
+                            ?: (data?.get("date") as? Double)?.toLong() ?: 0L,
+                        medications = parseMedications(data?.get("medications")),
+                        notes = data?.get("notes") as? String ?: "",
+                        qrCodeUrl = data?.get("qrCodeUrl") as? String ?: ""
+                    )
+                    onResult(prescription)
+                } else {
+                    onResult(null)
+                }
+            }
+            .addOnFailureListener {
+                onResult(null)
+            }
+    }
+
+    private fun parseMedications(medsData: Any?): Map<String, Medication> {
+        return try {
+            val medsMap = mutableMapOf<String, Medication>()
+            (medsData as? Map<String, Map<String, Any>>)?.forEach { (key, value) ->
+                medsMap[key] = Medication(
+                    name = value["name"] as? String ?: "",
+                    dosage = value["dosage"] as? String ?: "",
+                    frequency = value["frequency"] as? String ?: "",
+                    duration = value["duration"] as? String ?: "",
+                    instructions = value["instructions"] as? String ?: ""
+                )
+            }
+            medsMap
+        } catch (_: Exception) {
+            emptyMap()
+        }
+    }
 
     companion object {
         // Singleton instance

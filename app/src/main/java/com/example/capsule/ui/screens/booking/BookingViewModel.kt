@@ -30,14 +30,7 @@ class BookingViewModel : ViewModel() {
     val showConfirmation = mutableStateOf(false)
     val showDatePicker = mutableStateOf(false)
 
-    // --------------------------------------------------------------------
-    //                  LOAD DOCTOR SLOTS + APPLY FIREBASE FILTER
-    // --------------------------------------------------------------------
-
-    // --------------------------------------------------------------------
 //                  LOAD DOCTOR SLOTS (NO FIREBASE FILTER)
-// --------------------------------------------------------------------
-
     fun loadSlots(doctor: Doctor) {
         isLoading.value = true
 

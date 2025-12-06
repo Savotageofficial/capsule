@@ -97,6 +97,7 @@ fun DoctorEditProfileScreen(
                 .background(WhiteSmoke)
                 .padding(padding)
                 .padding(horizontal = 16.dp)
+                .fillMaxSize()
                 .verticalScroll(scrollState)
         ) {
             Spacer(Modifier.height(10.dp))

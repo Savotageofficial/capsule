@@ -118,7 +118,7 @@ fun DoctorProfileScreen(
             modifier = Modifier
                 .background(WhiteSmoke)
                 .padding(padding)
-                .padding(8.dp)
+                .padding(16.dp)
                 .fillMaxSize()
                 .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally

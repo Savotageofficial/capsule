@@ -78,4 +78,5 @@ class SearchRepository {
                 callback(emptyList())
             }
     }
+
 }

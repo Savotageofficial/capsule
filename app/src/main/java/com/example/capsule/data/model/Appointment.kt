@@ -11,3 +11,12 @@ data class Appointment(
     val type: String = "", // "In-Person", "Chat"
     val status: String = "" // "Upcoming", "Completed", "Cancelled"
 )
+
+val Appointment.isUpcoming: Boolean
+    get() = status == "Upcoming"
+
+val Appointment.isCompleted: Boolean
+    get() = status == "Completed"
+
+val Appointment.isCancelled: Boolean
+    get() = status == "Cancelled"
