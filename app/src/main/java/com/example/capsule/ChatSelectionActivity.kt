@@ -87,23 +87,22 @@ fun ChatSelection(
     val auth = FirebaseAuth.getInstance()
     val context = LocalContext.current
 
+    var userType by remember { mutableStateOf<String?>(null) }
+
     val doctors by viewModel.doctors.collectAsState()
     val patients by viewModel.patient.collectAsState()
+    val uid: String = auth.currentUser!!.uid
 
-    var userType by remember { mutableStateOf<String?>(null) }  // null = still loading
-
-    val uid = auth.currentUser!!.uid
-
-    // FIX: This runs only once & not on every recomposition
+// fetch once
     LaunchedEffect(uid) {
         db.collection("users").document(uid).get()
             .addOnSuccessListener { doc ->
-                userType = doc.getString("userType")    // triggers recomposition
-                if (userType == "patient") {
-                    viewModel.loadPatientChatHistory()
-                } else if (userType == "doctor") {
-                    viewModel.loadDoctorChatHistory(uid)
-                }
+                userType = doc.getString("userType")?.lowercase()  // lowercase to normalize
+                if (userType == "patient") viewModel.loadPatientChatHistory()
+                else if (userType == "doctor") viewModel.loadDoctorChatHistory(uid)
+            }
+            .addOnFailureListener { e ->
+                Log.e("ChatDebug", "Failed to fetch userType", e)
             }
     }
 
@@ -123,39 +122,42 @@ fun ChatSelection(
             }
         )
 
-        // 👇 While userType is still null → show loading instead of empty UI
-        if (userType == null) {
-            CircularProgressIndicator(modifier = Modifier.padding(50.dp))
-            return@Column
-        }
+        // 🔹 Only show the list when both userType and data are ready
+        when {
+            userType == null -> CircularProgressIndicator(modifier = Modifier.padding(50.dp))
+            userType == "doctor" && patients.isEmpty() -> CircularProgressIndicator(
+                modifier = Modifier.padding(
+                    50.dp
+                )
+            )
 
-        Log.d("trace" , "chattype : $userType")
-        Log.d("trace" , "patientlist : ${patients.size}")
-        if (userType == "Doctor") {
-            LazyColumn(
+            userType == "patient" && doctors.isEmpty() -> CircularProgressIndicator(
+                modifier = Modifier.padding(
+                    50.dp
+                )
+            )
+
+            userType == "doctor" -> LazyColumn(
                 modifier = modifier.fillMaxSize().padding(top = 50.dp)
             ) {
-                items(patients) { doc ->
-                    Log.d("trace" , "chattype : ${doc.name}")
-                    PatientResultCard(patient = doc) {
+                items(patients) { patient ->
+                    PatientResultCard(patient) {
                         val intent = Intent(context, ChatActivity::class.java)
-                        intent.putExtra("Name", doc.name)
-                        intent.putExtra("Id", doc.id)
+                        intent.putExtra("Name", patient.name)
+                        intent.putExtra("Id", patient.id)
                         context.startActivity(intent)
                     }
                 }
             }
 
-        } else if (userType == "Patient") {
-
-            LazyColumn(
+            userType == "patient" -> LazyColumn(
                 modifier = modifier.fillMaxSize().padding(top = 50.dp)
             ) {
-                items(doctors) { doc ->
-                    DoctorResultCard(doctor = doc) {
+                items(doctors) { doctor ->
+                    DoctorResultCard(doctor) {
                         val intent = Intent(context, ChatActivity::class.java)
-                        intent.putExtra("Name", doc.name)
-                        intent.putExtra("Id", doc.id)
+                        intent.putExtra("Name", doctor.name)
+                        intent.putExtra("Id", doctor.id)
                         context.startActivity(intent)
                     }
                 }
@@ -166,7 +168,7 @@ fun ChatSelection(
 
 
 
-@Composable
+    @Composable
 fun ChatItem(image: Int, title : String, modifier: Modifier = Modifier) {
 
 
