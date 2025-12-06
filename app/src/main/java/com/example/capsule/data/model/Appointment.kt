@@ -1,5 +1,7 @@
 package com.example.capsule.data.model
 
+import com.example.capsule.util.formatAppointmentDateTime
+
 data class Appointment(
     val id: String = "",
     val doctorId: String = "",
@@ -11,3 +13,16 @@ data class Appointment(
     val type: String = "", // "In-Person", "Chat"
     val status: String = "" // "Upcoming", "Completed", "Cancelled"
 )
+
+// Add to Appointment.kt
+val Appointment.formattedDateTime: String
+    get() = formatAppointmentDateTime(dateTime, timeSlot)
+
+val Appointment.isUpcoming: Boolean
+    get() = status == "Upcoming"
+
+val Appointment.isCompleted: Boolean
+    get() = status == "Completed"
+
+val Appointment.isCancelled: Boolean
+    get() = status == "Cancelled"

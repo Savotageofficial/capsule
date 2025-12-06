@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Capsule">
         <activity
-            android:name=".activities.ChatSelectionActivity"
+            android:name=".ChatSelectionActivity"
             android:exported="false"
             android:label="@string/title_activity_chat_selection"
             android:theme="@style/Theme.Capsule" />

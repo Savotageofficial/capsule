@@ -1,7 +1,6 @@
 package com.example.capsule.ui.screens.doctor
 
 import android.content.Intent
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -44,10 +43,11 @@ fun DoctorDashboardScreen(
     viewModel: DoctorViewModel = viewModel(),
     onProfileClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
-    onPatientClick: (String) -> Unit = {},  // for later
+    onPatientClick: (String) -> Unit = {},
     onScheduleClick: () -> Unit = {},
-    onMessagesClick: () -> Unit = {},       // when chat finish
-    onPrescriptionClick: () -> Unit = {}    // when presc finish
+    onMessagesClick: () -> Unit = {},
+    onMakePrescriptionClick: () -> Unit = {},
+    onPrescriptionClick: () -> Unit = {}
 ) {
     val doctor = viewModel.doctor.value
     val appointments = viewModel.appointments.value   // USE REAL APPOINTMENTS
@@ -182,12 +182,46 @@ fun DoctorDashboardScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            Card(
+                onClick = onPrescriptionClick,
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                modifier = Modifier
+                    .padding(4.dp)
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth()
+                ) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .size(36.dp)
+                            .background(Color(0xFFFBE4E4), CircleShape)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_calendar),
+                            tint = Color(0xFFFF4141),
+                            contentDescription = "Prescription"
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "Prescription Sent",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
             // Make Prescription Button
             Button(
-                onClick = {
-                    onPrescriptionClick()
-                    Toast.makeText(context, "Wait for it!", Toast.LENGTH_SHORT).show()
-                },
+                onClick = onMakePrescriptionClick,
                 colors = ButtonDefaults.buttonColors(containerColor = Blue),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier

@@ -1,7 +1,6 @@
 package com.example.capsule.ui.screens.patient
 
 import android.content.Intent
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -50,7 +49,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.capsule.activities.ChatActivity
+import com.example.capsule.ChatSelectionActivity
 import com.example.capsule.R
 import com.example.capsule.data.model.OfferItem
 import com.example.capsule.data.model.Tip
@@ -69,7 +68,8 @@ fun HomePage(
     onSettingsClick: () -> Unit = {},
     onProfilePatientClick: () -> Unit = {},
     onAppointmentsClick: () -> Unit = {},
-    onMessagesClick: () -> Unit = {}
+    onMessagesClick: () -> Unit = {},
+    onPrescriptionsClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val patient = viewModel.patient.value
@@ -184,7 +184,7 @@ fun HomePage(
                     iconColor = Green,
                     onClick = {
                         onMessagesClick()
-                        context.startActivity(Intent(context, ChatActivity::class.java))
+                        context.startActivity(Intent(context, ChatSelectionActivity::class.java))
                     },
                     modifier = Modifier.weight(1f)
                 )
@@ -195,9 +195,7 @@ fun HomePage(
 
             // ---------------- PRESCRIPTIONS BUTTON ----------------
             Button(
-                onClick = {
-                    Toast.makeText(context, "Wait for it!", Toast.LENGTH_SHORT).show()
-                },
+                onClick = onPrescriptionsClick,
                 modifier = Modifier
                     .padding(horizontal = 14.dp)
                     .height(55.dp)
@@ -437,7 +435,8 @@ fun HomepagePreview() {
             onSearchClick = {},
             onSettingsClick = {},
             onAppointmentsClick = {},
-            onMessagesClick = {}
+            onMessagesClick = {},
+            onPrescriptionsClick = {}
         )
     }
 }

@@ -3,9 +3,15 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.capsule.data.repository.Prefs
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 //package com.example.capsule.model
 //
@@ -17,9 +23,60 @@ import kotlinx.coroutines.flow.StateFlow
 //import kotlinx.coroutines.flow.StateFlow
 //import kotlinx.coroutines.launch
 //
+import com.example.capsule.data.model.Doctor
 
 
 
+//data class Doctor(
+//    val id: String,
+//    val name: String,
+//    val specialty: String
+//)
+
+class ChatHistoryViewModel : ViewModel() {
+
+    private val db = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
+
+    private val _doctors = MutableStateFlow<List<Doctor>>(emptyList())
+    val doctors = _doctors.asStateFlow()
+
+    fun loadPatientChatHistory() {
+        val currentUid = auth.currentUser?.uid ?: return
+
+        db.collection("patients")
+            .document(currentUid)
+            .get()
+            .addOnSuccessListener { patientDoc ->
+                val historyIds = patientDoc.get("msgHistory") as? List<String> ?: emptyList()
+
+                // fetch all doctors using coroutine
+                viewModelScope.launch {
+                    fetchDoctors(historyIds)
+                }
+            }
+    }
+
+    private suspend fun fetchDoctors(ids: List<String>) {
+        val doctorList = mutableListOf<Doctor>()
+
+        ids.forEach { id ->
+            val docSnapshot = db.collection("doctors")
+                .document(id)
+                .get()
+                .await()
+
+            val doctor = Doctor(
+                id = docSnapshot.id,
+                name = docSnapshot.getString("name") ?: "",
+                specialty = docSnapshot.getString("specialty") ?: ""
+            )
+            doctorList.add(doctor)
+        }
+
+        _doctors.value = doctorList
+    }
+}
 
 
 //class ChatViewModel(private val prefs: Prefs) : ViewModel() {
