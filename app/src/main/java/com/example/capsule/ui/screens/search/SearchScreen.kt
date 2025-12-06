@@ -98,11 +98,10 @@ fun SearchScreen(
             modifier = modifier
                 .background(WhiteSmoke)
                 .padding(padding)
-                .padding(16.dp)
+                .padding(horizontal = 16.dp)
+                .padding(vertical = 8.dp)
                 .fillMaxSize()
-
         ) {
-
 
             MySearchBar(
                 searchResults = searchResults,
@@ -258,7 +257,6 @@ fun MySearchBar(
                     }
                 }
             }
-        },
-        modifier = modifier // Remove the .padding(horizontal = 16.dp) from here
+        }
     )
 }

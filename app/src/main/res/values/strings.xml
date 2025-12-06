@@ -39,4 +39,6 @@
     <string name="title_activity_settings">SettingsActivity</string>
     <string name="title_activity_search_results">SearchResultsActivity</string>
     <string name="title_activity_chat_selection">ChatSelectionActivity</string>
+    <string name="my_appointments">My Appointments</string>
+    <string name="book_your_first_appointment_with_a_doctor">Book your first appointment with a doctor</string>
 </resources>

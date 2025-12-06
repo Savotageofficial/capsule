@@ -17,20 +17,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.capsule.R
 import com.example.capsule.data.repository.AuthRepository
+import com.example.capsule.ui.theme.WhiteSmoke
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    onBack: () -> Unit,
+    onBackClick: () -> Unit,
     onLogout: () -> Unit
 ) {
 
     val authRepo = remember { AuthRepository() }
-    val context = LocalContext.current
 
     var darkMode by remember { mutableStateOf(false) }
     var notifications by remember { mutableStateOf(true) }
@@ -41,44 +44,40 @@ fun SettingsScreen(
         colorScheme = if (darkMode) darkColorScheme() else lightColorScheme()
     ) {
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFFF2F2F2))
-        ) {
+        Scaffold(
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = {
+                        Text(
+                            stringResource(R.string.settings), fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                            color = Color(0xFF0A3140)
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onBackClick) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                tint = Color(0xFF0CA7BA),
+                                contentDescription = "Back",
+                                modifier = Modifier
+                                    .size(30.dp)
+                                    .clickable { onBackClick() }
+                            )
+                        }
+                    }
+                )
+            }
+        ) { padding ->
 
             Column(
                 modifier = Modifier
+                    .background(WhiteSmoke)
+                    .padding(padding)
+                    .padding(horizontal = 16.dp)
                     .fillMaxSize()
-                    .padding(20.dp)
             ) {
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp), // optional height for top bar
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = null,
-                        tint = Color.Black,
-                        modifier = Modifier
-                            .size(30.dp)
-                            .align(Alignment.CenterStart)
-                            .clickable { onBack() }
-                    )
-
-                    Text(
-                        text = "Settings",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(25.dp))
-
 
                 Text(
                     text = "Preferences",

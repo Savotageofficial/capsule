@@ -16,7 +16,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -29,8 +28,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.ui.components.InfoCard
 import com.example.capsule.ui.components.InfoRow
 import com.example.capsule.R
-import com.example.capsule.ui.theme.Blue
+import com.example.capsule.ui.theme.Cyan
 import com.example.capsule.ui.theme.Gray
+import com.example.capsule.ui.theme.Teal
 import com.example.capsule.ui.theme.WhiteSmoke
 import com.example.capsule.util.formatDateOfBirth
 
@@ -72,14 +72,13 @@ fun PatientProfileScreen(
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
-                        color = Color(0xFF0A3140)
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            tint = Color(0xFF0CA7BA),
+                            tint = Cyan,
                             contentDescription = "Back",
                             modifier = Modifier
                                 .size(30.dp)
@@ -91,10 +90,15 @@ fun PatientProfileScreen(
                     IconButton(onClick = onEditClick) {
                         Icon(
                             painter = painterResource(R.drawable.ic_edit),
-                            contentDescription = "Edit"
+                            contentDescription = "Edit",
+                            tint = Cyan
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = WhiteSmoke,
+                    titleContentColor = Teal
+                )
             )
         }
     ) { padding ->
@@ -103,9 +107,9 @@ fun PatientProfileScreen(
 
         Column(
             modifier = Modifier
+                .background(WhiteSmoke)
                 .padding(padding)
                 .padding(horizontal = 16.dp)
-                .background(WhiteSmoke)
                 .fillMaxSize()
                 .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -165,10 +169,13 @@ fun PatientProfileScreen(
                 Button(
                     onClick = onSettingsClick,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Blue
+                        containerColor = Cyan
                     ),
                     shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(38.dp)
+                        .padding(horizontal = 8.dp)
                 ) {
                     Text(stringResource(R.string.settings))
                 }

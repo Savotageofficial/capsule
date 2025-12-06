@@ -157,7 +157,7 @@ fun NavGraph(
 
         composable("settings") {
             SettingsScreen(
-                onBack = { navController.popBackStack() },
+                onBackClick = { navController.popBackStack() },
                 onLogout = onLogout
             )
         }

@@ -84,9 +84,9 @@ fun DoctorDashboardScreen(
         Column(
             modifier = Modifier
                 .background(WhiteSmoke)
-                .fillMaxSize()
                 .padding(padding)
                 .padding(16.dp)
+                .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
 
@@ -281,21 +281,21 @@ fun DoctorDashboardScreen(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(max = 400.dp), // Limit height for better UX
+                        .heightIn(max = 400.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(recentAppointments) { appointment ->
                         UpcomingCard(
                             name = appointment.patientName,
-                            details = "${appointment.timeSlot} - ${appointment.type}",
-                            onClick = {
-                                onPatientClick(appointment.patientId)
-                            },
+                            appointmentType = appointment.type,
+                            timeSlot = appointment.timeSlot,
+                            date = appointment.dateTime,
+                            onClick = { onPatientClick(appointment.patientId) },
                             showMoreIcon = false
                         )
                     }
 
-                    // Show "View All" message if there are more appointments
+                    // "View All" message if more appointments
                     if (appointments.size > 3) {
                         item {
                             Box(
@@ -314,8 +314,8 @@ fun DoctorDashboardScreen(
                         }
                     }
                 }
-            }
 
+            }
             Spacer(modifier = Modifier.height(16.dp))
         }
     }

@@ -94,9 +94,9 @@ fun HomePage(
     Scaffold { padding ->
         Column(
             modifier = modifier
-                .fillMaxSize()
-                .padding(padding)
                 .background(WhiteSmoke)
+                .padding(padding)
+                .fillMaxSize()
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -153,8 +153,11 @@ fun HomePage(
             // ---------------- SEARCH BAR ----------------
             SearchBar(
                 onClick = onSearchClick,
-                color = Color(0xFF4CAF50),
-                modifier = Modifier.padding(horizontal = 16.dp)
+//                color = Color(0xFF4CAF50),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(55.dp)
+                    .padding(horizontal = 14.dp)
             )
 
             Spacer(modifier = Modifier.height(18.dp))
@@ -197,16 +200,16 @@ fun HomePage(
             Button(
                 onClick = onPrescriptionsClick,
                 modifier = Modifier
-                    .padding(horizontal = 14.dp)
+                    .fillMaxWidth()
                     .height(55.dp)
-                    .fillMaxWidth(),
+                    .padding(horizontal = 14.dp),
                 colors = ButtonDefaults.buttonColors(Blue),
                 shape = RoundedCornerShape(14.dp),
                 elevation = ButtonDefaults.buttonElevation(6.dp)
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_prescription),
-                    contentDescription = "",
+                    contentDescription = "Prescriptions",
                     tint = White,
                     modifier = Modifier.size(22.dp)
                 )
@@ -224,11 +227,11 @@ fun HomePage(
             ) {
                 val offers = listOf(
                     OfferItem(
-                        title = "✨ 20% off your next consultation",
+                        title = "20% off your next consultation",
                         color = Color(0xFF4CAF50)
                     ),
                     OfferItem(
-                        title = "💉 A new way of vaccination",
+                        title = "A new way of vaccination",
                         color = Color(0xFF347deb)
                     )
                 )
@@ -290,42 +293,36 @@ fun HomePage(
 @Composable
 fun SearchBar(
     modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-    color: Color = Color(0xFF4CAF50)
+    onClick: () -> Unit
 ) {
     Box(
         modifier = modifier
+            .padding(horizontal = 6.dp)
             .fillMaxWidth()
-            .height(44.dp)
-            .padding(horizontal = 12.dp)
+            .height(55.dp)
+            .shadow(8.dp, RoundedCornerShape(20.dp))
+            .background(Color.White, RoundedCornerShape(20.dp))
+            .clickable { onClick() }
+            .padding(horizontal = 18.dp),
+        contentAlignment = Alignment.CenterStart
     ) {
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .background(
-                    color = color,
-                    shape = RoundedCornerShape(12.dp)
-                )
-                .clickable { onClick() }
-                .padding(vertical = 10.dp, horizontal = 16.dp)
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Search Bar",
-                    tint = Color.White,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Find Care",
-                    color = Color.White.copy(alpha = 0.9f),
-                    fontSize = 16.sp
-                )
-            }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = "Search",
+                tint = Color(0xFF6D6D6D),
+                modifier = Modifier.size(22.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                text = "Search for doctors",
+                color = Color(0xFF7A7A7A),
+                fontSize = 16.sp
+            )
         }
     }
 }
+
 
 
 @Composable

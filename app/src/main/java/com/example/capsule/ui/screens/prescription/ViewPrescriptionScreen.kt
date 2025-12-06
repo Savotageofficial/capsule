@@ -1,7 +1,9 @@
 package com.example.capsule.ui.screens.prescription
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -11,11 +13,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.ui.screens.doctor.DoctorViewModel
 import com.example.capsule.ui.screens.patient.PatientViewModel
+import com.example.capsule.ui.theme.Cyan
+import com.example.capsule.ui.theme.Teal
+import com.example.capsule.ui.theme.WhiteSmoke
 import com.example.capsule.util.formatDate
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -52,18 +58,37 @@ fun ViewPrescriptionScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Prescription Details", fontSize = 20.sp) },
+                title = {
+                    Text(
+                        "Prescriptions Details",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            tint = Cyan,
+                            contentDescription = "Back",
+                            modifier = Modifier
+                                .size(30.dp)
+                        )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = WhiteSmoke,
+                    titleContentColor = Teal
+                )
             )
         }
     ) { padding ->
         Box(
             modifier = Modifier
+                .background(WhiteSmoke)
                 .padding(padding)
+                .padding(16.dp)
                 .fillMaxSize()
         ) {
             if (isLoading) {
@@ -92,80 +117,94 @@ fun PrescriptionDetailContent(
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        // Header Info
+
+        // Header Card
         Card(
             modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            )
+                containerColor = Color.White
+            ),
+            elevation = CardDefaults.cardElevation(4.dp)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(
+                modifier = Modifier
+                    .padding(20.dp)
+                    .fillMaxWidth()
+            ) {
                 Text(
                     text = if (isDoctorView) "Patient: ${prescription.patientName}"
                     else "Doctor: ${prescription.doctorName}",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF2A2A2A)
                 )
 
                 Spacer(Modifier.height(8.dp))
 
                 Text(
-                    text = "Date: ${formatDate(prescription.date)}",
+                    text = formatDate(prescription.date),
                     fontSize = 14.sp,
-                    color = Color.Gray
+                    color = Color(0xFF7D7D7D)
                 )
 
                 if (isDoctorView) {
-                    Spacer(Modifier.height(4.dp))
+                    Spacer(Modifier.height(6.dp))
                     Text(
                         text = "Doctor: ${prescription.doctorName}",
                         fontSize = 14.sp,
-                        color = Color.Gray
+                        color = Color(0xFF7D7D7D)
                     )
                 }
             }
         }
 
-        // Medications Section
+        // Section Title
         Text(
             text = "Medications",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF202020),
+            modifier = Modifier.padding(horizontal = 4.dp)
         )
 
+        // Medication Cards
         prescription.medications.values.forEachIndexed { index, medication ->
-            MedicationDetailCard(
-                medication = medication,
-                index = index + 1
-            )
+            MedicationDetailCard(medication = medication, index = index + 1)
         }
 
-        // Notes Section
+        // Notes section
         if (prescription.notes.isNotBlank()) {
             Text(
                 text = "Notes",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF202020),
+                modifier = Modifier.padding(horizontal = 4.dp)
             )
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-                )
+                    containerColor = Color.White
+                ),
+                elevation = CardDefaults.cardElevation(2.dp)
             ) {
                 Text(
                     text = prescription.notes,
-                    modifier = Modifier.padding(16.dp),
-                    fontSize = 14.sp,
-                    lineHeight = 18.sp
+                    modifier = Modifier.padding(18.dp),
+                    fontSize = 15.sp,
+                    lineHeight = 20.sp,
+                    color = Color(0xFF3A3A3A)
                 )
             }
         }
     }
 }
+
 
 @Composable
 fun MedicationDetailCard(
@@ -174,54 +213,81 @@ fun MedicationDetailCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = Color.White
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(3.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(
+            modifier = Modifier
+                .padding(18.dp)
+                .fillMaxWidth()
+        ) {
+
+            // Title Row
             Text(
                 text = "$index. ${medication.name}",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.primary
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF2A2A2A)
             )
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(14.dp))
 
+            // Dosage + Frequency Row
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("Dosage", fontSize = 12.sp, color = Color.Gray)
-                    Text(medication.dosage, fontSize = 14.sp)
-                }
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("Frequency", fontSize = 12.sp, color = Color.Gray)
-                    Text(medication.frequency, fontSize = 14.sp)
-                }
+                MedicationField(
+                    label = "Dosage", value = medication.dosage,
+                    modifier = Modifier.weight(1f)
+                )
+                MedicationField(
+                    label = "Frequency",
+                    value = medication.frequency,
+                    modifier = Modifier.weight(1f)
+                )
             }
 
-            Spacer(Modifier.height(8.dp))
-
+            // Duration
             if (medication.duration.isNotBlank()) {
-                Row {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text("Duration", fontSize = 12.sp, color = Color.Gray)
-                        Text(medication.duration, fontSize = 14.sp)
-                    }
-                }
+                Spacer(Modifier.height(14.dp))
+                MedicationField(
+                    label = "Duration",
+                    value = medication.duration,
+                    modifier = Modifier.weight(1f)
+                )
             }
 
+            // Instructions
             if (medication.instructions.isNotBlank()) {
-                Spacer(Modifier.height(8.dp))
-                Column {
-                    Text("Instructions", fontSize = 12.sp, color = Color.Gray)
-                    Text(medication.instructions, fontSize = 14.sp)
-                }
+                Spacer(Modifier.height(14.dp))
+                MedicationField(
+                    label = "Instructions",
+                    value = medication.instructions,
+                    modifier = Modifier.weight(1f)
+                )
             }
         }
+    }
+}
+
+@Composable
+fun MedicationField(label: String, value: String, modifier: Modifier) {
+    Column(modifier = modifier) {
+        Text(
+            text = label,
+            fontSize = 12.sp,
+            color = Color(0xFF8A8A8A)
+        )
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = value,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Medium,
+            color = Color(0xFF343434)
+        )
     }
 }

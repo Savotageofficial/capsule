@@ -16,7 +16,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -32,7 +31,8 @@ import androidx.compose.ui.unit.toSize
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.R
 import com.example.capsule.ui.components.DatePickerDialog
-import com.example.capsule.ui.theme.Blue
+import com.example.capsule.ui.theme.Cyan
+import com.example.capsule.ui.theme.Teal
 import com.example.capsule.ui.theme.WhiteSmoke
 import com.example.capsule.util.formatDateOfBirth
 
@@ -79,30 +79,34 @@ fun PatientEditProfileScreen(
                         stringResource(R.string.edit_profile), fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
-                        color = Color(0xFF0A3140)
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            tint = Color(0xFF0CA7BA),
+                            tint = Cyan,
                             contentDescription = "Back",
                             modifier = Modifier
                                 .size(30.dp)
                                 .clickable { onBackClick() }
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = WhiteSmoke,
+                    titleContentColor = Teal
+                )
             )
         }
     ) { padding ->
 
         Column(
             modifier = Modifier
+                .background(WhiteSmoke)
                 .padding(padding)
                 .padding(horizontal = 16.dp)
-                .background(WhiteSmoke)
+                .fillMaxSize()
                 .verticalScroll(scrollState)
         ) {
 
@@ -222,7 +226,7 @@ fun PatientEditProfileScreen(
                     .fillMaxWidth()
                     .height(52.dp),
                 shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Blue),
+                colors = ButtonDefaults.buttonColors(containerColor = Cyan),
                 enabled = !loading
             ) {
                 if (loading) {

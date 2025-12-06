@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -26,6 +27,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.R
 import com.example.capsule.data.model.Appointment
+import com.example.capsule.ui.theme.Cyan
+import com.example.capsule.ui.theme.Teal
 import com.example.capsule.ui.theme.WhiteSmoke
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,7 +52,7 @@ fun PatientAppointmentsScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "My Appointments",
+                        text = stringResource(R.string.my_appointments),
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center
@@ -59,14 +62,14 @@ fun PatientAppointmentsScreen(
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            tint = Color(0xFF0CA7BA),
+                            tint = Cyan,
                             contentDescription = "Back"
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = WhiteSmoke,
-                    titleContentColor = Color(0xFF0A3140)
+                    titleContentColor = Teal
                 )
             )
         }
@@ -117,12 +120,12 @@ private fun EmptyAppointmentsState() {
                 tint = Color.Gray
             )
             Text(
-                text = "No upcoming appointments",
+                text = stringResource(R.string.no_upcoming_appointments),
                 color = Color.Gray,
                 fontSize = 16.sp
             )
             Text(
-                text = "Book your first appointment with a doctor",
+                text = stringResource(R.string.book_your_first_appointment_with_a_doctor),
                 color = Color.Gray,
                 fontSize = 14.sp
             )

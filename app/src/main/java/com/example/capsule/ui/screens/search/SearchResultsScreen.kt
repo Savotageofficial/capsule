@@ -49,8 +49,6 @@ fun SearchResultsScreen(
             id = ids.getOrNull(it) ?: "",
             name = names[it],
             specialty = specialities.getOrNull(it) ?: "",
-            rating = 4.5,
-            sessionPrice = 50.0
         )
     }
 
