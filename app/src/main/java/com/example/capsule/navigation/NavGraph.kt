@@ -6,22 +6,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.capsule.data.model.TimeSlot
-import com.example.capsule.ui.screens.doctor.DoctorDashboardScreen
-import com.example.capsule.ui.screens.doctor.DoctorEditProfileScreen
-import com.example.capsule.ui.screens.doctor.DoctorProfileScreen
-import com.example.capsule.ui.screens.doctor.DoctorScheduleScreen
-import com.example.capsule.ui.screens.doctor.DoctorViewModel
-import com.example.capsule.ui.screens.doctor.ViewDoctorProfileScreen
+import com.example.capsule.ui.screens.doctor.*
 import com.example.capsule.ui.screens.booking.BookingConfirmationScreen
 import com.example.capsule.ui.screens.search.SearchScreen
 import com.example.capsule.ui.screens.search.SearchResultsScreen
 import com.example.capsule.ui.screens.settings.SettingsScreen
-import com.example.capsule.ui.screens.patient.HomePage
-import com.example.capsule.ui.screens.patient.PatientAppointmentsScreen
-import com.example.capsule.ui.screens.patient.PatientEditProfileScreen
-import com.example.capsule.ui.screens.patient.PatientProfileScreen
-import com.example.capsule.ui.screens.patient.PatientViewModel
-import com.example.capsule.ui.screens.patient.ViewPatientProfileScreen
+import com.example.capsule.ui.screens.patient.*
+import com.example.capsule.ui.screens.prescription.*
 
 @Composable
 fun NavGraph(
@@ -31,13 +22,14 @@ fun NavGraph(
 ) {
     NavHost(navController = navController, startDestination = startDestination) {
 
-        // Patient Home
+        // PATIENT ROUTES
         composable("patientHome") {
             HomePage(
                 onProfilePatientClick = { navController.navigate("patientProfile") },
                 onSearchClick = { navController.navigate("search") },
                 onSettingsClick = { navController.navigate("settings") },
-                onAppointmentsClick = { navController.navigate("patientAppointments") }
+                onAppointmentsClick = { navController.navigate("patientAppointments") },
+                onPrescriptionsClick = { navController.navigate("patientPrescriptions") }
             )
         }
 
@@ -46,7 +38,6 @@ fun NavGraph(
                 onEditClick = { navController.navigate("editPatientProfile") },
                 onBackClick = { navController.popBackStack() },
                 onSettingsClick = { navController.navigate("settings") }
-
             )
         }
 
@@ -61,7 +52,17 @@ fun NavGraph(
             PatientAppointmentsScreen(onBackClick = { navController.popBackStack() })
         }
 
-        // Doctor Dashboard
+        // Patient Prescriptions
+        composable("patientPrescriptions") {
+            PatientPrescriptionsScreen(
+                onBackClick = { navController.popBackStack() },
+                onViewPrescription = { prescriptionId ->
+                    navController.navigate("viewPrescription/$prescriptionId/false")
+                }
+            )
+        }
+
+        // DOCTOR ROUTES
         composable("DoctorDashboard") {
             DoctorDashboardScreen(
                 onProfileClick = { navController.navigate("doctorProfile") },
@@ -71,11 +72,15 @@ fun NavGraph(
                 onScheduleClick = { navController.navigate("doctorSchedule") },
                 onSettingsClick = { navController.navigate("settings") },
                 onMessagesClick = { /* TODO */ },
-                onPrescriptionClick = { /* TODO */ }
+                onPrescriptionClick = {
+                    navController.navigate("doctorPrescriptions")
+                },
+                onMakePrescriptionClick = {
+                    navController.navigate("makePrescription")
+                }
             )
         }
 
-        // Doctor Profile
         composable("doctorProfile") {
             DoctorProfileScreen(
                 onEditClick = { navController.navigate("editDoctorProfile") },
@@ -84,7 +89,6 @@ fun NavGraph(
             )
         }
 
-        // Edit Doctor Profile
         composable("editDoctorProfile") {
             DoctorEditProfileScreen(
                 onBackClick = { navController.popBackStack() },
@@ -99,7 +103,42 @@ fun NavGraph(
             )
         }
 
-        // SearchScreen Routes
+        // Doctor Prescriptions List
+        composable("doctorPrescriptions") {
+            DoctorPrescriptionsScreen(
+                onBackClick = { navController.popBackStack() },
+                onViewPrescription = { prescriptionId ->
+                    navController.navigate("viewPrescription/$prescriptionId/true")
+                },
+                onNewPrescription = {
+                    navController.navigate("makePrescription")
+                }
+            )
+        }
+
+        // Make New Prescription (Doctor only)
+        composable("makePrescription") {
+            MakeNewPrescriptionScreen(
+                onBack = { navController.popBackStack() },
+                onSavePrescription = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // View Prescription (Shared - for both patient and doctor)
+        composable("viewPrescription/{prescriptionId}/{isDoctorView}") { backStackEntry ->
+            val prescriptionId = backStackEntry.arguments?.getString("prescriptionId") ?: ""
+            val isDoctorView = backStackEntry.arguments?.getString("isDoctorView")?.toBoolean() ?: false
+
+            ViewPrescriptionScreen(
+                prescriptionId = prescriptionId,
+                isDoctorView = isDoctorView,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        // SEARCH & BOOKING ROUTES
         composable("search") {
             SearchScreen(
                 searchResults = emptyList(),
@@ -126,15 +165,12 @@ fun NavGraph(
         // View Profiles
         composable("viewDoctorProfile/{doctorId}") { backStackEntry ->
             val doctorId = backStackEntry.arguments?.getString("doctorId")
-            val patientViewModel: PatientViewModel = viewModel()
-
             ViewDoctorProfileScreen(
                 doctorId = doctorId,
                 onBackClick = { navController.popBackStack() },
                 onBookingSuccess = { time, slot, type ->
                     navController.navigate("bookingConfirmation/$doctorId/$time/${slot.start}/${slot.end}/$type")
-                },
-                patientViewModel = patientViewModel
+                }
             )
         }
 
@@ -146,7 +182,7 @@ fun NavGraph(
             )
         }
 
-        // Booking
+        // Booking Confirmation
         composable("bookingConfirmation/{doctorId}/{timestamp}/{slotStart}/{slotEnd}/{type}") { backStackEntry ->
             val doctorId = backStackEntry.arguments?.getString("doctorId") ?: ""
             val timestamp = backStackEntry.arguments?.getString("timestamp")?.toLongOrNull() ?: 0L

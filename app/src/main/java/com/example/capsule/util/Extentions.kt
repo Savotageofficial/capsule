@@ -98,3 +98,15 @@ fun formatChatTime(rawDate: String): String {
         rawDate
     }
 }
+
+// Add to Extensions.kt
+fun formatDate(timestamp: Long): String {
+    return try {
+        val instant = Instant.ofEpochMilli(timestamp)
+        val localDateTime = instant.atZone(ZoneId.systemDefault()).toLocalDateTime()
+        val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy")
+        localDateTime.format(formatter)
+    } catch (_: Exception) {
+        "Date not available"
+    }
+}

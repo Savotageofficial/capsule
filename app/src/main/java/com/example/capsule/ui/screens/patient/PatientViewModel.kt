@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.capsule.data.model.Appointment
 import com.example.capsule.data.model.Patient
+import com.example.capsule.data.model.Prescription
 import com.example.capsule.data.repository.ProfileRepository
 import kotlinx.coroutines.launch
 
@@ -20,6 +21,14 @@ class PatientViewModel : ViewModel() {
     private val _appointments = mutableStateOf(emptyList<Appointment>())
     val appointments = _appointments
 
+    // Prescriptions
+    private val _prescriptions = mutableStateOf(emptyList<Prescription>())
+    val prescriptions = _prescriptions
+
+    // Selected prescription for viewing
+    private val _selectedPrescription = mutableStateOf<Prescription?>(null)
+    val selectedPrescription = _selectedPrescription
+
     private val _errorMessage = mutableStateOf<String?>(null)
     val errorMessage = _errorMessage
 
@@ -30,6 +39,7 @@ class PatientViewModel : ViewModel() {
                 _patient.value = patient
                 if (patient != null) {
                     loadPatientAppointments()
+                    loadPatientPrescriptions()
                 } else {
                     _isLoading.value = false
                     _errorMessage.value = "Failed to load patient profile"
@@ -43,6 +53,10 @@ class PatientViewModel : ViewModel() {
         viewModelScope.launch {
             repo.getPatientById(patientId) { patient ->
                 _patient.value = patient
+                if (patient != null) {
+                    loadPatientAppointments()
+                    loadPatientPrescriptions()
+                }
                 _isLoading.value = false
                 if (patient == null) {
                     _errorMessage.value = "Patient not found"
@@ -86,6 +100,40 @@ class PatientViewModel : ViewModel() {
         }
     }
 
+    // -------------------------
+    // Prescription Management
+    // -------------------------
+    fun loadPatientPrescriptions() {
+        _patient.value?.id?.let { patientId ->
+            _isLoading.value = true
+            viewModelScope.launch {
+                repo.getPrescriptionsByPatient(patientId) { prescriptions ->
+                    _prescriptions.value = prescriptions
+                    _isLoading.value = false
+                    if (prescriptions.isEmpty()) {
+                        _errorMessage.value = "No prescriptions found"
+                    }
+                }
+            }
+        } ?: run {
+            _errorMessage.value = "Patient ID not available"
+            _isLoading.value = false
+        }
+    }
+
+    fun loadPrescriptionById(prescriptionId: String) {
+        _isLoading.value = true
+        viewModelScope.launch {
+            repo.getPrescriptionById(prescriptionId) { prescription ->
+                _selectedPrescription.value = prescription
+                _isLoading.value = false
+                if (prescription == null) {
+                    _errorMessage.value = "Prescription not found"
+                }
+            }
+        }
+    }
+
     fun cancelAppointment(appointmentId: String) {
         viewModelScope.launch {
             repo.updateAppointmentStatus(appointmentId, "Cancelled") { success ->
@@ -97,10 +145,5 @@ class PatientViewModel : ViewModel() {
                 }
             }
         }
-    }
-
-    // when add refresh
-    fun refreshAppointments() {
-        loadPatientAppointments()
     }
 }

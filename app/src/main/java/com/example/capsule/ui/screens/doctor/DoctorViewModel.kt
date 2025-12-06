@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.capsule.data.model.Appointment
 import com.example.capsule.data.model.Doctor
+import com.example.capsule.data.model.Prescription
 import com.example.capsule.data.model.TimeSlot
 import com.example.capsule.data.repository.ProfileRepository
 import kotlinx.coroutines.launch
@@ -22,13 +23,24 @@ class DoctorViewModel : ViewModel() {
     private val _appointments = mutableStateOf(emptyList<Appointment>())
     val appointments = _appointments
 
+    // Prescriptions
+    private val _prescriptions = mutableStateOf(emptyList<Prescription>())
+    val prescriptions = _prescriptions
+
+    // Selected prescription for viewing
+    private val _selectedPrescription = mutableStateOf<Prescription?>(null)
+    val selectedPrescription = _selectedPrescription
+
     // Loading state
     private val _isLoading = mutableStateOf(false)
     val isLoading = _isLoading
 
+    // Error message
+    private val _errorMessage = mutableStateOf<String?>(null)
+    val errorMessage = _errorMessage
+
     // Availability (State kept separately for the UI)
     val availability = mutableStateMapOf<String, MutableList<TimeSlot>>()
-
 
     // -------------------------------------------------------------
     // Load Doctor Profile
@@ -38,8 +50,11 @@ class DoctorViewModel : ViewModel() {
         viewModelScope.launch {
             profileRepository.getCurrentDoctor { doctor ->
                 _doctor.value = doctor
-                loadAvailability()
-                loadDoctorAppointments()
+                if (doctor != null) {
+                    loadAvailability()
+                    loadDoctorAppointments()
+                    loadDoctorPrescriptions()
+                }
                 _isLoading.value = false
             }
         }
@@ -50,8 +65,11 @@ class DoctorViewModel : ViewModel() {
         viewModelScope.launch {
             profileRepository.getDoctorById(doctorId) { doctor ->
                 _doctor.value = doctor
-                loadAvailability()
-                loadDoctorAppointments()
+                if (doctor != null) {
+                    loadAvailability()
+                    loadDoctorAppointments()
+                    loadDoctorPrescriptions()
+                }
                 _isLoading.value = false
             }
         }
@@ -66,6 +84,57 @@ class DoctorViewModel : ViewModel() {
                 profileRepository.getDoctorAppointments(doctorId) { appointments ->
                     _appointments.value = appointments
                 }
+            }
+        }
+    }
+
+    // -------------------------------------------------------------
+    // Prescription Management
+    // -------------------------------------------------------------
+    fun loadDoctorPrescriptions() {
+        _doctor.value?.id?.let { doctorId ->
+            _isLoading.value = true
+            viewModelScope.launch {
+                profileRepository.getPrescriptionsByDoctor(doctorId) { prescriptions ->
+                    _prescriptions.value = prescriptions
+                    _isLoading.value = false
+                    if (prescriptions.isEmpty()) {
+                        _errorMessage.value = "No prescriptions found"
+                    }
+                }
+            }
+        } ?: run {
+            _errorMessage.value = "Doctor ID not available"
+            _isLoading.value = false
+        }
+    }
+
+    fun loadPrescriptionById(prescriptionId: String) {
+        _isLoading.value = true
+        viewModelScope.launch {
+            profileRepository.getPrescriptionById(prescriptionId) { prescription ->
+                _selectedPrescription.value = prescription
+                _isLoading.value = false
+                if (prescription == null) {
+                    _errorMessage.value = "Prescription not found"
+                }
+            }
+        }
+    }
+
+
+    fun deletePrescription(prescriptionId: String, onDone: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            profileRepository.deletePrescription(prescriptionId) { success ->
+                if (success) {
+                    // Remove from local state
+                    _prescriptions.value = _prescriptions.value.filter { it.id != prescriptionId }
+                    // Clear selected if it's the one being deleted
+                    if (_selectedPrescription.value?.id == prescriptionId) {
+                        _selectedPrescription.value = null
+                    }
+                }
+                onDone(success)
             }
         }
     }

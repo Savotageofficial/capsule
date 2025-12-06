@@ -1,7 +1,6 @@
 package com.example.capsule.ui.screens.patient
 
 import android.content.Intent
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -69,7 +68,8 @@ fun HomePage(
     onSettingsClick: () -> Unit = {},
     onProfilePatientClick: () -> Unit = {},
     onAppointmentsClick: () -> Unit = {},
-    onMessagesClick: () -> Unit = {}
+    onMessagesClick: () -> Unit = {},
+    onPrescriptionsClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val patient = viewModel.patient.value
@@ -195,9 +195,7 @@ fun HomePage(
 
             // ---------------- PRESCRIPTIONS BUTTON ----------------
             Button(
-                onClick = {
-                    Toast.makeText(context, "Wait for it!", Toast.LENGTH_SHORT).show()
-                },
+                onClick = onPrescriptionsClick,
                 modifier = Modifier
                     .padding(horizontal = 14.dp)
                     .height(55.dp)
@@ -437,7 +435,8 @@ fun HomepagePreview() {
             onSearchClick = {},
             onSettingsClick = {},
             onAppointmentsClick = {},
-            onMessagesClick = {}
+            onMessagesClick = {},
+            onPrescriptionsClick = {}
         )
     }
 }
