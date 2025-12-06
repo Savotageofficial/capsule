@@ -3,6 +3,7 @@ package com.example.capsule
 import ChatHistoryViewModel
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -26,6 +27,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -35,7 +37,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,15 +55,19 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.activities.ChatActivity
 import com.example.capsule.data.model.Doctor
+import com.example.capsule.data.model.Patient
+import com.example.capsule.data.model.UserProfile
 import com.example.capsule.ui.theme.CapsuleTheme
 import com.example.capsule.ui.theme.White
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlin.math.log
 
 class ChatSelectionActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
             CapsuleTheme {
                 ChatSelection()
@@ -76,86 +85,90 @@ fun ChatSelection(
 ) {
     val db = FirebaseFirestore.getInstance()
     val auth = FirebaseAuth.getInstance()
-    val currentUser = auth.currentUser
-    val scope = rememberCoroutineScope()
-    var messageHistory = mutableListOf<String>()
-    val doctors by viewModel.doctors.collectAsState()
     val context = LocalContext.current
 
+    var userType by remember { mutableStateOf<String?>(null) }
 
+    val doctors by viewModel.doctors.collectAsState()
+    val patients by viewModel.patient.collectAsState()
+    val uid: String = auth.currentUser!!.uid
 
-
-    LaunchedEffect(Unit) {
-        viewModel.loadPatientChatHistory()
+// fetch once
+    LaunchedEffect(uid) {
+        db.collection("users").document(uid).get()
+            .addOnSuccessListener { doc ->
+                userType = doc.getString("userType")?.lowercase()  // lowercase to normalize
+                if (userType == "patient") viewModel.loadPatientChatHistory()
+                else if (userType == "doctor") viewModel.loadDoctorChatHistory(uid)
+            }
+            .addOnFailureListener { e ->
+                Log.e("ChatDebug", "Failed to fetch userType", e)
+            }
     }
 
-//    val currentpatient = db.collection("patients").document(currentUser?.uid!!)
-//
-//    currentpatient.get().addOnSuccessListener { document ->
-//        val fetchedHistory = document.get("msgHistory") as? MutableList<String>
-//
-//
-//        for (docID in fetchedHistory!!){
-//            var doctor = db.collection("doctors").document(docID)
-//            doctor.get().addOnSuccessListener {
-//                val doctorid = document.id
-//                val doctorspecialization = document.getField<String>("specialty")
-//                val doctorname = document.getField<String>("name")
-//                val doctor = Doctor(id = doctorid , name = doctorname!! , specialty = doctorspecialization!!)
-//                val data = document.data
-//
-//            }
-//
-//        }
-//
-//
-//    }
-
-
-
-
     Column {
-
         TopAppBar(
             modifier = modifier.fillMaxWidth(),
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = Color(0xff5782b3),
                 titleContentColor = White,
             ),
-            windowInsets = WindowInsets.safeDrawing.only(
-                WindowInsetsSides.Vertical
-            ),
             title = {
-//                        Text("Capsule" , overflow = TextOverflow.Ellipsis)
-                Image(painter = painterResource(id = R.drawable.capsuletext) , contentDescription = null, modifier.size(120.dp))
-
-            }
-        )
-        LazyColumn(
-            modifier = modifier.fillMaxSize()
-                .padding(top = 50.dp)
-        ) {
-            items(doctors) { doc ->
-                //            ChatItem(R.drawable.doc_prof_unloaded ,//here will be the doctor icon
-                //                title = doc.name,
-                //                modifier = modifier.padding(top = 30.dp)
-                //            )
-                DoctorResultCard(doctor = doc , {
-                    val intent = Intent(context, ChatActivity::class.java)
-                    intent.putExtra("Name",doc.name)
-                    intent.putExtra("Id",doc.id)
-                    context.startActivity(intent)
-                }
+                Image(
+                    painter = painterResource(id = R.drawable.capsuletext),
+                    contentDescription = null,
+                    modifier = Modifier.size(120.dp)
                 )
             }
+        )
 
+        // 🔹 Only show the list when both userType and data are ready
+        when {
+            userType == null -> CircularProgressIndicator(modifier = Modifier.padding(50.dp))
+            userType == "doctor" && patients.isEmpty() -> CircularProgressIndicator(
+                modifier = Modifier.padding(
+                    50.dp
+                )
+            )
+
+            userType == "patient" && doctors.isEmpty() -> CircularProgressIndicator(
+                modifier = Modifier.padding(
+                    50.dp
+                )
+            )
+
+            userType == "doctor" -> LazyColumn(
+                modifier = modifier.fillMaxSize().padding(top = 50.dp)
+            ) {
+                items(patients) { patient ->
+                    PatientResultCard(patient) {
+                        val intent = Intent(context, ChatActivity::class.java)
+                        intent.putExtra("Name", patient.name)
+                        intent.putExtra("Id", patient.id)
+                        context.startActivity(intent)
+                    }
+                }
+            }
+
+            userType == "patient" -> LazyColumn(
+                modifier = modifier.fillMaxSize().padding(top = 50.dp)
+            ) {
+                items(doctors) { doctor ->
+                    DoctorResultCard(doctor) {
+                        val intent = Intent(context, ChatActivity::class.java)
+                        intent.putExtra("Name", doctor.name)
+                        intent.putExtra("Id", doctor.id)
+                        context.startActivity(intent)
+                    }
+                }
+            }
         }
     }
-
 }
 
 
-@Composable
+
+    @Composable
 fun ChatItem(image: Int, title : String, modifier: Modifier = Modifier) {
 
 
@@ -262,6 +275,59 @@ fun DoctorResultCard(
                     maxLines = 2
                 )
 
+
+                // -------- RATING & PRICE -------
+            }
+        }
+    }
+}
+
+@Composable
+fun PatientResultCard(
+    patient: Patient,
+    onClick: () -> Unit
+) {
+    Card(
+        onClick = onClick,
+        modifier = Modifier
+            .padding(horizontal = 14.dp, vertical = 10.dp)
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.cardElevation(6.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(20.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(18.dp)
+        ) {
+
+            // Circular doctor image
+            Image(
+                painter = painterResource(R.drawable.patient_profile),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(86.dp)
+                    .clip(CircleShape)
+            )
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+
+                // -------- NAME --------
+                Text(
+                    text = "Dr. ${patient.name}",
+                    style = MaterialTheme.typography.titleLarge,   // Larger text
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Spacer(Modifier.height(2.dp))
 
                 // -------- RATING & PRICE -------
             }
