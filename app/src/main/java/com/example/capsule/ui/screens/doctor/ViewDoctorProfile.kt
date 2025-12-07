@@ -253,35 +253,24 @@ fun ViewDoctorProfileScreen(
 
             // Rating
             Row(verticalAlignment = Alignment.CenterVertically) {
-//                Icon(
-//                    painter = painterResource(id = R.drawable.ic_star),
-//                    contentDescription = "Rating Star",
-//                    tint = Gold,
-//                    modifier = Modifier.size(20.dp)
-//                )
-//                Spacer(modifier = Modifier.width(4.dp))
-//                Text(
-//                    text = "${doctor.rating}",
-//                    fontWeight = FontWeight.Bold,
-//                    fontSize = 15.sp
-//                )
-//                Spacer(modifier = Modifier.width(8.dp))
-//                Text(
-//                    text = "(${doctor.reviewsCount} reviews)",
-//                    color = Color.Gray,
-//                    fontSize = 14.sp
-//                )
-                var userRating by remember { mutableStateOf(0) }
-
-                RatingBar(
-                    currentRating = userRating,
-                    onRatingSelected = { rating ->
-                        userRating = rating
-                        rateDoctor(doctor.id, rating)
-                        Toast.makeText(context, "Rated $rating stars", Toast.LENGTH_SHORT).show()
-                    }
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_star),
+                    contentDescription = "Rating Star",
+                    tint = Gold,
+                    modifier = Modifier.size(20.dp)
                 )
-
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = String.format("%.1f", doctor.rating),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "(${doctor.reviewsCount} reviews)",
+                    color = Color.Gray,
+                    fontSize = 14.sp
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -403,6 +392,47 @@ fun ViewDoctorProfileScreen(
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(16.dp))
+            InfoCard(title = stringResource(R.string.rate)) {
+                var selectedRating by remember { mutableStateOf(0) } // user's selected rating
+                val context = LocalContext.current
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                ) {
+                    // Rating stars
+                    RatingBar(
+                        currentRating = selectedRating,
+                        onRatingSelected = { rating ->
+                            selectedRating = rating
+                        }
+                    )
+                }
+                    // Submit button
+                    Button(
+                        onClick = {
+                            if (selectedRating > 0) {
+                                rateDoctor(doctor.id, selectedRating)
+                                Toast.makeText(
+                                    context,
+                                    "You rated $selectedRating stars",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "Please select a rating first",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Blue),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text("Submit Rating", color = Color.White)
+                    }
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
         }
@@ -435,8 +465,8 @@ fun rateDoctor(doctorId: String, newRating: Int) {
 
         val snapshot = transaction.get(docRef)
 
-        val oldTotal = snapshot.getLong("totalRatingSum") ?: 0
-        val oldCount = snapshot.getLong("ratingsCount") ?: 0
+        val oldTotal = snapshot.getLong("totalRating") ?: 0
+        val oldCount = snapshot.getLong("reviewsCount") ?: 0
 
         val newTotal = oldTotal + newRating
         val newCount = oldCount + 1
