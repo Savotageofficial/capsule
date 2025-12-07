@@ -1,6 +1,5 @@
 package com.example.capsule.ui.screens.doctor
 
-import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -29,9 +28,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.capsule.ChatSelection
-import com.example.capsule.ChatSelectionActivity
-import com.example.capsule.activities.ChatActivity
 import com.example.capsule.R
 import com.example.capsule.ui.components.DashboardCard
 import com.example.capsule.ui.components.UpcomingCard
@@ -54,7 +50,6 @@ fun DoctorDashboardScreen(
     val doctor = viewModel.doctor.value
     val appointments = viewModel.appointments.value   // USE REAL APPOINTMENTS
     val isLoading = viewModel.isLoading.value         // USE LOADING STATE
-    val context = LocalContext.current
 
     // Load doctor data when screen opens
     LaunchedEffect(Unit) {
@@ -173,11 +168,7 @@ fun DoctorDashboardScreen(
                     icon = R.drawable.ic_messages,
                     bgColor = Color(0xFFE4FBE4),
                     iconColor = Green,
-                    onClick = {
-                        onMessagesClick()
-                        val intent = Intent(context, ChatSelectionActivity::class.java)
-                        context.startActivity(intent)
-                    },
+                    onClick = onMessagesClick,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -205,7 +196,7 @@ fun DoctorDashboardScreen(
                             .background(Color(0xFFFBE4E4), CircleShape)
                     ) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_calendar),
+                            painter = painterResource(R.drawable.ic_prescription),
                             tint = Color(0xFFFF4141),
                             contentDescription = "Prescription"
                         )

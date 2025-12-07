@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import com.example.capsule.data.model.TimeSlot
 import com.example.capsule.ui.screens.doctor.*
 import com.example.capsule.ui.screens.booking.BookingConfirmationScreen
+import com.example.capsule.ui.chat.ChatSelectionScreen
 import com.example.capsule.ui.screens.search.SearchScreen
 import com.example.capsule.ui.screens.search.SearchResultsScreen
 import com.example.capsule.ui.screens.settings.SettingsScreen
@@ -29,7 +30,8 @@ fun NavGraph(
                 onSearchClick = { navController.navigate("search") },
                 onSettingsClick = { navController.navigate("settings") },
                 onAppointmentsClick = { navController.navigate("patientAppointments") },
-                onPrescriptionsClick = { navController.navigate("patientPrescriptions") }
+                onPrescriptionsClick = { navController.navigate("patientPrescriptions") },
+                onMessagesClick = { navController.navigate("chatSelection") }  // Added
             )
         }
 
@@ -71,7 +73,7 @@ fun NavGraph(
                 },
                 onScheduleClick = { navController.navigate("doctorSchedule") },
                 onSettingsClick = { navController.navigate("settings") },
-                onMessagesClick = { /* TODO */ },
+                onMessagesClick = { navController.navigate("chatSelection") },  // Updated
                 onPrescriptionClick = {
                     navController.navigate("doctorPrescriptions")
                 },
@@ -126,6 +128,20 @@ fun NavGraph(
             )
         }
 
+        composable("makePrescription/{patientId}/{patientName}") { backStackEntry ->
+            val patientId = backStackEntry.arguments?.getString("patientId") ?: ""
+            val patientName = backStackEntry.arguments?.getString("patientName") ?: ""
+
+            MakeNewPrescriptionScreen(
+                patientId = patientId,
+                patientName = patientName,
+                onBack = { navController.popBackStack() },
+                onSavePrescription = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
         // View Prescription (Shared - for both patient and doctor)
         composable("viewPrescription/{prescriptionId}/{isDoctorView}") { backStackEntry ->
             val prescriptionId = backStackEntry.arguments?.getString("prescriptionId") ?: ""
@@ -134,6 +150,13 @@ fun NavGraph(
             ViewPrescriptionScreen(
                 prescriptionId = prescriptionId,
                 isDoctorView = isDoctorView,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        // CHAT SELECTION SCREEN
+        composable("chatSelection") {
+            ChatSelectionScreen(
                 onBackClick = { navController.popBackStack() }
             )
         }
@@ -175,10 +198,14 @@ fun NavGraph(
         }
 
         composable("viewPatientProfile/{patientId}") { backStackEntry ->
-            val patientId = backStackEntry.arguments?.getString("patientId")
+            val patientIdArg = backStackEntry.arguments?.getString("patientId")
+
             ViewPatientProfileScreen(
-                patientId = patientId,
-                onBackClick = { navController.popBackStack() }
+                patientId = patientIdArg,
+                onBackClick = { navController.popBackStack() },
+                onMakePrescriptionClick = { patientId, patientName ->
+                    navController.navigate("makePrescription/$patientId/$patientName")
+                }
             )
         }
 
