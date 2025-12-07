@@ -9,6 +9,8 @@ import com.example.capsule.data.model.Patient
 import com.example.capsule.data.model.TimeSlot
 import com.example.capsule.data.repository.ProfileRepository
 import com.example.capsule.util.convertDateTimeToMillis
+import com.google.firebase.Timestamp
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 

@@ -5,6 +5,7 @@ import com.example.capsule.data.model.Doctor
 import com.example.capsule.data.model.Medication
 import com.example.capsule.data.model.Patient
 import com.example.capsule.data.model.Prescription
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
@@ -134,10 +135,19 @@ class ProfileRepository {
 
     // Book appointment with conflict check
     fun bookAppointment(appointment: Appointment, onDone: (Boolean) -> Unit) {
+
         db.collection("appointments")
             .add(appointment)
             .addOnSuccessListener { onDone(true) }
             .addOnFailureListener { onDone(false) }
+        db.collection("messages").add(
+            mapOf(
+                "message" to "${appointment.patientName} has reserved an appointment , please check your schedule",
+                "senderId" to appointment.patientId,
+                "timestamp" to Timestamp.now(),
+                "receiverId" to appointment.doctorId
+            )
+        )
     }
 
 
