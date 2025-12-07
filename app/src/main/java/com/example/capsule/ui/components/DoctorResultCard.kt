@@ -56,8 +56,10 @@ fun DoctorResultCard(
 
             // Circular doctor image
             Image(
-                painter = painterResource(R.drawable.doc_prof_unloaded),
-                contentDescription = null,
+                painter = painterResource(
+                    id = doctor.profileImageRes ?: R.drawable.doc_prof_unloaded
+                ),
+                contentDescription = "Doctor profile image",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(86.dp)
@@ -70,8 +72,8 @@ fun DoctorResultCard(
 
                 // -------- NAME --------
                 Text(
-                    text = "Dr. ${doctor.name}",
-                    style = MaterialTheme.typography.titleLarge,   // Larger text
+                    text = if (doctor.name.startsWith("Dr. ")) doctor.name else "Dr. ${doctor.name}",
+                    style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -88,15 +90,16 @@ fun DoctorResultCard(
 
                 Spacer(Modifier.height(8.dp))
 
-                // -------- ADDRESS --------
-                Text(
-                    text = doctor.clinicAddress,
-                    style = MaterialTheme.typography.bodyMedium,   // Larger
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2
-                )
-
-                Spacer(Modifier.height(14.dp))
+                // -------- ADDRESS (if available) --------
+                if (doctor.clinicAddress.isNotEmpty()) {
+                    Text(
+                        text = doctor.clinicAddress,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2
+                    )
+                    Spacer(Modifier.height(8.dp))
+                }
 
                 // -------- RATING & PRICE --------
                 Row(
@@ -104,33 +107,33 @@ fun DoctorResultCard(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
 
-                    // Rating
+                    // Rating section
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             painter = painterResource(R.drawable.ic_star_filled),
                             tint = Gold,
-                            contentDescription = null,
+                            contentDescription = "Rating",
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(Modifier.width(6.dp))
                         Text(
-                            text = doctor.rating.toString(),
-                            style = MaterialTheme.typography.titleMedium,  // Larger
+                            text = getRatingText(doctor.rating, doctor.reviewsCount),
+                            style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold
                         )
                     }
 
-                    // Price
+                    // Price section
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             painter = painterResource(R.drawable.ic_price),
                             tint = Green,
-                            contentDescription = null,
+                            contentDescription = "Session price",
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(Modifier.width(6.dp))
                         Text(
-                            text = doctor.formattedSessionPrice,
+                            text = getPriceText(doctor.sessionPrice),
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Bold
@@ -142,3 +145,20 @@ fun DoctorResultCard(
     }
 }
 
+
+private fun getRatingText(rating: Double, reviewsCount: Int): String {
+    return when {
+        rating > 0 && reviewsCount > 0 -> String.format("%.1f", rating)
+        rating > 0 -> String.format("%.1f", rating)
+        else -> "New"
+    }
+}
+
+
+private fun getPriceText(price: Double): String {
+    return when {
+        price > 0 -> "EGP ${price.toInt()}"
+        price == 0.0 -> "Free"
+        else -> "Contact"
+    }
+}

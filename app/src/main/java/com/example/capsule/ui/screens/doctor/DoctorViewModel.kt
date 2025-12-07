@@ -47,6 +47,16 @@ class DoctorViewModel : ViewModel() {
     // Availability (State kept separately for the UI)
     val availability = mutableStateMapOf<String, MutableList<TimeSlot>>()
 
+    // Rating state
+    private val _hasRated = mutableStateOf(false)
+    val hasRated = _hasRated
+
+    private val _currentUserRating = mutableStateOf(0)
+    val currentUserRating = _currentUserRating
+
+    private val _isRatingLoading = mutableStateOf(false)
+    val isRatingLoading = _isRatingLoading
+
     // -------------------------------------------------------------
     // Load Doctor Profile
     // -------------------------------------------------------------
@@ -297,4 +307,46 @@ class DoctorViewModel : ViewModel() {
         }
     }
 
+    // -------------------------------------------------------------
+    // Rating Functions
+    // -------------------------------------------------------------
+
+    // Function to check if current user has rated
+    fun checkIfUserHasRated(doctorId: String, userId: String) {
+        _isRatingLoading.value = true
+        viewModelScope.launch {
+            profileRepository.hasUserRatedDoctor(doctorId, userId) { hasRated ->
+                _hasRated.value = hasRated
+                _isRatingLoading.value = false
+            }
+        }
+    }
+
+    // Function to submit rating
+    fun submitRating(doctorId: String, patientId: String, rating: Int, onResult: (Boolean) -> Unit) {
+        _isRatingLoading.value = true
+        viewModelScope.launch {
+            profileRepository.rateDoctor(doctorId, patientId, rating) { success ->
+                if (success) {
+                    // Update local doctor state
+                    _doctor.value?.let { currentDoctor ->
+                        val newTotalRating = currentDoctor.totalRating + rating
+                        val newReviewsCount = currentDoctor.reviewsCount + 1
+                        val newRating = newTotalRating / newReviewsCount.toDouble()
+
+                        _doctor.value = currentDoctor.copy(
+                            totalRating = newTotalRating,
+                            reviewsCount = newReviewsCount,
+                            rating = newRating,
+                            ratedByUsers = currentDoctor.ratedByUsers + patientId
+                        )
+                        _hasRated.value = true
+                        _currentUserRating.value = rating
+                    }
+                }
+                _isRatingLoading.value = false
+                onResult(success)
+            }
+        }
+    }
 }

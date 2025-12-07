@@ -125,6 +125,7 @@ class ProfileRepository {
         }
     }
 
+    // if you wanna add it
     fun deleteAppointment(appointmentId: String, onDone: (Boolean) -> Unit) {
         db.collection("appointments")
             .document(appointmentId)
@@ -347,6 +348,57 @@ class ProfileRepository {
         } catch (_: Exception) {
             emptyMap()
         }
+    }
+
+
+    fun rateDoctor(doctorId: String, patientId: String, rating: Int, onDone: (Boolean) -> Unit) {
+        val doctorRef = db.collection("doctors").document(doctorId)
+
+        db.runTransaction { transaction ->
+            val doctorDoc = transaction.get(doctorRef)
+            val doctor = doctorDoc.toObject(Doctor::class.java) ?: return@runTransaction null
+
+            // Check if patient already rated
+            if (doctor.ratedByUsers.contains(patientId)) {
+                return@runTransaction false
+            }
+
+            // Calculate new rating
+            val newTotalRating = doctor.totalRating + rating
+            val newReviewsCount = doctor.reviewsCount + 1
+            val newRating = newTotalRating.toDouble() / newReviewsCount.toDouble()
+
+            // Update ratedByUsers list
+            val updatedRatedByUsers = doctor.ratedByUsers + patientId
+
+            // Update the doctor document
+            transaction.update(doctorRef, mapOf(
+                "totalRating" to newTotalRating,
+                "reviewsCount" to newReviewsCount,
+                "rating" to newRating,
+                "ratedByUsers" to updatedRatedByUsers
+            ))
+
+            return@runTransaction true
+        }.addOnSuccessListener { success ->
+            onDone(success == true)
+        }.addOnFailureListener {
+            onDone(false)
+        }
+    }
+
+    fun hasUserRatedDoctor(doctorId: String, userId: String, onResult: (Boolean) -> Unit) {
+        db.collection("doctors")
+            .document(doctorId)
+            .get()
+            .addOnSuccessListener { document ->
+                val doctor = document.toObject(Doctor::class.java)
+                val hasRated = doctor?.ratedByUsers?.contains(userId) ?: false
+                onResult(hasRated)
+            }
+            .addOnFailureListener {
+                onResult(false)
+            }
     }
 
     companion object {

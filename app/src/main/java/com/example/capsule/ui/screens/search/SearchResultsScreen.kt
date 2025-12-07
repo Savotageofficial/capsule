@@ -31,26 +31,10 @@ import com.example.capsule.ui.theme.WhiteSmoke
 fun SearchResultsScreen(
     navController: NavHostController
 ) {
-    val names = navController.previousBackStackEntry
+    // Get the complete list of Doctor objects
+    val doctors = navController.previousBackStackEntry
         ?.savedStateHandle
-        ?.get<ArrayList<String>>("names") ?: arrayListOf()
-
-    val ids = navController.previousBackStackEntry
-        ?.savedStateHandle
-        ?.get<ArrayList<String>>("ids") ?: arrayListOf()
-
-    val specialities = navController.previousBackStackEntry
-        ?.savedStateHandle
-        ?.get<ArrayList<String>>("specialities") ?: arrayListOf()
-
-    // Rebuild doctor list
-    val doctors = names.indices.map {
-        Doctor(
-            id = ids.getOrNull(it) ?: "",
-            name = names[it],
-            specialty = specialities.getOrNull(it) ?: "",
-        )
-    }
+        ?.get<ArrayList<Doctor>>("doctors") ?: arrayListOf()
 
     Scaffold(
         topBar = {
@@ -164,7 +148,6 @@ fun SearchResultsScreen(
                         }
                     }
 
-                    // Add bottom padding for better scroll experience
                     item {
                         Spacer(modifier = Modifier.height(16.dp))
                     }

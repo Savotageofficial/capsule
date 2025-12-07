@@ -25,17 +25,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -74,7 +64,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 fun ViewDoctorProfileScreen(
     doctorId: String? = null,
     onBackClick: () -> Unit = {},
-    onMessagesClick: () -> Unit = {},
     onBookingSuccess: (Long, TimeSlot, String) -> Unit = { _, _, _ -> },
     doctorViewModel: DoctorViewModel = viewModel(),
     patientViewModel: PatientViewModel = viewModel()
@@ -82,6 +71,7 @@ fun ViewDoctorProfileScreen(
     val doctor = doctorViewModel.doctor.value
     val patient = patientViewModel.patient.value
     var showBookingSheet by remember { mutableStateOf(false) }
+    var showRatingSheet by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val db = FirebaseFirestore.getInstance()
     val auth = FirebaseAuth.getInstance()
@@ -177,32 +167,16 @@ fun ViewDoctorProfileScreen(
 
                             docref.get().addOnSuccessListener { document ->
                                 if (document != null && document.exists()) {
-                                    // 1. FIX THE CRASH: Use .get() and cast it safely
-                                    // We expect an ArrayList, so we cast it to MutableList<String>
-                                    val fetchedHistory = document.get("msgHistory") as? MutableList<String>
-
-                                    // If the field doesn't exist yet, create a new list
+                                    val fetchedHistory =
+                                        document.get("msgHistory") as? MutableList<String>
                                     val msgHistory = fetchedHistory ?: mutableListOf()
 
-                                    // 2. FIX THE LOGIC: Do the check and update INSIDE this block
                                     if (doctorId != null && !msgHistory.contains(doctorId)) {
                                         msgHistory.add(doctorId)
-
-                                        // Perform the update strictly after we know the data is modified
                                         docref.update("msgHistory", msgHistory)
-                                            .addOnSuccessListener {
-                                                // Success message here
-                                            }
-                                            .addOnFailureListener { e ->
-                                                // Handle update failure
-                                            }
                                     }
                                 }
-                            }.addOnFailureListener { exception ->
-                                // Handle get() failure
                             }
-
-
 
                             val intent = Intent(context, ChatActivity::class.java)
                             intent.putExtra("Name", doctor.name)
@@ -251,8 +225,16 @@ fun ViewDoctorProfileScreen(
             Text(doctor.name, fontSize = 22.sp, fontWeight = FontWeight.Bold)
             Text(text = doctor.specialty, fontSize = 16.sp, color = Blue)
 
-            // Rating
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            // Rating Display Row
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .padding(vertical = 8.dp)
+                    .clickable {
+                        // Show rating bottom sheet when clicked
+                        showRatingSheet = true
+                    }
+            ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_star),
                     contentDescription = "Rating Star",
@@ -269,6 +251,19 @@ fun ViewDoctorProfileScreen(
                 Text(
                     text = "(${doctor.reviewsCount} reviews)",
                     color = Color.Gray,
+                    fontSize = 14.sp
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_edit),
+                    contentDescription = "Rate",
+                    tint = Blue,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "Rate",
+                    color = Blue,
                     fontSize = 14.sp
                 )
             }
@@ -335,8 +330,7 @@ fun ViewDoctorProfileScreen(
                 }
             }
 
-            // Add this section after the Location InfoCard and before Availability Section
-
+            // Session Price
             InfoCard(title = "Session Price") {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -392,47 +386,6 @@ fun ViewDoctorProfileScreen(
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(16.dp))
-            InfoCard(title = stringResource(R.string.rate)) {
-                var selectedRating by remember { mutableStateOf(0) } // user's selected rating
-                val context = LocalContext.current
-
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                ) {
-                    // Rating stars
-                    RatingBar(
-                        currentRating = selectedRating,
-                        onRatingSelected = { rating ->
-                            selectedRating = rating
-                        }
-                    )
-                }
-                    // Submit button
-                    Button(
-                        onClick = {
-                            if (selectedRating > 0) {
-                                rateDoctor(doctor.id, selectedRating)
-                                Toast.makeText(
-                                    context,
-                                    "You rated $selectedRating stars",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            } else {
-                                Toast.makeText(
-                                    context,
-                                    "Please select a rating first",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = Blue),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text("Submit Rating", color = Color.White)
-                    }
-            }
 
             Spacer(modifier = Modifier.height(16.dp))
         }
@@ -455,41 +408,230 @@ fun ViewDoctorProfileScreen(
             onDismiss = { showBookingSheet = false }
         )
     }
-}
-fun rateDoctor(doctorId: String, newRating: Int) {
-    val docRef = FirebaseFirestore.getInstance()
-        .collection("doctors")
-        .document(doctorId)
 
-    FirebaseFirestore.getInstance().runTransaction { transaction ->
-
-        val snapshot = transaction.get(docRef)
-
-        val oldTotal = snapshot.getLong("totalRating") ?: 0
-        val oldCount = snapshot.getLong("reviewsCount") ?: 0
-
-        val newTotal = oldTotal + newRating
-        val newCount = oldCount + 1
-
-        val newAvg = newTotal.toDouble() / newCount.toDouble()
-
-        // update atomically
-        transaction.update(docRef, mapOf(
-            "totalRating" to newTotal,
-            "reviewsCount" to newCount,
-            "rating" to newAvg
-        ))
+    // Rating Bottom Sheet
+    if (showRatingSheet) {
+        RatingBottomSheet(
+            doctor = doctor,
+            onRatingSubmitted = { success ->
+                showRatingSheet = false
+                if (success) {
+                    Toast.makeText(
+                        context,
+                        "Thank you for your rating!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            },
+            onDismiss = { showRatingSheet = false }
+        )
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RatingBottomSheet(
+    doctor: com.example.capsule.data.model.Doctor,
+    onRatingSubmitted: (Boolean) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val auth = FirebaseAuth.getInstance()
+    val currentUser = auth.currentUser
+    val context = LocalContext.current
+    var selectedRating by remember { mutableStateOf(0) }
+    var isSubmitting by remember { mutableStateOf(false) }
+    val doctorViewModel: DoctorViewModel = viewModel()
+
+    // Check if user has already rated this doctor
+    LaunchedEffect(doctor.id, currentUser?.uid) {
+        if (doctor.id.isNotEmpty() && currentUser?.uid != null) {
+            doctorViewModel.checkIfUserHasRated(doctor.id, currentUser.uid)
+        }
+    }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = Color.White,
+        sheetState = rememberModalBottomSheetState()
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Title
+            Text(
+                text = "Rate Dr. ${doctor.name}",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
+            // Subtitle
+            Text(
+                text = "How was your experience with this doctor?",
+                fontSize = 14.sp,
+                color = Color.Gray,
+                modifier = Modifier.padding(bottom = 24.dp)
+            )
+
+            // Rating Stars
+            if (doctorViewModel.isRatingLoading.value) {
+                CircularProgressIndicator(modifier = Modifier.size(24.dp))
+            } else if (doctorViewModel.hasRated.value) {
+                // Already rated state
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_check),
+                        contentDescription = "Already rated",
+                        tint = Green,
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Text(
+                        text = "You've already rated this doctor",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text(
+                        text = "Your rating: ${doctorViewModel.currentUserRating.value} stars",
+                        fontSize = 14.sp,
+                        color = Color.Gray
+                    )
+                    Button(
+                        onClick = onDismiss,
+                        colors = ButtonDefaults.buttonColors(containerColor = Blue),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Close")
+                    }
+                }
+            } else {
+                // Rating interface
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    // Stars
+                    RatingBar(
+                        currentRating = selectedRating,
+                        onRatingSelected = { rating ->
+                            selectedRating = rating
+                        },
+                        starSize = 40.dp
+                    )
+
+                    // Rating labels
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("Poor", fontSize = 12.sp, color = Color.Gray)
+                        Text("Excellent", fontSize = 12.sp, color = Color.Gray)
+                    }
+
+                    // Current doctor rating
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_star),
+                            contentDescription = "Current rating",
+                            tint = Gold,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Current rating: ${String.format("%.1f", doctor.rating)}",
+                            fontSize = 14.sp,
+                            color = Color.Gray
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "(${doctor.reviewsCount} reviews)",
+                            fontSize = 12.sp,
+                            color = Color.Gray
+                        )
+                    }
+
+                    // Submit button
+                    Button(
+                        onClick = {
+                            if (selectedRating > 0 && currentUser?.uid != null) {
+                                isSubmitting = true
+                                doctorViewModel.submitRating(
+                                    doctorId = doctor.id,
+                                    patientId = currentUser.uid,
+                                    rating = selectedRating
+                                ) { success ->
+                                    isSubmitting = false
+                                    onRatingSubmitted(success)
+                                }
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "Please select a rating first",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Blue),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        enabled = selectedRating > 0 && !isSubmitting
+                    ) {
+                        if (isSubmitting) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = Color.White
+                            )
+                        } else {
+                            Text(
+                                text = "Submit Rating",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+
+                    // Cancel button
+                    TextButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "Cancel",
+                            fontSize = 14.sp,
+                            color = Color.Gray
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+    }
+}
+
 @Composable
 fun RatingBar(
     currentRating: Int,
     onRatingSelected: (Int) -> Unit,
+    enabled: Boolean = true,
+    starSize: androidx.compose.ui.unit.Dp = 32.dp,
     modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.Center,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         for (i in 1..5) {
@@ -499,10 +641,10 @@ fun RatingBar(
                     id = if (filled) R.drawable.ic_star_filled else R.drawable.ic_star
                 ),
                 contentDescription = "$i stars",
-                tint = Gold,
+                tint = if (enabled && filled) Gold else Color.LightGray,
                 modifier = Modifier
-                    .size(32.dp)
-                    .clickable { onRatingSelected(i) }
+                    .size(starSize)
+                    .clickable(enabled = enabled) { onRatingSelected(i) }
                     .padding(4.dp)
             )
         }
