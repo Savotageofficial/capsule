@@ -20,8 +20,14 @@ class DoctorViewModel : ViewModel() {
     val doctor = _doctor
 
     // Appointments
+    private val _allAppointments = mutableStateOf(emptyList<Appointment>())
+
     private val _appointments = mutableStateOf(emptyList<Appointment>())
     val appointments = _appointments
+
+    // Filter state
+    private val _filterState = mutableStateOf("Upcoming") // Default filter
+    val filterState = _filterState
 
     // Prescriptions
     private val _prescriptions = mutableStateOf(emptyList<Prescription>())
@@ -37,7 +43,6 @@ class DoctorViewModel : ViewModel() {
 
     // Error message
     private val _errorMessage = mutableStateOf<String?>(null)
-    val errorMessage = _errorMessage
 
     // Availability (State kept separately for the UI)
     val availability = mutableStateMapOf<String, MutableList<TimeSlot>>()
@@ -76,13 +81,54 @@ class DoctorViewModel : ViewModel() {
     }
 
     // -------------------------------------------------------------
+    // Filter Functions
+    // -------------------------------------------------------------
+    fun setFilter(filter: String) {
+        _filterState.value = filter
+        applyFilter(filter)
+    }
+
+    private fun applyFilter(filter: String) {
+        _appointments.value = when (filter) {
+            "Upcoming" -> _allAppointments.value.filter { it.status == "Upcoming" }
+            "Completed" -> _allAppointments.value.filter { it.status == "Completed" }
+            "Cancelled" -> _allAppointments.value.filter { it.status == "Cancelled" }
+            else -> _allAppointments.value
+        }.sortedBy { it.dateTime }
+    }
+
+    // -------------------------------------------------------------
     // Load Appointments
     // -------------------------------------------------------------
     private fun loadDoctorAppointments() {
         _doctor.value?.id?.let { doctorId ->
             viewModelScope.launch {
                 profileRepository.getDoctorAppointments(doctorId) { appointments ->
-                    _appointments.value = appointments
+                    _allAppointments.value = appointments
+                    applyFilter(_filterState.value) // Apply the current filter
+                }
+            }
+        }
+    }
+
+    // -------------------------------------------------------------
+    // Mark Appointment as Completed
+    // -------------------------------------------------------------
+    fun markAsCompleted(appointmentId: String) {
+        viewModelScope.launch {
+            profileRepository.updateAppointmentStatus(appointmentId, "Completed") { success ->
+                if (success) {
+                    // Update local state
+                    _allAppointments.value = _allAppointments.value.map { appointment ->
+                        if (appointment.id == appointmentId) {
+                            appointment.copy(status = "Completed")
+                        } else {
+                            appointment
+                        }
+                    }
+                    applyFilter(_filterState.value) // Reapply filter
+                } else {
+                    _errorMessage.value = "Failed to mark appointment as completed"
                 }
             }
         }
@@ -182,6 +228,7 @@ class DoctorViewModel : ViewModel() {
             }
         }
     }
+
     // -------------------------------------------------------------
     // Save Availability to Firestore
     // -------------------------------------------------------------
@@ -216,7 +263,8 @@ class DoctorViewModel : ViewModel() {
                         clinicAddress = data["clinicAddress"] as? String
                             ?: _doctor.value!!.clinicAddress,
                         locationUrl = data["locationUrl"] as? String ?: _doctor.value!!.locationUrl,
-                        sessionPrice = data["sessionPrice"] as? Double ?: _doctor.value!!.sessionPrice,
+                        sessionPrice = data["sessionPrice"] as? Double
+                            ?: _doctor.value!!.sessionPrice,
                         availability = (data["availability"] as? Map<String, List<TimeSlot>>)
                             ?: _doctor.value!!.availability
                     )
@@ -227,16 +275,26 @@ class DoctorViewModel : ViewModel() {
     }
 
     // -------------------------------------------------------------
-    // Delete Appointment
+    // cancel Appointment
     // -------------------------------------------------------------
-    fun deleteAppointment(appointmentId: String) {
+    fun cancelAppointment(appointmentId: String) {
         viewModelScope.launch {
-            profileRepository.deleteAppointment(appointmentId) { success ->
+            profileRepository.updateAppointmentStatus(appointmentId, "Cancelled") { success ->
                 if (success) {
-                    _appointments.value =
-                        _appointments.value.filter { it.id != appointmentId }
+                    // Update local state
+                    _allAppointments.value = _allAppointments.value.map { appointment ->
+                        if (appointment.id == appointmentId) {
+                            appointment.copy(status = "Cancelled")
+                        } else {
+                            appointment
+                        }
+                    }
+                    applyFilter(_filterState.value) // Reapply filter
+                } else {
+                    _errorMessage.value = "Failed to cancel appointment"
                 }
             }
         }
     }
+
 }

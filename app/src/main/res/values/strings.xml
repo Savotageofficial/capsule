@@ -42,4 +42,16 @@
     <string name="my_appointments">My Appointments</string>
     <string name="book_your_first_appointment_with_a_doctor">Book your first appointment with a doctor</string>
     <string name="appointments">Appointments</string>
+    <string name="book_your_an_appointment_with_a_doctor_now">Book your an appointment with a doctor Now</string>
+    <string name="your_schedule_is_clear_for_now">Your schedule is clear for now</string>
+    <string name="booking_confirmation">Booking Confirmation</string>
+    <string name="update_failed">Update Failed</string>
+    <string name="failed_to_update_your_profile_please_try_again">Failed to update your profile. Please try again.</string>
+    <string name="ok">OK</string>
+    <string name="profile_updated">Profile Updated</string>
+    <string name="your_profile_has_been_successfully_updated">Your profile has been successfully updated.</string>
+    <string name="session_price_egp">Session Price (EGP)</string>
+    <string name="egp">EGP</string>
+    <string name="consultation_fee">Consultation Fee</string>
+    <string name="session_price">Session Price</string>
 </resources>

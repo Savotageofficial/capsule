@@ -5,7 +5,7 @@ data class Patient(
     override val name: String = "",
     override val email: String = "",
     override val userType: String = "Patient",
-    override val msgHistory : List<String> = listOf<String>(),
+    override val msgHistory : List<String> = listOf(),
 
     val dob: Long = System.currentTimeMillis(),
     val gender: String = "",
