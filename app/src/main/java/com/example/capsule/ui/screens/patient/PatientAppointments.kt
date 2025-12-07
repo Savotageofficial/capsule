@@ -1,13 +1,17 @@
 package com.example.capsule.ui.screens.patient
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -17,7 +21,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -164,109 +170,149 @@ private fun AppointmentCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(vertical = 6.dp)
             .clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(Color.White),
+        elevation = CardDefaults.cardElevation(8.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
+        Row(
+            modifier = Modifier
+                .padding(18.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // Header with doctor info and status
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+
+            // ---------------- Left Side: Profile + Info ----------------
+            Row(verticalAlignment = Alignment.CenterVertically) {
+
+                // Doctor Picture
+                Image(
+                    painter = painterResource(R.drawable.doc_prof_unloaded),
+                    contentDescription = "Doctor Profile",
+                    modifier = Modifier
+                        .size(52.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFFEFEFEF), CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+
+                Spacer(modifier = Modifier.width(14.dp))
+
                 Column {
+
+                    // Doctor Name
                     Text(
                         text = "Dr. ${appointment.doctorName}",
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
+                        color = Color(0xFF1C1C1C)
                     )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    // Appointment Type
                     Text(
                         text = appointment.type,
-                        color = Color.Gray,
-                        fontSize = 14.sp
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF333333)
                     )
-                }
 
-                // Status badge
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    // Time Row
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Default.AccessTime,
+                            contentDescription = null,
+                            tint = Color(0xFF6D6D6D),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = appointment.timeSlot.toDisplayString(),
+                            fontSize = 14.sp,
+                            color = Color(0xFF6D6D6D)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    // Date Row
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Default.CalendarToday,
+                            contentDescription = null,
+                            tint = Color(0xFF7D7D7D),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = formatAppointmentDateTime(appointment),
+                            fontSize = 14.sp,
+                            color = Color(0xFF7D7D7D)
+                        )
+                    }
+                }
+            }
+
+
+            // ---------------- Right Side: Status + Menu ----------------
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+
+                // Status badge new style
                 Box(
                     modifier = Modifier
                         .background(
                             color = when (appointment.status) {
-                                "Upcoming" -> Color(0x3300FF00)
-                                "Completed" -> Color(0x330000FF)
-                                "Cancelled" -> Color(0x33FF0000)
+                                "Upcoming" -> Color(0x3328B463)
+                                "Completed" -> Color(0x334195F4)
+                                "Cancelled" -> Color(0x33E53935)
                                 else -> Color(0x33CCCCCC)
                             },
-                            shape = RoundedCornerShape(8.dp)
+                            shape = RoundedCornerShape(50)
                         )
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
                     Text(
                         text = appointment.status,
                         color = when (appointment.status) {
-                            "Upcoming" -> Color(0xFF00C853)
-                            "Completed" -> Color(0xFF2196F3)
-                            "Cancelled" -> Color(0xFFF44336)
+                            "Upcoming" -> Color(0xFF2E7D32)
+                            "Completed" -> Color(0xFF1E88E5)
+                            "Cancelled" -> Color(0xFFD32F2F)
                             else -> Color.Gray
                         },
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium
                     )
                 }
-            }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Appointment details
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_calendar),
-                    contentDescription = "Date",
-                    modifier = Modifier.size(16.dp),
-                    tint = Color.Gray
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = formatAppointmentDateTime(appointment),
-                    color = Color.Gray,
-                    fontSize = 14.sp
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Actions - Only show cancel for upcoming appointments
-            if (appointment.status == "Upcoming") {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(
-                        onClick = { showCancelDialog = true },
-                        colors = ButtonDefaults.textButtonColors(
-                            contentColor = Color.Red
-                        )
-                    ) {
-                        Text("Cancel Appointment")
-                    }
+                // Cancel button only if upcoming
+                if (appointment.status == "Upcoming") {
+                    Text(
+                        text = "Cancel",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.Red,
+                        modifier = Modifier.clickable { showCancelDialog = true }
+                    )
                 }
             }
         }
     }
 
-    // Cancel confirmation dialog
+    // -------- Cancel Dialog --------
     if (showCancelDialog) {
         AlertDialog(
             onDismissRequest = { showCancelDialog = false },
             title = { Text("Cancel Appointment") },
             text = {
-                Text("Are you sure you want to cancel this appointment with Dr. ${appointment.doctorName}?")
+                Text("Are you sure you want to cancel your appointment with Dr. ${appointment.doctorName}?")
             },
             confirmButton = {
                 TextButton(
@@ -286,6 +332,7 @@ private fun AppointmentCard(
         )
     }
 }
+
 
 // Helper function to format appointment date and time
 private fun formatAppointmentDateTime(appointment: Appointment): String {

@@ -1,13 +1,17 @@
 package com.example.capsule.ui.screens.doctor
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -17,7 +21,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -28,11 +34,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.R
 import com.example.capsule.data.model.Appointment
-import com.example.capsule.data.model.isUpcoming
 import com.example.capsule.ui.theme.WhiteSmoke
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
+import com.example.capsule.util.formatDate
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -157,46 +160,113 @@ private fun DoctorAppointmentsList(
 }
 
 @Composable
-private fun DoctorAppointmentCard(
+fun DoctorAppointmentCard(
     appointment: Appointment,
     onPatientClick: () -> Unit,
     onAppointmentClick: () -> Unit,
     onDeleteClick: () -> Unit
 ) {
+    var menuExpanded by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     Card(
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(Color.White),
+        elevation = CardDefaults.cardElevation(8.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onAppointmentClick() },
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            .padding(vertical = 6.dp)
+            .clickable { onAppointmentClick() }
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
+
+        Row(
+            modifier = Modifier
+                .padding(18.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // Patient info
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(
-                    modifier = Modifier.clickable { onPatientClick() }
-                ) {
+
+            // ---------------- LEFT SIDE ----------------
+            Row(verticalAlignment = Alignment.CenterVertically) {
+
+                // Profile Image
+                Image(
+                    painter = painterResource(R.drawable.patient_profile),
+                    contentDescription = "Profile",
+                    modifier = Modifier
+                        .size(52.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFFEFEFEF), CircleShape)
+                        .clickable { onPatientClick() },
+                    contentScale = ContentScale.Crop
+                )
+
+                Spacer(modifier = Modifier.width(14.dp))
+
+                Column(modifier = Modifier.clickable { onPatientClick() }) {
+
+                    // Patient Name
                     Text(
                         text = appointment.patientName,
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
+                        color = Color(0xFF1C1C1C)
                     )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    // Appointment Type
                     Text(
                         text = appointment.type,
-                        color = Color.Gray,
-                        fontSize = 14.sp
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF333333)
                     )
-                }
 
-                // Status badge
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    // Time Slot
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Default.AccessTime,
+                            contentDescription = null,
+                            tint = Color(0xFF7D7D7D),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = appointment.timeSlot.toDisplayString(),
+                            fontSize = 14.sp,
+                            color = Color(0xFF6D6D6D)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    // Date
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Default.CalendarToday,
+                            contentDescription = null,
+                            tint = Color(0xFF7D7D7D),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = formatDate(appointment.dateTime),
+                            fontSize = 14.sp,
+                            color = Color(0xFF7D7D7D)
+                        )
+                    }
+                }
+            }
+
+            // ---------------- RIGHT SIDE ----------------
+
+            Column(horizontalAlignment = Alignment.End) {
+
+                // STATUS BADGE
                 Box(
                     modifier = Modifier
                         .background(
@@ -206,90 +276,51 @@ private fun DoctorAppointmentCard(
                                 "Cancelled" -> Color(0x33FF0000)
                                 else -> Color(0x33CCCCCC)
                             },
-                            shape = RoundedCornerShape(8.dp)
+                            shape = RoundedCornerShape(10.dp)
                         )
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
                     Text(
                         text = appointment.status,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
                         color = when (appointment.status) {
-                            "Upcoming" -> Color.Green
-                            "Completed" -> Color.Blue
+                            "Upcoming" -> Color(0xFF00AA00)
+                            "Completed" -> Color(0xFF0044FF)
                             "Cancelled" -> Color.Red
                             else -> Color.Gray
-                        },
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
+                        }
                     )
                 }
-            }
 
-            Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
-            // Appointment time
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_clock),
-                    contentDescription = "Time",
-                    modifier = Modifier.size(16.dp),
-                    tint = Color.Gray
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "${appointment.timeSlot.start} - ${appointment.timeSlot.end}",
-                    color = Color.Gray,
-                    fontSize = 14.sp
-                )
-            }
+                // THREE DOTS MENU
+                IconButton(onClick = { menuExpanded = true }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_more),
+                        contentDescription = "",
+                        tint = Color(0xFF505050)
+                    )
+                }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Appointment date
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_calendar),
-                    contentDescription = "Date",
-                    modifier = Modifier.size(16.dp),
-                    tint = Color.Gray
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = Instant.ofEpochMilli(appointment.dateTime)
-                        .atZone(ZoneId.systemDefault())
-                        .format(DateTimeFormatter.ofPattern("MMM dd, yyyy")),
-                    color = Color.Gray,
-                    fontSize = 14.sp
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Actions
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                if (appointment.isUpcoming) {
-                    TextButton(
-                        onClick = { showDeleteDialog = true },
-                        colors = ButtonDefaults.textButtonColors(
-                            contentColor = Color.Red
-                        )
-                    ) {
-                        Text("Remove")
-                    }
+                DropdownMenu(
+                    expanded = menuExpanded,
+                    onDismissRequest = { menuExpanded = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Delete", color = Color.Red) },
+                        onClick = {
+                            menuExpanded = false
+                            showDeleteDialog = true
+                        }
+                    )
                 }
             }
         }
     }
 
-    // Delete confirmation dialog
+    // ------------ DELETE CONFIRMATION DIALOG ------------
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },

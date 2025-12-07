@@ -128,6 +128,20 @@ fun NavGraph(
             )
         }
 
+        composable("makePrescription/{patientId}/{patientName}") { backStackEntry ->
+            val patientId = backStackEntry.arguments?.getString("patientId") ?: ""
+            val patientName = backStackEntry.arguments?.getString("patientName") ?: ""
+
+            MakeNewPrescriptionScreen(
+                patientId = patientId,
+                patientName = patientName,
+                onBack = { navController.popBackStack() },
+                onSavePrescription = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
         // View Prescription (Shared - for both patient and doctor)
         composable("viewPrescription/{prescriptionId}/{isDoctorView}") { backStackEntry ->
             val prescriptionId = backStackEntry.arguments?.getString("prescriptionId") ?: ""
@@ -184,10 +198,14 @@ fun NavGraph(
         }
 
         composable("viewPatientProfile/{patientId}") { backStackEntry ->
-            val patientId = backStackEntry.arguments?.getString("patientId")
+            val patientIdArg = backStackEntry.arguments?.getString("patientId")
+
             ViewPatientProfileScreen(
-                patientId = patientId,
-                onBackClick = { navController.popBackStack() }
+                patientId = patientIdArg,
+                onBackClick = { navController.popBackStack() },
+                onMakePrescriptionClick = { patientId, patientName ->
+                    navController.navigate("makePrescription/$patientId/$patientName")
+                }
             )
         }
 

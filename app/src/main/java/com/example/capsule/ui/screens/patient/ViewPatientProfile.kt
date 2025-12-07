@@ -42,8 +42,7 @@ fun ViewPatientProfileScreen(
     patientId: String? = null,
     onBackClick: () -> Unit = {},
     viewModel: PatientViewModel = viewModel(),
-    onMessagesClick: () -> Unit = {},
-
+    onMakePrescriptionClick: (patientId: String, patientName: String) -> Unit = { _, _ -> },
 ) {
     val patient = viewModel.patient.value
     val context = LocalContext.current
@@ -74,7 +73,8 @@ fun ViewPatientProfileScreen(
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
-                        color = Color(0xFF0A3140)                    )
+                        color = Color(0xFF0A3140)
+                    )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
@@ -100,7 +100,10 @@ fun ViewPatientProfileScreen(
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     Button(
-                        onClick = { /* TODO: Handle booking */ },
+                        onClick = {
+                                onMakePrescriptionClick(patient.id, patient.name)
+
+                        },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Green
                         ),
@@ -119,10 +122,9 @@ fun ViewPatientProfileScreen(
 
                     Button(
                         onClick = {
-                            onMessagesClick()
                             val intent = Intent(context, ChatActivity::class.java)
-                            intent.putExtra("Name",patient.name)
-                            intent.putExtra("Id",patient.id)
+                            intent.putExtra("Name", patient.name)
+                            intent.putExtra("Id", patient.id)
                             context.startActivity(intent)
                         },
                         colors = ButtonDefaults.buttonColors(
@@ -179,7 +181,10 @@ fun ViewPatientProfileScreen(
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(6.dp))
-                    InfoRow(label = stringResource(R.string.date_of_birth), value = patient.dob.toString())
+                    InfoRow(
+                        label = stringResource(R.string.date_of_birth),
+                        value = patient.dob.toString()
+                    )
                     Spacer(modifier = Modifier.height(4.dp))
                     InfoRow(label = stringResource(R.string.gender), value = patient.gender)
                     Spacer(modifier = Modifier.height(4.dp))
