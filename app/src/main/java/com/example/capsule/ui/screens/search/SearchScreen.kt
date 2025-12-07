@@ -64,6 +64,7 @@ fun SearchScreen(
     val context = LocalContext.current
     var selectedSpecialty by remember { mutableStateOf("") }
     var searchQuery by remember { mutableStateOf("") }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -127,17 +128,11 @@ fun SearchScreen(
             Button(
                 onClick = {
                     performSearch(context, searchQuery, selectedSpecialty) { doctors ->
-                        val names = ArrayList(doctors.map { it.name })
-                        val ids = ArrayList(doctors.map { it.id })
-                        val specialities = ArrayList(doctors.map { it.specialty })
-
-                        navController.currentBackStackEntry?.savedStateHandle?.set("names", names)
-                        navController.currentBackStackEntry?.savedStateHandle?.set("ids", ids)
+                        // Pass the complete list of Doctor objects
                         navController.currentBackStackEntry?.savedStateHandle?.set(
-                            "specialities",
-                            specialities
+                            "doctors",
+                            ArrayList(doctors)
                         )
-
                         navController.navigate("searchResults")
                     }
                 },
@@ -167,7 +162,7 @@ private fun performSearch(
     onSearchSuccess: (List<Doctor>) -> Unit
 ) {
     val repository = SearchRepository()
-    repository.getDoctorByName(name, Speciality = speciality) { doctors ->
+    repository.getDoctorByName(name, speciality = speciality) { doctors ->
         if (doctors.isNotEmpty()) {
             onSearchSuccess(doctors)
         } else {

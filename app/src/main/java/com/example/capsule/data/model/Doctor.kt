@@ -11,7 +11,9 @@ data class Doctor(
     var specialty: String = "",
     val bio: String = "",
     val rating: Double = 0.0,
+    val totalRating: Double = 0.0,
     val reviewsCount: Int = 0,
+    val ratedByUsers: List<String> = emptyList(),
     val experience: String = "",
     val clinicName: String = "",
     val clinicAddress: String = "",
@@ -32,6 +34,7 @@ data class Doctor(
     // Formatted session price for display
     val formattedSessionPrice: String
         get() = "EGP ${sessionPrice.toInt()}" // Or use currency formatting
+
 
 }
 
