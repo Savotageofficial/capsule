@@ -1,18 +1,3 @@
-import android.app.Application
-import android.content.Context
-import android.content.SharedPreferences
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.example.capsule.data.repository.Prefs
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
-
 //package com.example.capsule.model
 //
 //import androidx.lifecycle.ViewModel
@@ -23,8 +8,18 @@ import kotlinx.coroutines.tasks.await
 //import kotlinx.coroutines.flow.StateFlow
 //import kotlinx.coroutines.launch
 //
+import android.util.Log
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.capsule.data.model.Doctor
-
+import com.example.capsule.data.model.Message
+import com.example.capsule.data.model.Patient
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 
 //data class Doctor(
@@ -37,9 +32,11 @@ class ChatHistoryViewModel : ViewModel() {
 
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
-
     private val _doctors = MutableStateFlow<List<Doctor>>(emptyList())
     val doctors = _doctors.asStateFlow()
+    private val _patients = MutableStateFlow<List<Patient>>(emptyList())
+
+    val patient = _patients.asStateFlow()
 
     fun loadPatientChatHistory() {
         val currentUid = auth.currentUser?.uid ?: return
@@ -57,6 +54,43 @@ class ChatHistoryViewModel : ViewModel() {
             }
     }
 
+    fun loadDoctorChatHistory(doctorId: String) {
+        //.whereEqualTo("receiverId", doctorId)
+        var messages: List<Message>
+
+        var senderIds = mutableListOf<String>()
+
+
+
+        db.collection("messages")
+            .orderBy("timestamp")
+            .addSnapshotListener { snapshot, e ->
+                if (e == null && snapshot != null) {
+                    val fetchedMessages = snapshot.documents.map {
+                        Message(
+                            message = it.getString("message") ?: "",
+                            senderId = it.getString("senderId") ?: "",
+                            timestamp = it.getTimestamp("timestamp")?.toDate().toString(),
+                            recieverId = it.getString("receiverId") ?: ""
+                        )
+                    }
+                    Log.d("ChatDebug", "Received messages: $snapshot", e)
+                    messages = fetchedMessages.filter {it.recieverId == doctorId}
+
+                    for (message in messages){
+                        if (!senderIds.contains(message.senderId)){
+                            senderIds.add(message.senderId)
+                        }
+                        Log.d("ChatDebug", "Received messages: ${message.message}, senderId: ${message.senderId}")
+                    }
+                    viewModelScope.launch {
+                        fetchPatients(senderIds)
+                    }
+
+                }
+            }
+    }
+
     private suspend fun fetchDoctors(ids: List<String>) {
         val doctorList = mutableListOf<Doctor>()
 
@@ -68,7 +102,7 @@ class ChatHistoryViewModel : ViewModel() {
 
             val doctor = Doctor(
                 id = docSnapshot.id,
-                name = docSnapshot.getString("name") ?: "",
+                name = docSnapshot.getString("name") ?: "error fetching name", //added error fetching name if name returned null, hamza's super code!
                 specialty = docSnapshot.getString("specialty") ?: ""
             )
             doctorList.add(doctor)
@@ -76,6 +110,26 @@ class ChatHistoryViewModel : ViewModel() {
 
         _doctors.value = doctorList
     }
+
+    private suspend fun fetchPatients(ids: List<String>) {
+        val patientList = mutableListOf<Patient>()
+
+
+        ids.forEach { id ->
+            val docSnapshot = db.collection("patients")
+                .document(id).get().await()
+
+            val patient = Patient(
+                id = docSnapshot.id,
+                name = docSnapshot.getString("name") ?: "error fetching name",
+                //speciality = shit Blood when i Fart
+            )
+            patientList.add(patient)
+            Log.d("ChatDebug", "list: $patientList")
+        }
+
+        _patients.value = patientList
+    }//would be faster to fetch all and compare all, but i am too lazy, hey it works!
 }
 
 
