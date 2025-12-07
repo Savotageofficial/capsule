@@ -1,5 +1,6 @@
 package com.example.capsule.util
 
+import com.example.capsule.data.model.Appointment
 import com.example.capsule.data.model.TimeSlot
 import java.time.*
 import java.time.format.DateTimeFormatter
@@ -82,10 +83,12 @@ fun formatChatTime(rawDate: String): String {
                     // Today
                     SimpleDateFormat("hh:mm a", Locale.ENGLISH).format(date)
                 }
+
                 diff < 2 * oneDay -> {
                     // Yesterday
                     "Yesterday • " + SimpleDateFormat("hh:mm a", Locale.ENGLISH).format(date)
                 }
+
                 else -> {
                     // Older dates
                     SimpleDateFormat("MMM dd • hh:mm a", Locale.ENGLISH).format(date)
@@ -99,13 +102,28 @@ fun formatChatTime(rawDate: String): String {
     }
 }
 
-// Add to Extensions.kt
 fun formatDate(timestamp: Long): String {
     return try {
         val instant = Instant.ofEpochMilli(timestamp)
         val localDateTime = instant.atZone(ZoneId.systemDefault()).toLocalDateTime()
         val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy")
         localDateTime.format(formatter)
+    } catch (_: Exception) {
+        "Date not available"
+    }
+}
+
+// Helper function to format appointment date and time
+fun formatAppointmentDateTime(appointment: Appointment): String {
+    return try {
+        val dateTime = Instant.ofEpochMilli(appointment.dateTime)
+            .atZone(ZoneId.systemDefault())
+            .toLocalDateTime()
+
+        val dateFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy")
+        val timeFormatter = DateTimeFormatter.ofPattern("h:mm a")
+
+        "${dateTime.format(dateFormatter)} at ${dateTime.format(timeFormatter)}"
     } catch (_: Exception) {
         "Date not available"
     }

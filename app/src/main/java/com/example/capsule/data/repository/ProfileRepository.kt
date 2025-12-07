@@ -98,7 +98,7 @@ class ProfileRepository {
             .addOnFailureListener { onResult(null) }
     }
 
-    //     UPDATE PROFILES
+    //     UPDATE  PROFILES
     fun updateCurrentDoctor(data: Map<String, Any>, onDone: (Boolean) -> Unit) {
         val currentUser = auth.currentUser
         if (currentUser != null) {
@@ -159,11 +159,9 @@ class ProfileRepository {
             .addOnFailureListener { onDone(false) }
     }
 
-    // Add to ProfileRepository.kt for real-time updates
     fun getPatientAppointments(patientId: String, onResult: (List<Appointment>) -> Unit) {
         db.collection("appointments")
             .whereEqualTo("patientId", patientId)
-            .whereEqualTo("status", "Upcoming")
             .addSnapshotListener { querySnapshot, error ->
                 if (error != null) {
                     onResult(emptyList())
@@ -181,7 +179,6 @@ class ProfileRepository {
     fun getDoctorAppointments(doctorId: String, onResult: (List<Appointment>) -> Unit) {
         db.collection("appointments")
             .whereEqualTo("doctorId", doctorId)
-            .whereEqualTo("status", "Upcoming")
             .addSnapshotListener { querySnapshot, error ->
                 if (error != null) {
                     onResult(emptyList())
@@ -207,8 +204,6 @@ class ProfileRepository {
                 onDone(false, null)
             }
     }
-
-// In ProfileRepository.kt, update the getPrescriptionsByPatient function:
 
     fun getPrescriptionsByPatient(patientId: String, onResult: (List<Prescription>) -> Unit) {
         db.collection("prescriptions")

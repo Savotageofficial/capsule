@@ -35,6 +35,8 @@ import com.example.capsule.ui.theme.Blue
 import com.example.capsule.ui.theme.Gold
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.capsule.ui.theme.Cyan
+import com.example.capsule.ui.theme.Teal
 import com.example.capsule.ui.theme.WhiteSmoke
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -81,14 +83,13 @@ fun DoctorProfileScreen(
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
-                        color = Color(0xFF0A3140)
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            tint = Color(0xFF0CA7BA),
+                            tint = Cyan,
                             contentDescription = "Back",
                             modifier = Modifier
                                 .size(30.dp)
@@ -100,13 +101,14 @@ fun DoctorProfileScreen(
                     IconButton(onClick = onEditClick) {
                         Icon(
                             painter = painterResource(R.drawable.ic_edit),
-                            contentDescription = "Edit"
+                            contentDescription = "Edit",
+                            tint = Cyan
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = WhiteSmoke,
-                    titleContentColor = Color(0xFF0A3140)
+                    titleContentColor = Teal
                 )
             )
         }
@@ -240,14 +242,14 @@ fun DoctorProfileScreen(
 
             // Add this section after the Location InfoCard and before Availability Section
 
-            InfoCard(title = "Session Price") {
+            InfoCard(title = stringResource(R.string.session_price)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Consultation Fee",
+                        text = stringResource(R.string.consultation_fee),
                         fontWeight = FontWeight.Medium,
                         fontSize = 15.sp
                     )
@@ -294,12 +296,13 @@ fun DoctorProfileScreen(
             Button(
                 onClick = onSettingsClick,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Blue
+                    containerColor = Cyan
                 ),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+                    .height(38.dp)
+                    .padding(horizontal = 8.dp)
             ) {
                 Text(stringResource(R.string.settings))
             }

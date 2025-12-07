@@ -24,6 +24,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.capsule.R
 import com.example.capsule.data.repository.AuthRepository
+import com.example.capsule.ui.theme.Cyan
+import com.example.capsule.ui.theme.Teal
 import com.example.capsule.ui.theme.WhiteSmoke
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,24 +51,28 @@ fun SettingsScreen(
                 CenterAlignedTopAppBar(
                     title = {
                         Text(
-                            stringResource(R.string.settings), fontSize = 24.sp,
+                            stringResource(R.string.settings),
+                            fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center,
-                            color = Color(0xFF0A3140)
                         )
                     },
                     navigationIcon = {
                         IconButton(onClick = onBackClick) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                tint = Color(0xFF0CA7BA),
+                                tint = Cyan,
                                 contentDescription = "Back",
                                 modifier = Modifier
                                     .size(30.dp)
                                     .clickable { onBackClick() }
                             )
                         }
-                    }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = WhiteSmoke,
+                        titleContentColor = Teal
+                    )
                 )
             }
         ) { padding ->

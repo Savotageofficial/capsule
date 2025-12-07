@@ -17,7 +17,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -32,7 +31,9 @@ import com.example.capsule.activities.ChatActivity
 import com.example.capsule.ui.components.InfoRow
 import com.example.capsule.R
 import com.example.capsule.ui.theme.Blue
+import com.example.capsule.ui.theme.Cyan
 import com.example.capsule.ui.theme.Green
+import com.example.capsule.ui.theme.Teal
 import com.example.capsule.ui.theme.White
 import com.example.capsule.ui.theme.WhiteSmoke
 
@@ -73,21 +74,24 @@ fun ViewPatientProfileScreen(
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
-                        color = Color(0xFF0A3140)
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            tint = Color(0xFF0CA7BA),
+                            tint = Cyan,
                             contentDescription = "Back",
                             modifier = Modifier
                                 .size(30.dp)
                                 .clickable { onBackClick() }
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = WhiteSmoke,
+                    titleContentColor = Teal
+                )
             )
         },
         bottomBar = {
@@ -170,6 +174,16 @@ fun ViewPatientProfileScreen(
                             .size(130.dp)
                             .clip(CircleShape),
                         contentScale = ContentScale.Crop
+                    )
+                }?: run {
+                    // Fallback image if profileImageRes is null
+                    Image(
+                        painter = painterResource(id = R.drawable.patient_profile),
+                        contentDescription = "Doctor Image",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(CircleShape)
                     )
                 }
                 Spacer(modifier = Modifier.width(8.dp))

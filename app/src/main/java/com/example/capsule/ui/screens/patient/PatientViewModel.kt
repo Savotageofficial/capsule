@@ -18,20 +18,27 @@ class PatientViewModel : ViewModel() {
     private val _isLoading = mutableStateOf(false)
     val isLoading = _isLoading
 
+    private val _allAppointments = mutableStateOf(emptyList<Appointment>())
+
     private val _appointments = mutableStateOf(emptyList<Appointment>())
     val appointments = _appointments
 
-    // Prescriptions
+    private val _filterState = mutableStateOf("Upcoming") // Default filter
+    val filterState = _filterState
+
     private val _prescriptions = mutableStateOf(emptyList<Prescription>())
     val prescriptions = _prescriptions
 
-    // Selected prescription for viewing
+
     private val _selectedPrescription = mutableStateOf<Prescription?>(null)
     val selectedPrescription = _selectedPrescription
 
     private val _errorMessage = mutableStateOf<String?>(null)
-    val errorMessage = _errorMessage
 
+
+    // -------------------------------------------------------------
+    // Load Patient Profile
+    // -------------------------------------------------------------
     fun loadCurrentPatientProfile() {
         _isLoading.value = true
         viewModelScope.launch {
@@ -48,6 +55,9 @@ class PatientViewModel : ViewModel() {
         }
     }
 
+    // -------------------------------------------------------------
+    // Load Patient Profile by ID
+    // -------------------------------------------------------------
     fun loadPatientProfileById(patientId: String) {
         _isLoading.value = true
         viewModelScope.launch {
@@ -65,6 +75,9 @@ class PatientViewModel : ViewModel() {
         }
     }
 
+    // -------------------------------------------------------------
+    // Update Patient Profile
+    // -------------------------------------------------------------
     fun updatePatientProfile(data: Map<String, Any>, onDone: (Boolean) -> Unit) {
         viewModelScope.launch {
             repo.updateCurrentPatient(data) { success ->
@@ -82,12 +95,16 @@ class PatientViewModel : ViewModel() {
         }
     }
 
+    // -------------------------------------------------------------
+    // Load Patient Appointments
+    // -------------------------------------------------------------
     fun loadPatientAppointments() {
         _patient.value?.id?.let { patientId ->
             _isLoading.value = true
             viewModelScope.launch {
                 repo.getPatientAppointments(patientId) { appointments ->
-                    _appointments.value = appointments
+                    _allAppointments.value = appointments
+                    applyFilter(_filterState.value)
                     _isLoading.value = false
                     if (appointments.isEmpty()) {
                         _errorMessage.value = "No appointments found"
@@ -100,9 +117,49 @@ class PatientViewModel : ViewModel() {
         }
     }
 
-    // -------------------------
+    // -------------------------------------------------------------
+    // Filter Functions
+    // -------------------------------------------------------------
+    fun setFilter(filter: String) {
+        _filterState.value = filter
+        applyFilter(filter)
+    }
+
+    private fun applyFilter(filter: String) {
+        _appointments.value = when (filter) {
+            "Upcoming" -> _allAppointments.value.filter { it.status == "Upcoming" }
+            "Completed" -> _allAppointments.value.filter { it.status == "Completed" }
+            "Cancelled" -> _allAppointments.value.filter { it.status == "Cancelled" }
+            else -> _allAppointments.value
+        }.sortedBy { it.dateTime }
+    }
+
+    // -------------------------------------------------------------
+    // Cancel Appointment
+    // -------------------------------------------------------------
+    fun cancelAppointment(appointmentId: String) {
+        viewModelScope.launch {
+            repo.updateAppointmentStatus(appointmentId, "Cancelled") { success ->
+                if (success) {
+                    // Update local state
+                    _allAppointments.value = _allAppointments.value.map { appointment ->
+                        if (appointment.id == appointmentId) {
+                            appointment.copy(status = "Cancelled")
+                        } else {
+                            appointment
+                        }
+                    }
+                    applyFilter(_filterState.value) // Reapply filter
+                } else {
+                    _errorMessage.value = "Failed to cancel appointment"
+                }
+            }
+        }
+    }
+
+    // -------------------------------------------------------------
     // Prescription Management
-    // -------------------------
+    // -------------------------------------------------------------
     fun loadPatientPrescriptions() {
         _patient.value?.id?.let { patientId ->
             _isLoading.value = true
@@ -129,19 +186,6 @@ class PatientViewModel : ViewModel() {
                 _isLoading.value = false
                 if (prescription == null) {
                     _errorMessage.value = "Prescription not found"
-                }
-            }
-        }
-    }
-
-    fun cancelAppointment(appointmentId: String) {
-        viewModelScope.launch {
-            repo.updateAppointmentStatus(appointmentId, "Cancelled") { success ->
-                if (success) {
-                    // Update local state by filtering out the cancelled appointment
-                    _appointments.value = _appointments.value.filter { it.id != appointmentId }
-                } else {
-                    _errorMessage.value = "Failed to cancel appointment"
                 }
             }
         }

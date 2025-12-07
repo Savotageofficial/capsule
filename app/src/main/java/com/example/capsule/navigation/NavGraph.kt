@@ -51,7 +51,12 @@ fun NavGraph(
         }
 
         composable("patientAppointments") {
-            PatientAppointmentsScreen(onBackClick = { navController.popBackStack() })
+            PatientAppointmentsScreen(
+                onBackClick = { navController.popBackStack() },
+                onDoctorClick = { doctorId ->
+                    navController.navigate("viewDoctorProfile/$doctorId")
+                }
+            )
         }
 
         // Patient Prescriptions

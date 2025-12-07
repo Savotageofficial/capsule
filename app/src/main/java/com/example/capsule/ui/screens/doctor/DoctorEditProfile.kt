@@ -24,7 +24,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.R
 import com.example.capsule.ui.components.AvailabilityBottomSheet
 import com.example.capsule.ui.components.SpecializationDropdown
-import com.example.capsule.ui.theme.Blue
+import com.example.capsule.ui.theme.Cyan
 import com.example.capsule.ui.theme.WhiteSmoke
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -191,18 +191,18 @@ fun DoctorEditProfileScreen(
                                 sessionPrice = it
                             }
                         },
-                        label = { Text("Session Price ($)") },
+                        label = { Text(stringResource(R.string.session_price_egp)) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        prefix = { Text("$") }
+                        prefix = { Text(stringResource(R.string.egp)) }
                     )
 
                     Spacer(Modifier.height(12.dp))
 
                     // Availability Section
                     Text(
-                        text = "Availability",
+                        text = stringResource(R.string.availability),
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
@@ -244,7 +244,7 @@ fun DoctorEditProfileScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Blue),
+                colors = ButtonDefaults.buttonColors(Cyan),
                 shape = MaterialTheme.shapes.medium,
                 enabled = !isLoading
             ) {
@@ -262,10 +262,10 @@ fun DoctorEditProfileScreen(
         AlertDialog(
             onDismissRequest = { showErrorDialog = false },
             confirmButton = {
-                TextButton(onClick = { showErrorDialog = false }) { Text("OK") }
+                TextButton(onClick = { showErrorDialog = false }) { Text(stringResource(R.string.ok)) }
             },
-            title = { Text("Update Failed") },
-            text = { Text("Failed to update your profile. Please try again.") }
+            title = { Text(stringResource(R.string.update_failed)) },
+            text = { Text(stringResource(R.string.failed_to_update_your_profile_please_try_again)) }
         )
     }
 
@@ -276,10 +276,10 @@ fun DoctorEditProfileScreen(
                 TextButton(onClick = {
                     showSaveDialog = false
                     onBackClick()
-                }) { Text("OK") }
+                }) { Text(stringResource(R.string.ok)) }
             },
-            title = { Text("Profile Updated") },
-            text = { Text("Your profile has been successfully updated.") }
+            title = { Text(stringResource(R.string.profile_updated)) },
+            text = { Text(stringResource(R.string.your_profile_has_been_successfully_updated)) }
         )
     }
 

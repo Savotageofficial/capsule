@@ -34,6 +34,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.R
 import com.example.capsule.data.model.Appointment
+import com.example.capsule.ui.theme.Cyan
+import com.example.capsule.ui.theme.Teal
 import com.example.capsule.ui.theme.WhiteSmoke
 import com.example.capsule.util.formatDate
 
@@ -48,6 +50,7 @@ fun DoctorScheduleScreen(
 ) {
     val appointments = viewModel.appointments.value
     val isLoading by viewModel.isLoading
+    val filterState by viewModel.filterState
 
     LaunchedEffect(Unit) {
         viewModel.loadCurrentDoctorProfile()
@@ -56,24 +59,27 @@ fun DoctorScheduleScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(WhiteSmoke),
                 title = {
                     Text(
                         text = stringResource(R.string.schedule),
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
-                        color = Color(0xFF0A3140)
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            tint = Cyan,
                             contentDescription = "Back"
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = WhiteSmoke,
+                    titleContentColor = Teal
+                )
             )
         }
     ) { padding ->
@@ -84,6 +90,16 @@ fun DoctorScheduleScreen(
                 .padding(16.dp)
                 .fillMaxSize()
         ) {
+
+            FilterChipsRow(
+                selectedFilter = filterState,
+                onFilterSelected = { filter ->
+                    viewModel.setFilter(filter)
+                }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             if (isLoading) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -98,14 +114,18 @@ fun DoctorScheduleScreen(
                     appointments = appointments,
                     onPatientClick = onPatientClick,
                     onAppointmentClick = onViewAppointmentDetails,
-                    onDeleteAppointment = { appointment ->
-                        viewModel.deleteAppointment(appointment.id)
+                    onCancelAppointment = { appointment ->
+                        viewModel.cancelAppointment(appointment.id)
+                    },
+                    onMarkAsCompleted = { appointment ->
+                        viewModel.markAsCompleted(appointment.id)
                     }
                 )
             }
         }
     }
 }
+
 
 @Composable
 private fun EmptyDoctorScheduleState() {
@@ -124,14 +144,60 @@ private fun EmptyDoctorScheduleState() {
                 tint = Color.Gray
             )
             Text(
-                text = "No upcoming appointments",
+                text = stringResource(R.string.no_upcoming_appointments),
                 color = Color.Gray,
                 fontSize = 16.sp
             )
             Text(
-                text = "Your schedule is clear for now",
+                text = stringResource(R.string.your_schedule_is_clear_for_now),
                 color = Color.Gray,
                 fontSize = 14.sp
+            )
+        }
+    }
+}
+@Composable
+private fun FilterChipsRow(
+    selectedFilter: String,
+    onFilterSelected: (String) -> Unit
+) {
+    val filters = listOf("Upcoming", "Completed", "Cancelled")
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        filters.forEach { filter ->
+            // Use the simpler FilterChip constructor
+            FilterChip(
+                selected = selectedFilter == filter,
+                onClick = { onFilterSelected(filter) },
+                label = {
+                    Text(
+                        text = filter,
+                        fontSize = 14.sp,
+                        fontWeight = if (selectedFilter == filter) FontWeight.Bold else FontWeight.Normal
+                    )
+                },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = when (filter) {
+                        "Upcoming" -> Color(0x3300FF00)
+                        "Completed" -> Color(0x330000FF)
+                        "Cancelled" -> Color(0x33FF0000)
+                        else -> Color(0x33CCCCCC)
+                    },
+                    containerColor = Color.White,
+                    selectedLabelColor = when (filter) {
+                        "Upcoming" -> Color(0xFF00AA00)
+                        "Completed" -> Color(0xFF0044FF)
+                        "Cancelled" -> Color.Red
+                        else -> Color.Gray
+                    },
+                    labelColor = Color.Gray
+                ),
+                // Remove the border parameter entirely - let Compose handle it
             )
         }
     }
@@ -142,7 +208,8 @@ private fun DoctorAppointmentsList(
     appointments: List<Appointment>,
     onPatientClick: (String) -> Unit,
     onAppointmentClick: (Appointment) -> Unit,
-    onDeleteAppointment: (Appointment) -> Unit
+    onCancelAppointment: (Appointment) -> Unit,
+    onMarkAsCompleted: (Appointment) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
@@ -153,7 +220,8 @@ private fun DoctorAppointmentsList(
                 appointment = appointment,
                 onPatientClick = { onPatientClick(appointment.patientId) },
                 onAppointmentClick = { onAppointmentClick(appointment) },
-                onDeleteClick = { onDeleteAppointment(appointment) }
+                onCancelClick = { onCancelAppointment(appointment) },
+                onMarkAsCompleted = { onMarkAsCompleted(appointment) }
             )
         }
     }
@@ -164,10 +232,11 @@ fun DoctorAppointmentCard(
     appointment: Appointment,
     onPatientClick: () -> Unit,
     onAppointmentClick: () -> Unit,
-    onDeleteClick: () -> Unit
+    onCancelClick: () -> Unit,
+    onMarkAsCompleted: () -> Unit
 ) {
-    var menuExpanded by remember { mutableStateOf(false) }
-    var showDeleteDialog by remember { mutableStateOf(false) }
+    var showCancelDialog by remember { mutableStateOf(false) }
+    var showCompleteDialog by remember { mutableStateOf(false) }
 
     Card(
         shape = RoundedCornerShape(20.dp),
@@ -264,7 +333,10 @@ fun DoctorAppointmentCard(
 
             // ---------------- RIGHT SIDE ----------------
 
-            Column(horizontalAlignment = Alignment.End) {
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
 
                 // STATUS BADGE
                 Box(
@@ -293,54 +365,79 @@ fun DoctorAppointmentCard(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(6.dp))
+                // Action Buttons based on status
+                when (appointment.status) {
+                    "Upcoming" -> {
+                        // Mark as Completed button
+                        Text(
+                            text = "Mark Complete",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF00AA00),
+                            modifier = Modifier.clickable { showCompleteDialog = true }
+                        )
 
-                // THREE DOTS MENU
-                IconButton(onClick = { menuExpanded = true }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_more),
-                        contentDescription = "",
-                        tint = Color(0xFF505050)
-                    )
-                }
-
-                DropdownMenu(
-                    expanded = menuExpanded,
-                    onDismissRequest = { menuExpanded = false }
-                ) {
-                    DropdownMenuItem(
-                        text = { Text("Delete", color = Color.Red) },
-                        onClick = {
-                            menuExpanded = false
-                            showDeleteDialog = true
-                        }
-                    )
+                        // Cancel button
+                        Text(
+                            text = "Cancel",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.Red,
+                            modifier = Modifier.clickable { showCancelDialog = true }
+                        )
+                    }
                 }
             }
         }
     }
 
-    // ------------ DELETE CONFIRMATION DIALOG ------------
-    if (showDeleteDialog) {
+    // -------- Cancel Dialog --------
+    if (showCancelDialog) {
         AlertDialog(
-            onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Remove Appointment") },
+            onDismissRequest = { showCancelDialog = false },
+            title = { Text("Cancel Appointment") },
             text = {
-                Text("Are you sure you want to remove this appointment with ${appointment.patientName}?")
+                Text("Are you sure you want to cancel your appointment with ${appointment.patientName}?")
             },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        onDeleteClick()
-                        showDeleteDialog = false
+                        onCancelClick()
+                        showCancelDialog = false
                     }
                 ) {
-                    Text("Remove", color = Color.Red)
+                    Text("Yes, Cancel", color = Color.Red)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Keep")
+                TextButton(onClick = { showCancelDialog = false }) {
+                    Text("Keep Appointment")
+                }
+            }
+        )
+    }
+
+    // -------- Mark as Complete Dialog --------
+    if (showCompleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showCompleteDialog = false },
+            title = { Text("Mark as Completed") },
+            text = {
+                Text("Mark appointment with ${appointment.patientName} as completed?")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onMarkAsCompleted()
+                        showCompleteDialog = false
+                    }
+                ) {
+                    Text("Yes, Complete", color = Color(0xFF00AA00))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCompleteDialog = false }) {
+                    Text("Not Yet")
                 }
             }
         )
