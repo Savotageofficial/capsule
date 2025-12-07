@@ -1,6 +1,5 @@
 package com.example.capsule.ui.screens.patient
 
-import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -44,12 +43,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.capsule.ChatSelectionActivity
 import com.example.capsule.R
 import com.example.capsule.data.model.OfferItem
 import com.example.capsule.data.model.Tip
@@ -71,7 +70,6 @@ fun HomePage(
     onMessagesClick: () -> Unit = {},
     onPrescriptionsClick: () -> Unit = {}
 ) {
-    val context = LocalContext.current
     val patient = viewModel.patient.value
     val isLoading = viewModel.isLoading.value
 
@@ -153,7 +151,6 @@ fun HomePage(
             // ---------------- SEARCH BAR ----------------
             SearchBar(
                 onClick = onSearchClick,
-//                color = Color(0xFF4CAF50),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(55.dp)
@@ -172,7 +169,7 @@ fun HomePage(
             ) {
 
                 DashboardCard(
-                    title = "Appointments",
+                    title = stringResource(R.string.appointments),
                     icon = R.drawable.ic_calendar,
                     bgColor = Color(0xFFFFEAD8),
                     iconColor = Color(0xFFFF8728),
@@ -181,14 +178,11 @@ fun HomePage(
                 )
 
                 DashboardCard(
-                    title = "Chats",
+                    title = stringResource(R.string.messages),
                     icon = R.drawable.ic_messages,
                     bgColor = Color(0xFFE4FBE4),
                     iconColor = Green,
-                    onClick = {
-                        onMessagesClick()
-                        context.startActivity(Intent(context, ChatSelectionActivity::class.java))
-                    },
+                    onClick = onMessagesClick,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -322,7 +316,6 @@ fun SearchBar(
         }
     }
 }
-
 
 
 @Composable

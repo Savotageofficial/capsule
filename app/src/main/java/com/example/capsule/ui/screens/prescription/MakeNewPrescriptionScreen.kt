@@ -34,6 +34,7 @@ import com.example.capsule.ui.theme.Teal
 import com.example.capsule.ui.theme.WhiteSmoke
 import com.example.capsule.util.formatDate
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.delay
 
 // Enum to manage the screen state
 enum class PrescriptionScreenState {
@@ -47,6 +48,8 @@ fun MakeNewPrescriptionScreen(
     viewModel: PrescriptionViewModel = viewModel(),
     onBack: () -> Unit,
     onSavePrescription: () -> Unit,
+    patientId: String? = null,
+    patientName: String? = null
 ) {
     val prescription by viewModel.prescription.collectAsState()
     val medications by viewModel.medications.collectAsState()
@@ -54,14 +57,46 @@ fun MakeNewPrescriptionScreen(
     val appointments by viewModel.appointments.collectAsState()
     val selectedPatient by viewModel.selectedPatient.collectAsState()
 
-    var screenState by remember { mutableStateOf(PrescriptionScreenState.SELECT_PATIENT) }
+    var screenState by remember {
+        mutableStateOf(
+            if (patientId != null && patientName != null) {
+                PrescriptionScreenState.CREATE_PRESCRIPTION
+            } else {
+                PrescriptionScreenState.SELECT_PATIENT
+            }
+        )
+    }
 
+    var directPrescriptionLoading by remember { mutableStateOf(false) }
     val doctorId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
     val context = LocalContext.current
 
-    LaunchedEffect(Unit) {
-        viewModel.loadDoctorAppointments()
+    LaunchedEffect(patientId, patientName) {
+        if (patientId != null && patientName != null) {
+            // Direct prescription for specific patient
+            directPrescriptionLoading = true
+            viewModel.setPatientForDirectPrescription(patientId, patientName)
+            // Wait a moment for the data to be set
+            delay(100)
+            directPrescriptionLoading = false
+        } else {
+            // Normal flow - load appointments for selection
+            viewModel.loadDoctorAppointments()
+        }
     }
+
+    // Show loading screen while setting up direct prescription
+    if (directPrescriptionLoading) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                CircularProgressIndicator()
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("Loading prescription form...")
+            }
+        }
+        return
+    }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -90,8 +125,7 @@ fun MakeNewPrescriptionScreen(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             tint = Cyan,
                             contentDescription = "Back",
-                            modifier = Modifier
-                                .size(30.dp)
+                            modifier = Modifier.size(30.dp)
                         )
                     }
                 },
@@ -132,6 +166,8 @@ fun MakeNewPrescriptionScreen(
                 // ----------------------------
                 PrescriptionScreenState.CREATE_PRESCRIPTION -> {
                     selectedPatient?.let { appointment ->
+                        val currentDoctorName = viewModel.doctor.value?.name ?: "Doctor"
+
                         CreatePrescriptionSection(
                             appointment = appointment,
                             prescription = prescription,
@@ -148,12 +184,11 @@ fun MakeNewPrescriptionScreen(
                                 viewModel.updateNotes(notes)
                             },
                             onSavePrescription = {
-
                                 viewModel.savePrescription(
                                     patientId = appointment.patientId,
                                     patientName = appointment.patientName,
                                     doctorId = doctorId,
-                                    doctorName = appointment.doctorName,
+                                    doctorName = currentDoctorName,
                                     notes = prescription.notes,
                                     medications = medications.associateBy { it.name }
                                 ) { success ->
@@ -164,10 +199,33 @@ fun MakeNewPrescriptionScreen(
                                             Toast.LENGTH_SHORT
                                         ).show()
                                         onSavePrescription()
+                                    } else {
+                                        Toast.makeText(
+                                            context,
+                                            "Failed to save prescription",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
                                     }
                                 }
                             }
                         )
+                    } ?: run {
+                        // No selected patient - show error
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    "Patient information not loaded",
+                                    color = Color.Red
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Button(onClick = { onBack() }) {
+                                    Text("Go Back")
+                                }
+                            }
+                        }
                     }
                 }
             }
