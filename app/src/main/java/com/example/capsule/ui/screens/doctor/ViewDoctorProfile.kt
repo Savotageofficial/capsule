@@ -5,7 +5,19 @@ import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,8 +25,23 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,20 +56,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.capsule.activities.ChatActivity
 import com.example.capsule.R
+import com.example.capsule.activities.ChatActivity
 import com.example.capsule.data.model.TimeSlot
-import com.example.capsule.ui.screens.booking.BookingBottomSheet
 import com.example.capsule.ui.components.InfoCard
+import com.example.capsule.ui.screens.booking.BookingBottomSheet
 import com.example.capsule.ui.screens.patient.PatientViewModel
 import com.example.capsule.ui.theme.Blue
 import com.example.capsule.ui.theme.Gold
 import com.example.capsule.ui.theme.Green
-import com.example.capsule.ui.theme.White
+import com.example.capsule.ui.theme.WhiteSmoke
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.getField
-import com.example.capsule.ui.theme.WhiteSmoke
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -236,7 +261,7 @@ fun ViewDoctorProfileScreen(
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = "${doctor.rating}",
+                    text = String.format("%.1f", doctor.rating),
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp
                 )
@@ -367,6 +392,47 @@ fun ViewDoctorProfileScreen(
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(16.dp))
+            InfoCard(title = stringResource(R.string.rate)) {
+                var selectedRating by remember { mutableStateOf(0) } // user's selected rating
+                val context = LocalContext.current
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                ) {
+                    // Rating stars
+                    RatingBar(
+                        currentRating = selectedRating,
+                        onRatingSelected = { rating ->
+                            selectedRating = rating
+                        }
+                    )
+                }
+                    // Submit button
+                    Button(
+                        onClick = {
+                            if (selectedRating > 0) {
+                                rateDoctor(doctor.id, selectedRating)
+                                Toast.makeText(
+                                    context,
+                                    "You rated $selectedRating stars",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "Please select a rating first",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Blue),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text("Submit Rating", color = Color.White)
+                    }
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
         }
@@ -388,5 +454,57 @@ fun ViewDoctorProfileScreen(
             },
             onDismiss = { showBookingSheet = false }
         )
+    }
+}
+fun rateDoctor(doctorId: String, newRating: Int) {
+    val docRef = FirebaseFirestore.getInstance()
+        .collection("doctors")
+        .document(doctorId)
+
+    FirebaseFirestore.getInstance().runTransaction { transaction ->
+
+        val snapshot = transaction.get(docRef)
+
+        val oldTotal = snapshot.getLong("totalRating") ?: 0
+        val oldCount = snapshot.getLong("reviewsCount") ?: 0
+
+        val newTotal = oldTotal + newRating
+        val newCount = oldCount + 1
+
+        val newAvg = newTotal.toDouble() / newCount.toDouble()
+
+        // update atomically
+        transaction.update(docRef, mapOf(
+            "totalRating" to newTotal,
+            "reviewsCount" to newCount,
+            "rating" to newAvg
+        ))
+    }
+}
+@Composable
+fun RatingBar(
+    currentRating: Int,
+    onRatingSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        for (i in 1..5) {
+            val filled = i <= currentRating
+            Icon(
+                painter = painterResource(
+                    id = if (filled) R.drawable.ic_star_filled else R.drawable.ic_star
+                ),
+                contentDescription = "$i stars",
+                tint = Gold,
+                modifier = Modifier
+                    .size(32.dp)
+                    .clickable { onRatingSelected(i) }
+                    .padding(4.dp)
+            )
+        }
     }
 }

@@ -11,6 +11,7 @@ data class Doctor(
     var specialty: String = "",
     val bio: String = "",
     val rating: Double = 0.0,
+    val totalRating: Double = 0.0,
     val reviewsCount: Int = 0,
     val experience: String = "",
     val clinicName: String = "",
