@@ -63,7 +63,7 @@ class LoginActivity : ComponentActivity() {
                             Toast.makeText(this, "Please enter email and password", Toast.LENGTH_SHORT).show()
                         } else {
                             isLoading = true
-                            signin(email, password) {
+                            signIn(email, password) {
                                 isLoading = false
                             }
                         }
@@ -91,7 +91,7 @@ class LoginActivity : ComponentActivity() {
         }
     }
 
-    private fun signin(email: String, password: String, onFinish: () -> Unit) {
+    private fun signIn(email: String, password: String, onFinish: () -> Unit) {
         repository.signIn(email, password,
             onSuccess = { userType ->
                 onFinish()

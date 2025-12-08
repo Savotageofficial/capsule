@@ -226,8 +226,8 @@ fun HomePage(
 
                 items(offers) { item ->
                     SliderItem(
-                        Title = item.title,
-                        Description = "Limited Time Offer",
+                        title = item.title,
+                        description = "Limited Time Offer",
                         backgroundColor = item.color
                     )
                 }
@@ -315,8 +315,8 @@ fun SearchBar(
 @Composable
 fun SliderItem(
     modifier: Modifier = Modifier,
-    Title: String,
-    Description: String,
+    title: String,
+    description: String,
     backgroundColor: Color
 ) {
     Card(
@@ -336,7 +336,7 @@ fun SliderItem(
                 .fillMaxSize()
         ) {
             Text(
-                text = Title,
+                text = title,
                 fontSize = 21.sp,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.height(50.dp),
@@ -344,7 +344,7 @@ fun SliderItem(
                 lineHeight = 20.sp
             )
 
-            Text(text = Description, fontSize = 15.sp, color = Color(0xffffffff))
+            Text(text = description, fontSize = 15.sp, color = Color(0xffffffff))
             Spacer(modifier = Modifier.height(12.dp))
             Button(
                 onClick = {},

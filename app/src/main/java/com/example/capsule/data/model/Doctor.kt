@@ -19,11 +19,13 @@ data class Doctor(
     val clinicName: String = "",
     val clinicAddress: String = "",
     val locationUrl: String = "",
-    override val msgHistory: List<String> = listOf<String>(),
+    override val msgHistory: List<String> = listOf(),
     val sessionPrice: Double = 0.0,
     val availability: Map<String, List<TimeSlot>> = emptyMap(),
-) : UserProfile(id = id, name = name, email = email, userType = userType,
-    msgHistory = msgHistory, profileImageBase64 = profileImageBase64) {
+) : UserProfile(
+    id = id, name = name, email = email, userType = userType,
+    msgHistory = msgHistory, profileImageBase64 = profileImageBase64
+) {
 
     // Formatted availability string for display
     val availabilityDisplay: String

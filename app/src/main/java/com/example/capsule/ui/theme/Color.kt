@@ -15,7 +15,6 @@ val White = Color(0xFFFFFFFF)
 val Blue = Color(0xFF4A90E2)
 val Gray = Color(0xFF757575)
 val DarkGray = Color(0xFF2C2C2C)
-val Red = Color(0xDDAD0505)
 val Green = Color(0xFF53B957)
 val Gold = Color(0xFFFFB700)
 

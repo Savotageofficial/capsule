@@ -49,8 +49,7 @@ fun NavGraph(
 
         composable("editPatientProfile") {
             PatientEditProfileScreen(
-                onBackClick = { navController.popBackStack() },
-                onSaveClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() }
             )
         }
 
@@ -102,8 +101,7 @@ fun NavGraph(
 
         composable("editDoctorProfile") {
             DoctorEditProfileScreen(
-                onBackClick = { navController.popBackStack() },
-                onSaveClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() }
             )
         }
 

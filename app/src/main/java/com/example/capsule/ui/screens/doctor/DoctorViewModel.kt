@@ -7,11 +7,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.capsule.data.model.Doctor
 import com.example.capsule.data.model.TimeSlot
 import com.example.capsule.ui.screens.common.UserViewModel
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
 class DoctorViewModel : UserViewModel(userType = "Doctor") {
-    private val auth = FirebaseAuth.getInstance()
 
     // Doctor Profile
     private val _doctor = mutableStateOf<Doctor?>(null)

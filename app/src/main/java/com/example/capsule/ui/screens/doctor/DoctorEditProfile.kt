@@ -1,6 +1,5 @@
 package com.example.capsule.ui.screens.doctor
 
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -34,7 +33,6 @@ import com.example.capsule.ui.theme.WhiteSmoke
 fun DoctorEditProfileScreen(
     viewModel: DoctorViewModel = viewModel(),
     onBackClick: () -> Unit = {},
-    onSaveClick: () -> Unit = {}
 ) {
     val doctor = viewModel.doctor.value
     val scrollState = rememberScrollState()
