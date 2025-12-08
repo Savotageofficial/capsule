@@ -30,6 +30,7 @@ import com.example.capsule.R
 import com.example.capsule.data.model.Doctor
 import com.example.capsule.ui.theme.Gold
 import com.example.capsule.ui.theme.Green
+import com.example.capsule.util.ProfileImage
 
 @Composable
 fun DoctorResultCard(
@@ -55,15 +56,11 @@ fun DoctorResultCard(
         ) {
 
             // Circular doctor image
-            Image(
-                painter = painterResource(
-                    id = doctor.profileImageRes ?: R.drawable.doc_prof_unloaded
-                ),
-                contentDescription = "Doctor profile image",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(86.dp)
-                    .clip(CircleShape)
+            ProfileImage(
+                base64Image = doctor.profileImageBase64,
+                defaultImageRes = R.drawable.doc_prof_unloaded,
+                modifier = Modifier.size(86.dp),
+                onImageClick = null
             )
 
             Column(

@@ -1,6 +1,5 @@
-package com.example.capsule.ui.screens.doctor
+package com.example.capsule.ui.screens.dashboards
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,10 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -31,10 +27,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.R
 import com.example.capsule.ui.components.DashboardCard
 import com.example.capsule.ui.components.UpcomingCard
+import com.example.capsule.ui.screens.doctor.DoctorViewModel
 import com.example.capsule.ui.theme.Blue
 import com.example.capsule.ui.theme.Green
 import com.example.capsule.ui.theme.White
 import com.example.capsule.ui.theme.WhiteSmoke
+import com.example.capsule.util.ProfileImage
 
 @Composable
 fun DoctorDashboardScreen(
@@ -98,26 +96,12 @@ fun DoctorDashboardScreen(
                     .clickable { onProfileClick() }
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    doctor.profileImageRes?.let {
-                        Image(
-                            painter = painterResource(id = it),
-                            contentDescription = "Doctor Image",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .size(50.dp)
-                                .clip(CircleShape)
-                        )
-                    } ?: run {
-                        // Fallback image if profileImageRes is null
-                        Image(
-                            painter = painterResource(id = R.drawable.doc_prof_unloaded),
-                            contentDescription = "Doctor Image",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .size(50.dp)
-                                .clip(CircleShape)
-                        )
-                    }
+                    ProfileImage(
+                        base64Image = doctor.profileImageBase64,
+                        defaultImageRes = R.drawable.doc_prof_unloaded,
+                        modifier = Modifier.size(50.dp),
+                        onImageClick = null
+                    )
 
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {

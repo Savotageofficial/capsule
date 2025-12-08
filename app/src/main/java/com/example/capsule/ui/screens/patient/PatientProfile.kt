@@ -32,6 +32,7 @@ import com.example.capsule.ui.theme.Cyan
 import com.example.capsule.ui.theme.Gray
 import com.example.capsule.ui.theme.Teal
 import com.example.capsule.ui.theme.WhiteSmoke
+import com.example.capsule.util.ProfileImage
 import com.example.capsule.util.formatDateOfBirth
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -114,26 +115,12 @@ fun PatientProfileScreen(
                 .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            patient.profileImageRes?.let {
-                Image(
-                    painter = painterResource(id = it),
-                    contentDescription = "Profile Image",
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop
-                )
-            } ?: run {
-                // Fallback image if profileImageRes is null
-                Image(
-                    painter = painterResource(id = R.drawable.patient_profile),
-                    contentDescription = "Doctor Image",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape)
-                )
-            }
+            ProfileImage(
+                base64Image = patient.profileImageBase64,
+                defaultImageRes = R.drawable.doc_prof_unloaded,
+                modifier = Modifier.size(120.dp),
+                onImageClick = null
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 

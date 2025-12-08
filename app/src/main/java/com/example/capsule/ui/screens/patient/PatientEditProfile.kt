@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.toSize
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.R
 import com.example.capsule.ui.components.DatePickerDialog
+import com.example.capsule.ui.components.ImagePicker
 import com.example.capsule.ui.theme.Cyan
 import com.example.capsule.ui.theme.Teal
 import com.example.capsule.ui.theme.WhiteSmoke
@@ -55,7 +56,7 @@ fun PatientEditProfileScreen(
         return
     }
 
-    // Editable states
+    // Editable fields
     var name by remember { mutableStateOf(TextFieldValue(patient.name)) }
     var dob by remember { mutableLongStateOf(patient.dob) }
     var gender by remember { mutableStateOf(patient.gender) }
@@ -64,7 +65,10 @@ fun PatientEditProfileScreen(
     var showDatePicker by remember { mutableStateOf(false) }
     var showSaveDialog by remember { mutableStateOf(false) }
     var showErrorDialog by remember { mutableStateOf(false) }
-    var loading by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
+
+    // Profile image handler (same logic as doctor)
+    var selectedImageBase64 by remember { mutableStateOf<String?>(patient.profileImageBase64) }
 
     // Dropdown
     var genderExpanded by remember { mutableStateOf(false) }
@@ -76,9 +80,9 @@ fun PatientEditProfileScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        stringResource(R.string.edit_profile), fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center,
+                        stringResource(R.string.edit_profile),
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold
                     )
                 },
                 navigationIcon = {
@@ -86,16 +90,12 @@ fun PatientEditProfileScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             tint = Cyan,
-                            contentDescription = "Back",
-                            modifier = Modifier
-                                .size(30.dp)
-                                .clickable { onBackClick() }
+                            contentDescription = "Back"
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = WhiteSmoke,
-                    titleContentColor = Teal
+                    containerColor = WhiteSmoke
                 )
             )
         }
@@ -112,7 +112,22 @@ fun PatientEditProfileScreen(
 
             Spacer(Modifier.height(10.dp))
 
-            // Card wrapper for cleaner look
+            // --- Profile Image Picker (same UI as doctor) ---
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                ImagePicker(
+                    currentImageUrl = selectedImageBase64,
+                    onImagePicked = { newImage ->
+                        selectedImageBase64 = newImage
+                    }
+                )
+            }
+
+            Spacer(Modifier.height(20.dp))
+
+            // --- Card with form fields ---
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -130,7 +145,7 @@ fun PatientEditProfileScreen(
 
                     Spacer(Modifier.height(14.dp))
 
-                    // DOB Button
+                    // DOB
                     OutlinedButton(
                         onClick = { showDatePicker = true },
                         modifier = Modifier.fillMaxWidth(),
@@ -142,10 +157,7 @@ fun PatientEditProfileScreen(
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(Modifier.width(8.dp))
-                        Text(
-                            if (dob > 0) formatDateOfBirth(dob)
-                            else "Select Date of Birth"
-                        )
+                        Text(if (dob > 0) formatDateOfBirth(dob) else "Select Date of Birth")
                     }
 
                     Spacer(Modifier.height(14.dp))
@@ -159,14 +171,13 @@ fun PatientEditProfileScreen(
                             .onGloballyPositioned { genderFieldSize = it.size.toSize() },
                         label = { Text(stringResource(R.string.gender)) },
                         trailingIcon = {
-                            val icon = if (genderExpanded)
-                                Icons.Filled.KeyboardArrowUp
-                            else Icons.Filled.KeyboardArrowDown
-
                             Icon(
-                                icon,
+                                if (genderExpanded) Icons.Filled.KeyboardArrowUp
+                                else Icons.Filled.KeyboardArrowDown,
                                 contentDescription = null,
-                                modifier = Modifier.clickable { genderExpanded = !genderExpanded }
+                                modifier = Modifier.clickable {
+                                    genderExpanded = !genderExpanded
+                                }
                             )
                         },
                         singleLine = true
@@ -204,48 +215,78 @@ fun PatientEditProfileScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            // Save Button
+            // ---------------- SAVE BUTTON ----------------
             Button(
                 onClick = {
-                    loading = true
-                    val updatedData = mapOf(
+                    isLoading = true
+
+                    val profileData = mapOf(
                         "name" to name.text,
                         "dob" to dob,
                         "gender" to gender,
                         "contact" to contact.text
                     )
-                    viewModel.updatePatientProfile(updatedData) { success ->
-                        loading = false
-                        if (success) {
-                            showSaveDialog = true
-                            onSaveClick()
-                        } else showErrorDialog = true
+
+                    // Determine image action
+                    val imageAction = when {
+                        selectedImageBase64 == null && patient.profileImageBase64 != null -> "delete"
+                        selectedImageBase64 != null && selectedImageBase64 != patient.profileImageBase64 -> "upload"
+                        else -> "none"
+                    }
+
+                    fun finishUpdate(success: Boolean) {
+                        isLoading = false
+                        if (success) showSaveDialog = true
+                        else showErrorDialog = true
+                    }
+
+                    // Step 1: Handle image action
+                    when (imageAction) {
+                        "delete" -> {
+                            viewModel.deleteProfileImage { success, _ ->
+                                if (success)
+                                    viewModel.updatePatientProfile(profileData, ::finishUpdate)
+                                else finishUpdate(false)
+                            }
+                        }
+
+                        "upload" -> {
+                            selectedImageBase64?.let { img ->
+                                viewModel.uploadProfileImage(img) { success, _ ->
+                                    if (success)
+                                        viewModel.updatePatientProfile(profileData, ::finishUpdate)
+                                    else finishUpdate(false)
+                                }
+                            }
+                        }
+
+                        "none" -> {
+                            viewModel.updatePatientProfile(profileData, ::finishUpdate)
+                        }
                     }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
+                colors = ButtonDefaults.buttonColors(Cyan),
                 shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Cyan),
-                enabled = !loading
+                enabled = !isLoading
             ) {
-                if (loading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(22.dp),
-                        strokeWidth = 2.dp
-                    )
-                } else {
+                if (isLoading)
+                    CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp)
+                else
                     Text("Save Changes", fontSize = 17.sp)
-                }
             }
         }
     }
 
-    // Dialogs
+    // ------ Dialogs ------
     if (showErrorDialog) {
         AlertDialog(
             onDismissRequest = { showErrorDialog = false },
-            confirmButton = { TextButton({ showErrorDialog = false }) { Text("OK") } },
+            confirmButton = {
+                TextButton(onClick = { showErrorDialog = false }) { Text("OK") }
+            },
             title = { Text("Update Failed") },
             text = { Text("Failed to update your profile. Please try again.") }
         )
@@ -258,7 +299,7 @@ fun PatientEditProfileScreen(
                 onBackClick()
             },
             confirmButton = {
-                TextButton({
+                TextButton(onClick = {
                     showSaveDialog = false
                     onBackClick()
                 }) { Text("OK") }
@@ -278,6 +319,7 @@ fun PatientEditProfileScreen(
         )
     }
 }
+
 
 @Composable
 fun FormTextField(

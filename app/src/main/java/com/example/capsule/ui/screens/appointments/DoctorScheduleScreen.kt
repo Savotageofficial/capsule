@@ -1,4 +1,4 @@
-package com.example.capsule.ui.screens.patient
+package com.example.capsule.ui.screens.appointments
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -28,31 +28,34 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.R
 import com.example.capsule.data.model.Appointment
+import com.example.capsule.ui.components.FilterChipsRow
+import com.example.capsule.ui.screens.doctor.DoctorViewModel
 import com.example.capsule.ui.theme.Cyan
 import com.example.capsule.ui.theme.Teal
 import com.example.capsule.ui.theme.WhiteSmoke
-import com.example.capsule.util.formatAppointmentDateTime
+import com.example.capsule.util.formatDate
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PatientAppointmentsScreen(
+fun DoctorScheduleScreen(
+    viewModel: DoctorViewModel = viewModel(),
+    onPatientClick: (String) -> Unit = {},
     onBackClick: () -> Unit = {},
-    onDoctorClick: (String) -> Unit = {},
-    viewModel: PatientViewModel = viewModel()
+    onViewAppointmentDetails: (Appointment) -> Unit = {}
 ) {
     val appointments = viewModel.appointments.value
     val isLoading by viewModel.isLoading
     val filterState by viewModel.filterState
 
     LaunchedEffect(Unit) {
-        viewModel.loadPatientAppointments()
-        // Load patient profile first to ensure we have patient ID
-        viewModel.loadCurrentPatientProfile()
+        viewModel.loadCurrentDoctorProfile()
     }
 
     Scaffold(
@@ -60,10 +63,10 @@ fun PatientAppointmentsScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = stringResource(R.string.my_appointments),
+                        text = stringResource(R.string.schedule),
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
                     )
                 },
                 navigationIcon = {
@@ -89,7 +92,7 @@ fun PatientAppointmentsScreen(
                 .padding(16.dp)
                 .fillMaxSize()
         ) {
-            // Add Filter Chips Row
+
             FilterChipsRow(
                 selectedFilter = filterState,
                 onFilterSelected = { filter ->
@@ -107,13 +110,17 @@ fun PatientAppointmentsScreen(
                     CircularProgressIndicator()
                 }
             } else if (appointments.isEmpty()) {
-                EmptyAppointmentsState()
+                EmptyDoctorScheduleState()
             } else {
-                AppointmentsList(
+                DoctorAppointmentsList(
                     appointments = appointments,
-                    onDoctorClick = onDoctorClick,
+                    onPatientClick = onPatientClick,
+                    onAppointmentClick = onViewAppointmentDetails,
                     onCancelAppointment = { appointment ->
                         viewModel.cancelAppointment(appointment.id)
+                    },
+                    onMarkAsCompleted = { appointment ->
+                        viewModel.markAsCompleted(appointment.id)
                     }
                 )
             }
@@ -121,8 +128,9 @@ fun PatientAppointmentsScreen(
     }
 }
 
+
 @Composable
-private fun EmptyAppointmentsState() {
+private fun EmptyDoctorScheduleState() {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -143,7 +151,7 @@ private fun EmptyAppointmentsState() {
                 fontSize = 16.sp
             )
             Text(
-                text = stringResource(R.string.book_your_an_appointment_with_a_doctor_now),
+                text = stringResource(R.string.your_schedule_is_clear_for_now),
                 color = Color.Gray,
                 fontSize = 14.sp
             )
@@ -152,87 +160,50 @@ private fun EmptyAppointmentsState() {
 }
 
 @Composable
-private fun FilterChipsRow(
-    selectedFilter: String,
-    onFilterSelected: (String) -> Unit
-) {
-    val filters = listOf("Upcoming", "Completed", "Cancelled")
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        filters.forEach { filter ->
-            FilterChip(
-                selected = selectedFilter == filter,
-                onClick = { onFilterSelected(filter) },
-                label = {
-                    Text(
-                        text = filter,
-                        fontSize = 14.sp,
-                        fontWeight = if (selectedFilter == filter) FontWeight.Bold else FontWeight.Normal
-                    )
-                },
-                colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = when (filter) {
-                        "Upcoming" -> Color(0x3328B463)
-                        "Completed" -> Color(0x334195F4)
-                        "Cancelled" -> Color(0x33E53935)
-                        else -> Color(0x33CCCCCC)
-                    },
-                    containerColor = Color.White,
-                    selectedLabelColor = when (filter) {
-                        "Upcoming" -> Color(0xFF2E7D32)
-                        "Completed" -> Color(0xFF1E88E5)
-                        "Cancelled" -> Color(0xFFD32F2F)
-                        else -> Color.Gray
-                    },
-                    labelColor = Color.Gray
-                )
-            )
-        }
-    }
-}
-
-@Composable
-private fun AppointmentsList(
+private fun DoctorAppointmentsList(
     appointments: List<Appointment>,
-    onDoctorClick: (String) -> Unit,
-    onCancelAppointment: (Appointment) -> Unit
+    onPatientClick: (String) -> Unit,
+    onAppointmentClick: (Appointment) -> Unit,
+    onCancelAppointment: (Appointment) -> Unit,
+    onMarkAsCompleted: (Appointment) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         items(appointments) { appointment ->
-            AppointmentCard(
+            DoctorAppointmentCard(
                 appointment = appointment,
-                onDoctorClick = { onDoctorClick(appointment.doctorId) },
-                onCancelClick = { onCancelAppointment(appointment) }
+                onPatientClick = { onPatientClick(appointment.patientId) },
+                onAppointmentClick = { onAppointmentClick(appointment) },
+                onCancelClick = { onCancelAppointment(appointment) },
+                onMarkAsCompleted = { onMarkAsCompleted(appointment) }
             )
         }
     }
 }
 
 @Composable
-private fun AppointmentCard(
+fun DoctorAppointmentCard(
     appointment: Appointment,
-    onDoctorClick: () -> Unit,
-    onCancelClick: () -> Unit
+    onPatientClick: () -> Unit,
+    onAppointmentClick: () -> Unit,
+    onCancelClick: () -> Unit,
+    onMarkAsCompleted: () -> Unit
 ) {
     var showCancelDialog by remember { mutableStateOf(false) }
+    var showCompleteDialog by remember { mutableStateOf(false) }
 
     Card(
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(Color.White),
+        elevation = CardDefaults.cardElevation(8.dp),
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp)
-            .clickable { onDoctorClick() },
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(Color.White),
-        elevation = CardDefaults.cardElevation(8.dp)
+            .clickable { onAppointmentClick() }
     ) {
+
         Row(
             modifier = Modifier
                 .padding(18.dp)
@@ -240,26 +211,29 @@ private fun AppointmentCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // ---------------- Left Side: Profile + Info ----------------
+
+            // ---------------- LEFT SIDE ----------------
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // Doctor Picture
+
+                // Profile Image
                 Image(
-                    painter = painterResource(R.drawable.doc_prof_unloaded),
-                    contentDescription = "Doctor Profile",
+                    painter = painterResource(R.drawable.patient_profile),
+                    contentDescription = "Profile",
                     modifier = Modifier
                         .size(52.dp)
                         .clip(CircleShape)
                         .background(Color(0xFFEFEFEF), CircleShape)
-                        .clickable { onDoctorClick() },
+                        .clickable { onPatientClick() },
                     contentScale = ContentScale.Crop
                 )
 
                 Spacer(modifier = Modifier.width(14.dp))
 
-                Column(modifier = Modifier.clickable { onDoctorClick() }) {
-                    // Doctor Name
+                Column(modifier = Modifier.clickable { onPatientClick() }) {
+
+                    // Patient Name
                     Text(
-                        text = "Dr. ${appointment.doctorName}",
+                        text = appointment.patientName,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF1C1C1C)
@@ -275,14 +249,14 @@ private fun AppointmentCard(
                         color = Color(0xFF333333)
                     )
 
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
 
-                    // Time Row
+                    // Time Slot
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             Icons.Default.AccessTime,
                             contentDescription = null,
-                            tint = Color(0xFF6D6D6D),
+                            tint = Color(0xFF7D7D7D),
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
@@ -293,9 +267,9 @@ private fun AppointmentCard(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
 
-                    // Date Row
+                    // Date
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             Icons.Default.CalendarToday,
@@ -305,7 +279,7 @@ private fun AppointmentCard(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = formatAppointmentDateTime(appointment),
+                            text = formatDate(appointment.dateTime),
                             fontSize = 14.sp,
                             color = Color(0xFF7D7D7D)
                         )
@@ -313,42 +287,53 @@ private fun AppointmentCard(
                 }
             }
 
-            // ---------------- Right Side: Status + Action ----------------
+            // ---------------- RIGHT SIDE ----------------
+
             Column(
                 horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Status badge
+
+                // STATUS BADGE
                 Box(
                     modifier = Modifier
                         .background(
                             color = when (appointment.status) {
-                                "Upcoming" -> Color(0x3328B463)
-                                "Completed" -> Color(0x334195F4)
-                                "Cancelled" -> Color(0x33E53935)
+                                "Upcoming" -> Color(0x3300FF00)
+                                "Completed" -> Color(0x330000FF)
+                                "Cancelled" -> Color(0x33FF0000)
                                 else -> Color(0x33CCCCCC)
                             },
-                            shape = RoundedCornerShape(50)
+                            shape = RoundedCornerShape(10.dp)
                         )
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
                     Text(
                         text = appointment.status,
-                        color = when (appointment.status) {
-                            "Upcoming" -> Color(0xFF2E7D32)
-                            "Completed" -> Color(0xFF1E88E5)
-                            "Cancelled" -> Color(0xFFD32F2F)
-                            else -> Color.Gray
-                        },
                         fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.Medium,
+                        color = when (appointment.status) {
+                            "Upcoming" -> Color(0xFF00AA00)
+                            "Completed" -> Color(0xFF0044FF)
+                            "Cancelled" -> Color.Red
+                            else -> Color.Gray
+                        }
                     )
                 }
 
-                // Action buttons based on status
+                // Action Buttons based on status
                 when (appointment.status) {
                     "Upcoming" -> {
-                        // Cancel button for upcoming appointments
+                        // Mark as Completed button
+                        Text(
+                            text = "Mark Complete",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF00AA00),
+                            modifier = Modifier.clickable { showCompleteDialog = true }
+                        )
+
+                        // Cancel button
                         Text(
                             text = "Cancel",
                             fontSize = 14.sp,
@@ -368,7 +353,7 @@ private fun AppointmentCard(
             onDismissRequest = { showCancelDialog = false },
             title = { Text("Cancel Appointment") },
             text = {
-                Text("Are you sure you want to cancel your appointment with Dr. ${appointment.doctorName}?")
+                Text("Are you sure you want to cancel your appointment with ${appointment.patientName}?")
             },
             confirmButton = {
                 TextButton(
@@ -386,5 +371,39 @@ private fun AppointmentCard(
                 }
             }
         )
+    }
+
+    // -------- Mark as Complete Dialog --------
+    if (showCompleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showCompleteDialog = false },
+            title = { Text("Mark as Completed") },
+            text = {
+                Text("Mark appointment with ${appointment.patientName} as completed?")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onMarkAsCompleted()
+                        showCompleteDialog = false
+                    }
+                ) {
+                    Text("Yes, Complete", color = Color(0xFF00AA00))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCompleteDialog = false }) {
+                    Text("Not Yet")
+                }
+            }
+        )
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun DoctorScheduleScreenPreview() {
+    MaterialTheme {
+        DoctorScheduleScreen()
     }
 }

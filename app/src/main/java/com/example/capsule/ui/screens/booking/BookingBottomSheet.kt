@@ -26,6 +26,7 @@ import com.example.capsule.R
 import com.example.capsule.data.model.Doctor
 import com.example.capsule.data.model.Patient
 import com.example.capsule.data.model.TimeSlot
+import com.example.capsule.util.ProfileImage
 import com.example.capsule.ui.components.DatePickerDialog as CapsuleDatePickerDialog
 import java.time.Instant
 import java.time.ZoneId
@@ -158,7 +159,9 @@ fun BookingBottomSheet(
             Spacer(Modifier.height(8.dp))
 
             if (isLoading) {
-                CircularProgressIndicator(Modifier.align(Alignment.CenterHorizontally))
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    CircularProgressIndicator(Modifier.align(Alignment.Center))
+                }
             } else if (allSlots.isEmpty()) {
                 Text("No availability for this day", color = Color.Gray)
             } else {
@@ -291,24 +294,13 @@ private fun BookingSheetHeader(doctor: Doctor) {
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            val painter = if (doctor.profileImageRes != null) {
-                painterResource(id = doctor.profileImageRes)
-            } else {
-                painterResource(id = R.drawable.doc_prof_unloaded)
-            }
-
-            Surface(
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(CircleShape),
-                color = MaterialTheme.colorScheme.surface
-            ) {
-                Image(
-                    painter = painter,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
+            // Profile image using ProfileImage composable
+            ProfileImage(
+                base64Image = doctor.profileImageBase64,
+                defaultImageRes = R.drawable.doc_prof_unloaded,
+                modifier = Modifier.size(56.dp),
+                onImageClick = null
+            )
 
             Spacer(modifier = Modifier.width(16.dp))
 
@@ -319,11 +311,20 @@ private fun BookingSheetHeader(doctor: Doctor) {
                     fontSize = 18.sp
                 )
                 Text(doctor.specialty, color = Color.Gray)
-                Text(
-                    text = "${doctor.rating} • ${doctor.reviewsCount} reviews",
-                    color = Color.Gray,
-                    fontSize = 12.sp
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_star),
+                        contentDescription = "Rating",
+                        tint = Color(0xFFFFD700),
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "${doctor.rating} • ${doctor.reviewsCount} reviews",
+                        color = Color.Gray,
+                        fontSize = 12.sp
+                    )
+                }
             }
         }
     }

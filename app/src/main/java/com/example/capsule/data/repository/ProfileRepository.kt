@@ -401,6 +401,51 @@ class ProfileRepository {
             }
     }
 
+    // Upload profile image
+    fun uploadProfileImage(
+        userId: String,
+        userType: String,
+        base64Image: String,
+        onSuccess: () -> Unit,
+        onFailure: (String) -> Unit
+    ) {
+        val collection = when (userType) {
+            "Doctor" -> "doctors"
+            "Patient" -> "patients"
+            else -> return onFailure("Invalid user type")
+        }
+
+        db.collection(collection)
+            .document(userId)
+            .update("profileImageBase64", base64Image)
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { e ->
+                onFailure(e.message ?: "Failed to upload image")
+            }
+    }
+
+    // Delete profile image
+    fun deleteProfileImage(
+        userId: String,
+        userType: String,
+        onSuccess: () -> Unit,
+        onFailure: (String) -> Unit
+    ) {
+        val collection = when (userType) {
+            "Doctor" -> "doctors"
+            "Patient" -> "patients"
+            else -> return onFailure("Invalid user type")
+        }
+
+        db.collection(collection)
+            .document(userId)
+            .update("profileImageBase64", null)
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { e ->
+                onFailure(e.message ?: "Failed to delete image")
+            }
+    }
+
     companion object {
         // Singleton instance
         private var instance: ProfileRepository? = null

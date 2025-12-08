@@ -36,6 +36,7 @@ import com.example.capsule.ui.theme.Green
 import com.example.capsule.ui.theme.Teal
 import com.example.capsule.ui.theme.White
 import com.example.capsule.ui.theme.WhiteSmoke
+import com.example.capsule.util.ProfileImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -166,26 +167,12 @@ fun ViewPatientProfileScreen(
                 modifier = Modifier
                     .fillMaxWidth()
             ) {
-                patient.profileImageRes?.let {
-                    Image(
-                        painter = painterResource(id = it),
-                        contentDescription = "Doctor Image",
-                        modifier = Modifier
-                            .size(130.dp)
-                            .clip(CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
-                }?: run {
-                    // Fallback image if profileImageRes is null
-                    Image(
-                        painter = painterResource(id = R.drawable.patient_profile),
-                        contentDescription = "Doctor Image",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(120.dp)
-                            .clip(CircleShape)
-                    )
-                }
+                ProfileImage(
+                    base64Image = patient.profileImageBase64,
+                    defaultImageRes = R.drawable.doc_prof_unloaded,
+                    modifier = Modifier.size(120.dp),
+                    onImageClick = null
+                )
                 Spacer(modifier = Modifier.width(8.dp))
 
                 Column {

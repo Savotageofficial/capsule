@@ -1,5 +1,6 @@
 package com.example.capsule.ui.screens.doctor
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -23,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.R
 import com.example.capsule.ui.components.AvailabilityBottomSheet
+import com.example.capsule.ui.components.ImagePicker
 import com.example.capsule.ui.components.SpecializationDropdown
 import com.example.capsule.ui.theme.Cyan
 import com.example.capsule.ui.theme.WhiteSmoke
@@ -58,11 +60,13 @@ fun DoctorEditProfileScreen(
     var sessionPrice by remember { mutableStateOf(TextFieldValue(doctor.sessionPrice.toString())) }
     var specialty by remember { mutableStateOf(doctor.specialty) }
 
-
+    // Profile image state
+    var selectedImageBase64 by remember { mutableStateOf<String?>(doctor.profileImageBase64) }
     var showAvailabilitySheet by remember { mutableStateOf(false) }
     var showErrorDialog by remember { mutableStateOf(false) }
     var showSaveDialog by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
+
 
     Scaffold(
         topBar = {
@@ -101,6 +105,20 @@ fun DoctorEditProfileScreen(
                 .verticalScroll(scrollState)
         ) {
             Spacer(Modifier.height(10.dp))
+
+            // Profile Image Picker
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                ImagePicker(
+                    currentImageUrl = selectedImageBase64,
+                    onImagePicked = { newBase64Image ->
+                        selectedImageBase64 = newBase64Image
+                    }
+                )
+            }
+            Spacer(Modifier.height(20.dp))
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -219,10 +237,13 @@ fun DoctorEditProfileScreen(
             Spacer(Modifier.height(24.dp))
 
             // Save button
+            // In DoctorEditProfile.kt, replace the save button logic:
+
             Button(
                 onClick = {
                     isLoading = true
-                    val updatedData = mapOf(
+
+                    val profileData = mapOf(
                         "name" to name.text,
                         "specialty" to specialty,
                         "bio" to bio.text,
@@ -233,12 +254,58 @@ fun DoctorEditProfileScreen(
                         "sessionPrice" to sessionPrice.text.toDouble()
                     )
 
-                    viewModel.updateDoctorProfile(updatedData) { success ->
-                        isLoading = false
+                    // Determine image action
+                    val imageAction = when {
+                        selectedImageBase64 == null && doctor.profileImageBase64 != null ->
+                            "delete" // Remove existing image
+                        selectedImageBase64 != null && selectedImageBase64 != doctor.profileImageBase64 ->
+                            "upload" // Upload new/changed image
+                        else -> "none" // No change
+                    }
+
+                    // Helper function to handle profile update
+                    fun handleProfileUpdate(success: Boolean, error: String? = null) {
                         if (success) {
-                            showSaveDialog = true
-                            onSaveClick()
-                        } else showErrorDialog = true
+                            viewModel.updateDoctorProfile(profileData) { updateSuccess ->
+                                isLoading = false
+                                if (updateSuccess) {
+                                    showSaveDialog = true
+                                } else {
+                                    showErrorDialog = true
+                                }
+                            }
+                        } else {
+                            isLoading = false
+                            showErrorDialog = true
+                        }
+                    }
+
+                    // Execute image action first (if needed), then update profile
+                    when (imageAction) {
+                        "delete" -> {
+                            viewModel.deleteProfileImage { success, error ->
+                                handleProfileUpdate(success, error)
+                            }
+                        }
+                        "upload" -> {
+                            selectedImageBase64?.let { base64 ->
+                                viewModel.uploadProfileImage(base64) { success, error ->
+                                    handleProfileUpdate(success, error)
+                                }
+                            } ?: run {
+                                handleProfileUpdate(true) // No image to upload
+                            }
+                        }
+                        "none" -> {
+                            viewModel.updateDoctorProfile(profileData) { success ->
+                                isLoading = false
+                                if (success) {
+                                    showSaveDialog = true
+                                } else {
+                                    showErrorDialog = true
+                                }
+                            }
+                        }
                     }
                 },
                 modifier = Modifier

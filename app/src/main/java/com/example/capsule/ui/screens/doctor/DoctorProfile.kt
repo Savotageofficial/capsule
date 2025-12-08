@@ -38,6 +38,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.ui.theme.Cyan
 import com.example.capsule.ui.theme.Teal
 import com.example.capsule.ui.theme.WhiteSmoke
+import com.example.capsule.util.ProfileImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -126,26 +127,15 @@ fun DoctorProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Profile Image
-            doctor.profileImageRes?.let {
-                Image(
-                    painter = painterResource(id = it),
-                    contentDescription = "Doctor Image",
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop
-                )
-            } ?: run {
-                // Fallback image if profileImageRes is null
-                Image(
-                    painter = painterResource(id = R.drawable.doc_prof_unloaded),
-                    contentDescription = "Doctor Image",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape)
-                )
-            }
+            ProfileImage(
+                base64Image = doctor.profileImageBase64,
+                defaultImageRes = R.drawable.doc_prof_unloaded,
+                modifier = Modifier.size(120.dp),
+                onImageClick = {
+                    // You can add image picker functionality here
+                    // or navigate to edit screen
+                }
+            )
 
             Spacer(modifier = Modifier.height(12.dp))
 
