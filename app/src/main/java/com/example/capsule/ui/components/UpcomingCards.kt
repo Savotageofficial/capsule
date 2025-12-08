@@ -1,10 +1,7 @@
 package com.example.capsule.ui.components
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
@@ -13,15 +10,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.capsule.R
 import com.example.capsule.data.model.TimeSlot
+import com.example.capsule.util.ProfileImage
 import com.example.capsule.util.formatDate
 
 @Composable
@@ -30,6 +26,7 @@ fun UpcomingCard(
     appointmentType: String,
     timeSlot: TimeSlot,
     date: Long,
+    profileImage: String? = null, // Add this parameter
     showMoreIcon: Boolean = false,
     onClick: () -> Unit = {},
     onDeleteClick: () -> Unit = {}
@@ -56,15 +53,12 @@ fun UpcomingCard(
             // ----------- Profile + Texts ------------
             Row(verticalAlignment = Alignment.CenterVertically) {
 
-                // Profile Picture
-                Image(
-                    painter = painterResource(R.drawable.patient_profile),
-                    contentDescription = "Profile",
-                    modifier = Modifier
-                        .size(52.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFEFEFEF), CircleShape),
-                    contentScale = ContentScale.Crop
+                // Profile Picture - NOW USING profileImage parameter
+                ProfileImage(
+                    base64Image = profileImage,
+                    defaultImageRes = R.drawable.patient_profile,
+                    modifier = Modifier.size(52.dp),
+                    onImageClick = null
                 )
 
                 Spacer(modifier = Modifier.width(14.dp))
@@ -154,5 +148,3 @@ fun UpcomingCard(
         }
     }
 }
-
-

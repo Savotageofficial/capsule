@@ -23,28 +23,9 @@ open class UserViewModel(
     protected val _isLoading = mutableStateOf(false)
     val isLoading = _isLoading
 
-    protected val appointmentsLoading = mutableStateOf(false)
-
-    protected val prescriptionsLoading = mutableStateOf(false)
-
     protected val errorMessage = mutableStateOf<String?>(null)
 
-
-    // Add this helper method
     protected open fun getCurrentUserId(): String? = null
-
-    protected fun launchSafely(block: suspend () -> Unit) {
-        viewModelScope.launch {
-            try {
-                _isLoading.value = true
-                block()
-            } catch (e: Exception) {
-                errorMessage.value = e.message
-            } finally {
-                _isLoading.value = false
-            }
-        }
-    }
 
     // ------------------------------
     // Profile Image Logic
@@ -99,8 +80,7 @@ open class UserViewModel(
         }
     }
 
-
-
+    // ------------------------------
     // Appointments Logic
     // ------------------------------
     protected val _allAppointments = mutableStateOf(emptyList<Appointment>())
@@ -128,12 +108,69 @@ open class UserViewModel(
         viewModelScope.launch {
             repo.updateAppointmentStatus(appointmentId, "Cancelled") { success ->
                 if (success) {
+                    // Update all appointments
                     _allAppointments.value = _allAppointments.value.map { a ->
                         if (a.id == appointmentId) a.copy(status = "Cancelled") else a
                     }
+                    // Reapply current filter
                     applyFilter(_filterState.value)
                 } else {
                     errorMessage.value = "Failed to cancel appointment"
+                }
+            }
+        }
+    }
+
+    // ------------------------------
+    // Enrich appointments with profile images (SIMPLIFIED)
+    // ------------------------------
+    protected fun loadAndEnrichAppointments(
+        fetchAppointments: (callback: (List<Appointment>) -> Unit) -> Unit
+    ) {
+        _isLoading.value = true
+        viewModelScope.launch {
+            fetchAppointments { appointments ->
+                if (appointments.isEmpty()) {
+                    _allAppointments.value = emptyList()
+                    _appointments.value = emptyList()
+                    _isLoading.value = false
+                    return@fetchAppointments
+                }
+
+                // Start enriching appointments with profile images
+                val enrichedAppointments = mutableListOf<Appointment>()
+                val total = appointments.size
+                var completed = 0
+
+                appointments.forEach { appointment ->
+                    // Fetch doctor profile image
+                    repo.getDoctorProfileImage(appointment.doctorId) { doctorImage ->
+                        // Fetch patient profile image
+                        repo.getPatientProfileImage(appointment.patientId) { patientImage ->
+                            synchronized(enrichedAppointments) {
+                                enrichedAppointments.add(
+                                    appointment.copy(
+                                        doctorProfileImage = doctorImage,
+                                        patientProfileImage = patientImage
+                                    )
+                                )
+                                completed++
+
+                                // When all appointments are enriched
+                                if (completed == total) {
+                                    // Sort to maintain original order
+                                    val sorted = enrichedAppointments.sortedBy { app ->
+                                        appointments.indexOfFirst { it.id == app.id }
+                                    }
+
+                                    // Update state
+                                    _allAppointments.value = sorted
+                                    applyFilter(_filterState.value)
+                                    _isLoading.value = false
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

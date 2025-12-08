@@ -16,6 +16,7 @@ class PatientViewModel : UserViewModel("Patient") {
         get() = _patient.value?.id
 
     override fun getCurrentUserId(): String? = _patient.value?.id
+
     // -------------------------------------------------------------
     // Load Patient Profile
     // -------------------------------------------------------------
@@ -67,9 +68,10 @@ class PatientViewModel : UserViewModel("Patient") {
                         dob = data["dob"] as? Long ?: _patient.value?.dob ?: 0L,
                         gender = data["gender"] as? String ?: _patient.value?.gender.orEmpty(),
                         contact = data["contact"] as? String ?: _patient.value?.contact.orEmpty(),
-                        email = data["email"] as? String ?: _patient.value?.email.orEmpty()
+                        email = data["email"] as? String ?: _patient.value?.email.orEmpty(),
+                        profileImageBase64 = data["profileImageBase64"] as? String
+                            ?: _patient.value?.profileImageBase64
                     )
-
                 }
                 onDone(success)
             }
@@ -77,24 +79,13 @@ class PatientViewModel : UserViewModel("Patient") {
     }
 
     // -------------------------------------------------------------
-    // Load Patient Appointments
+    // Load Patient Appointments WITH PROFILE IMAGES
     // -------------------------------------------------------------
     fun loadPatientAppointments() {
         _patient.value?.id?.let { patientId ->
-            _isLoading.value = true
-            viewModelScope.launch {
-                repo.getPatientAppointments(patientId) { appointments ->
-                    _allAppointments.value = appointments
-                    applyFilter(_filterState.value)
-                    _isLoading.value = false
-                    if (appointments.isEmpty()) {
-                        errorMessage.value = "No appointments found"
-                    }
-                }
+            loadAndEnrichAppointments { callback ->
+                repo.getPatientAppointments(patientId, callback)
             }
-        } ?: run {
-            errorMessage.value = "Patient ID not available"
-            _isLoading.value = false
         }
     }
 
@@ -136,5 +127,12 @@ class PatientViewModel : UserViewModel("Patient") {
         } ?: run {
             callback(false, "Patient ID not available")
         }
+    }
+
+    // -------------------------------------------------------------
+    // Refresh Appointments
+    // -------------------------------------------------------------
+    fun refreshAppointments() {
+        loadPatientAppointments()
     }
 }

@@ -1,12 +1,10 @@
 package com.example.capsule.ui.screens.appointments
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -21,9 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -39,6 +35,7 @@ import com.example.capsule.ui.screens.doctor.DoctorViewModel
 import com.example.capsule.ui.theme.Cyan
 import com.example.capsule.ui.theme.Teal
 import com.example.capsule.ui.theme.WhiteSmoke
+import com.example.capsule.util.ProfileImage
 import com.example.capsule.util.formatDate
 
 
@@ -215,29 +212,36 @@ fun DoctorAppointmentCard(
             // ---------------- LEFT SIDE ----------------
             Row(verticalAlignment = Alignment.CenterVertically) {
 
-                // Profile Image
-                Image(
-                    painter = painterResource(R.drawable.patient_profile),
-                    contentDescription = "Profile",
+                // Profile Image - NOW USING appointment.patientProfileImage
+                ProfileImage(
+                    base64Image = appointment.patientProfileImage, // Directly use from appointment
+                    defaultImageRes = R.drawable.patient_profile,
                     modifier = Modifier
                         .size(52.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFEFEFEF), CircleShape)
                         .clickable { onPatientClick() },
-                    contentScale = ContentScale.Crop
+                    onImageClick = { onPatientClick() }
                 )
 
                 Spacer(modifier = Modifier.width(14.dp))
 
-                Column(modifier = Modifier.clickable { onPatientClick() }) {
+                Column(modifier = Modifier
+                    .clickable { onPatientClick() }
+                ) {
 
                     // Patient Name
+                    val shortPatientName = if (appointment.patientName.length > 10)
+                        appointment.patientName.take(10) + "..."
+                    else
+                        appointment.patientName
+
                     Text(
-                        text = appointment.patientName,
+                        text = shortPatientName,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF1C1C1C)
                     )
+
+
 
                     Spacer(modifier = Modifier.height(4.dp))
 

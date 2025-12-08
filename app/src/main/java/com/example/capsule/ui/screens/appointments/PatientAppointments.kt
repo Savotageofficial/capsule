@@ -1,12 +1,10 @@
 package com.example.capsule.ui.screens.appointments
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -21,9 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -38,6 +34,7 @@ import com.example.capsule.ui.screens.patient.PatientViewModel
 import com.example.capsule.ui.theme.Cyan
 import com.example.capsule.ui.theme.Teal
 import com.example.capsule.ui.theme.WhiteSmoke
+import com.example.capsule.util.ProfileImage
 import com.example.capsule.util.formatAppointmentDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -53,7 +50,7 @@ fun PatientAppointmentsScreen(
 
     LaunchedEffect(Unit) {
         viewModel.loadPatientAppointments()
-        // Load patient profile first to ensure we have patient ID
+        // Load patient profile first to get patient ID, then load appointments
         viewModel.loadCurrentPatientProfile()
     }
 
@@ -199,27 +196,32 @@ private fun AppointmentCard(
         ) {
             // ---------------- Left Side: Profile + Info ----------------
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // Doctor Picture
-                Image(
-                    painter = painterResource(R.drawable.doc_prof_unloaded),
-                    contentDescription = "Doctor Profile",
+                // Doctor Picture - NOW USING appointment.doctorProfileImage
+                ProfileImage(
+                    base64Image = appointment.doctorProfileImage,
+                    defaultImageRes = R.drawable.doc_prof_unloaded,
                     modifier = Modifier
                         .size(52.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFEFEFEF), CircleShape)
                         .clickable { onDoctorClick() },
-                    contentScale = ContentScale.Crop
+                    onImageClick = { onDoctorClick() }
                 )
 
                 Spacer(modifier = Modifier.width(14.dp))
 
-                Column(modifier = Modifier.clickable { onDoctorClick() }) {
+                Column(modifier = Modifier
+                    .clickable { onDoctorClick() }
+                ) {
                     // Doctor Name
+                    val shortName = if (appointment.doctorName.length > 10)
+                        appointment.doctorName.take(10) + "..."
+                    else
+                        appointment.doctorName
+
                     Text(
-                        text = "Dr. ${appointment.doctorName}",
+                        text = "Dr. $shortName",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1C1C1C)
+                        color = Color(0xFF1C1C1C),
                     )
 
                     Spacer(modifier = Modifier.height(4.dp))

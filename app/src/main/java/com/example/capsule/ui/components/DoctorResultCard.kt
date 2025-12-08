@@ -51,7 +51,7 @@ fun DoctorResultCard(
             horizontalArrangement = Arrangement.spacedBy(18.dp)
         ) {
 
-            // Circular doctor image
+            // Circular doctor image - NOW USING REAL PROFILE IMAGE
             ProfileImage(
                 base64Image = doctor.profileImageBase64,
                 defaultImageRes = R.drawable.doc_prof_unloaded,
@@ -82,6 +82,27 @@ fun DoctorResultCard(
                 )
 
                 Spacer(Modifier.height(8.dp))
+
+                // -------- EXPERIENCE --------
+                if (doctor.experience.isNotEmpty()) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_experience),
+                            contentDescription = "Experience",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            text = doctor.experience,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
 
                 // -------- ADDRESS (if available) --------
                 if (doctor.clinicAddress.isNotEmpty()) {
@@ -141,7 +162,7 @@ fun DoctorResultCard(
 
 private fun getRatingText(rating: Double, reviewsCount: Int): String {
     return when {
-        rating > 0 && reviewsCount > 0 -> String.format("%.1f", rating)
+        rating > 0 && reviewsCount > 0 -> String.format("%.1f (%d)", rating, reviewsCount)
         rating > 0 -> String.format("%.1f", rating)
         else -> "New"
     }

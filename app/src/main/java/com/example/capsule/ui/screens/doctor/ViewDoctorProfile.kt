@@ -53,6 +53,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
@@ -635,7 +636,7 @@ fun RatingBar(
     currentRating: Int,
     onRatingSelected: (Int) -> Unit,
     enabled: Boolean = true,
-    starSize: androidx.compose.ui.unit.Dp = 32.dp,
+    starSize: Dp = 32.dp,
     modifier: Modifier = Modifier
 ) {
     Row(
