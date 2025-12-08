@@ -46,12 +46,14 @@ Book appointments, chat with licensed doctors, and receive electronic prescripti
 ## **Doctor Module**
 
 * Full doctor profile (specialty, experience, ratings, clinic info)
+* Profile picture upload & update
 * Real-time data fetched from Firestore
 * Dashboard with weekly schedule & upcoming appointments
 
 ## **Patient Module**
 
 * Patient profile with personal & medical details
+* Profile picture upload & update
 * Edit profile and manage personal information
 
 ## **Patient Home**
@@ -99,11 +101,21 @@ Book appointments, chat with licensed doctors, and receive electronic prescripti
 # **Upcoming Enhancements**
 
 * **Settings Module**
-
   * Theme (Light/Dark)
+  * Multi-language support (Arabic / English)
   * Notification control
   * Privacy settings
-* **Performance Optimization** (caching, faster loading)
+
+* **Patient Medical History**
+  * View past diagnoses
+  * Previous prescriptions summary
+  * Lab results & visit records
+
+* **Performance Optimization**
+  * Caching
+  * Faster screen loading
+  * Reduced Firestore reads
+
 
 ---
 
