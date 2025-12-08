@@ -56,3 +56,5 @@ fun CapsuleTheme(
         content = content
     )
 }
+
+//ignore (by safwat)

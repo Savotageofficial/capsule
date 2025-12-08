@@ -1,5 +1,9 @@
 package com.example.capsule
 
+import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.launch
 import org.junit.Test
 
 import org.junit.Assert.*
