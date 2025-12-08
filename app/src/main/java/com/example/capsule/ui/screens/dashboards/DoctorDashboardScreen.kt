@@ -28,6 +28,7 @@ import com.example.capsule.R
 import com.example.capsule.ui.components.DashboardCard
 import com.example.capsule.ui.components.UpcomingCard
 import com.example.capsule.ui.screens.doctor.DoctorViewModel
+import com.example.capsule.ui.screens.patient.PatientViewModel
 import com.example.capsule.ui.theme.Blue
 import com.example.capsule.ui.theme.Green
 import com.example.capsule.ui.theme.White
@@ -46,8 +47,8 @@ fun DoctorDashboardScreen(
     onPrescriptionClick: () -> Unit = {}
 ) {
     val doctor = viewModel.doctor.value
-    val appointments = viewModel.appointments.value   // USE REAL APPOINTMENTS
-    val isLoading = viewModel.isLoading.value         // USE LOADING STATE
+    val appointments = viewModel.appointments.value
+    val isLoading = viewModel.isLoading.value
 
     // Load doctor data when screen opens
     LaunchedEffect(Unit) {
@@ -263,6 +264,7 @@ fun DoctorDashboardScreen(
                 ) {
                     items(recentAppointments) { appointment ->
                         UpcomingCard(
+                            patientPic = appointment.patientProfileImage,
                             name = appointment.patientName,
                             appointmentType = appointment.type,
                             timeSlot = appointment.timeSlot,
