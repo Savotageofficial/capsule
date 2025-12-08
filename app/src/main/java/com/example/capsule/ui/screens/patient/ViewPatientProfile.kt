@@ -32,6 +32,7 @@ import com.example.capsule.ui.theme.Teal
 import com.example.capsule.ui.theme.White
 import com.example.capsule.ui.theme.WhiteSmoke
 import com.example.capsule.util.ProfileImage
+import com.example.capsule.util.formatDateOfBirth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -149,10 +150,10 @@ fun ViewPatientProfileScreen(
 
         Column(
             modifier = Modifier
+                .background(WhiteSmoke)
                 .padding(padding)
                 .padding(horizontal = 16.dp)
                 .padding(vertical = 20.dp)
-                .background(WhiteSmoke)
                 .fillMaxSize()
                 .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -179,7 +180,7 @@ fun ViewPatientProfileScreen(
                     Spacer(modifier = Modifier.height(6.dp))
                     InfoRow(
                         label = stringResource(R.string.date_of_birth),
-                        value = patient.dob.toString()
+                        value = formatDateOfBirth(patient.dob)
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     InfoRow(label = stringResource(R.string.gender), value = patient.gender)
