@@ -193,61 +193,61 @@ fun SettingsScreen(
                 }
 
                 // Language dropdown (ExposedDropdownMenu style)
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 12.dp),
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
-                ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Text(
-                            text = "Language",
-                            fontSize = 17.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
-                        )
-
-                        ExposedDropdownMenuBox(
-                            expanded = expanded,
-                            onExpandedChange = { expanded = !expanded }
-                        ) {
-                            TextField(
-                                readOnly = true,
-                                value = selectedLangLabel,
-                                onValueChange = { },
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                                colors = ExposedDropdownMenuDefaults.textFieldColors(),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(Color.White)
-                            )
-                            ExposedDropdownMenu(
-                                expanded = expanded,
-                                onDismissRequest = { expanded = false }
-                            ) {
-                                languages.forEach { (label, tag) ->
-                                    DropdownMenuItem(
-                                        text = { Text(label) },
-                                        onClick = {
-                                            expanded = false
-                                            if (tag != selectedLangTag) {
-                                                selectedLangTag = tag
-                                                // save
-                                                prefs.edit {putString("app_lang", tag)}
-                                                // apply locales using AppCompatDelegate (works on many API levels)
-                                                val localeList = LocaleListCompat.forLanguageTags(tag)
-                                                AppCompatDelegate.setApplicationLocales(localeList)
-                                                // try to recreate activity for immediate effect
-                                                (context as? ComponentActivity)?.recreate()
-                                            }
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
+//                Card(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(bottom = 12.dp),
+//                    shape = RoundedCornerShape(20.dp),
+//                    colors = CardDefaults.cardColors(containerColor = Color.White)
+//                ) {
+//                    Column(modifier = Modifier.padding(12.dp)) {
+//                        Text(
+//                            text = "Language",
+//                            fontSize = 17.sp,
+//                            fontWeight = FontWeight.SemiBold,
+//                            modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
+//                        )
+//
+//                        ExposedDropdownMenuBox(
+//                            expanded = expanded,
+//                            onExpandedChange = { expanded = !expanded }
+//                        ) {
+//                            TextField(
+//                                readOnly = true,
+//                                value = selectedLangLabel,
+//                                onValueChange = { },
+//                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+//                                colors = ExposedDropdownMenuDefaults.textFieldColors(),
+//                                modifier = Modifier
+//                                    .fillMaxWidth()
+//                                    .background(Color.White)
+//                            )
+//                            ExposedDropdownMenu(
+//                                expanded = expanded,
+//                                onDismissRequest = { expanded = false }
+//                            ) {
+//                                languages.forEach { (label, tag) ->
+//                                    DropdownMenuItem(
+//                                        text = { Text(label) },
+//                                        onClick = {
+//                                            expanded = false
+//                                            if (tag != selectedLangTag) {
+//                                                selectedLangTag = tag
+//                                                // save
+//                                                prefs.edit {putString("app_lang", tag)}
+//                                                // apply locales using AppCompatDelegate (works on many API levels)
+//                                                val localeList = LocaleListCompat.forLanguageTags(tag)
+//                                                AppCompatDelegate.setApplicationLocales(localeList)
+//                                                // try to recreate activity for immediate effect
+//                                                (context as? ComponentActivity)?.recreate()
+//                                            }
+//                                        }
+//                                    )
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
 
                 Spacer(modifier = Modifier.height(25.dp))
 
