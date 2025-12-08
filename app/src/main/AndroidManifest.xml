@@ -12,11 +12,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Capsule">
         <activity
-            android:name=".ChatSelectionActivity"
-            android:exported="false"
-            android:label="@string/title_activity_chat_selection"
-            android:theme="@style/Theme.Capsule" />
-        <activity
             android:name=".activities.ChatActivity"
             android:exported="false"
             android:label="@string/title_activity_chat"
@@ -30,11 +25,10 @@
             android:name=".activities.LoginActivity"
             android:exported="false"
             android:label="@string/title_activity_login"
-            android:theme="@style/Theme.Capsule" /> <!-- main launcher activity -->
+            android:theme="@style/Theme.Capsule" />
         <activity
             android:name=".activities.SignUpActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.Capsule">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

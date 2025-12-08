@@ -9,8 +9,6 @@ import com.example.capsule.data.model.Patient
 import com.example.capsule.data.model.TimeSlot
 import com.example.capsule.data.repository.ProfileRepository
 import com.example.capsule.util.convertDateTimeToMillis
-import com.google.firebase.Timestamp
-import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -32,7 +30,7 @@ class BookingViewModel : ViewModel() {
     val showConfirmation = mutableStateOf(false)
     val showDatePicker = mutableStateOf(false)
 
-//                  LOAD DOCTOR SLOTS (NO FIREBASE FILTER)
+    //                  LOAD DOCTOR SLOTS (NO FIREBASE FILTER)
     fun loadSlots(doctor: Doctor) {
         isLoading.value = true
 
@@ -92,6 +90,7 @@ class BookingViewModel : ViewModel() {
 
         val timestamp = convertDateTimeToMillis(selectedDate.value, slot.start)
 
+        // Create appointment with BOTH profile images
         val appointment = Appointment(
             doctorId = doctor.id,
             patientId = patient.id,
@@ -100,7 +99,9 @@ class BookingViewModel : ViewModel() {
             dateTime = timestamp,
             timeSlot = slot,
             type = appointmentType.value,
-            status = "Upcoming"
+            status = "Upcoming",
+            doctorProfileImage = doctor.profileImageBase64,  // Add doctor's profile image
+            patientProfileImage = patient.profileImageBase64  // Add patient's profile image
         )
 
         // Make booking request
@@ -117,5 +118,4 @@ class BookingViewModel : ViewModel() {
             }
         }
     }
-
 }

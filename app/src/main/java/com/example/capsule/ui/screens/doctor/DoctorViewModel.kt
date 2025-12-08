@@ -1,48 +1,24 @@
 package com.example.capsule.ui.screens.doctor
 
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.capsule.data.model.Appointment
 import com.example.capsule.data.model.Doctor
-import com.example.capsule.data.model.Prescription
 import com.example.capsule.data.model.TimeSlot
-import com.example.capsule.data.repository.ProfileRepository
+import com.example.capsule.ui.screens.common.UserViewModel
 import kotlinx.coroutines.launch
 
-class DoctorViewModel : ViewModel() {
-
-    private val profileRepository = ProfileRepository.getInstance()
+class DoctorViewModel : UserViewModel(userType = "Doctor") {
 
     // Doctor Profile
     private val _doctor = mutableStateOf<Doctor?>(null)
     val doctor = _doctor
 
-    // Appointments
-    private val _allAppointments = mutableStateOf(emptyList<Appointment>())
+    // doctorId property
+    private val doctorId: String?
+        get() = _doctor.value?.id
 
-    private val _appointments = mutableStateOf(emptyList<Appointment>())
-    val appointments = _appointments
-
-    // Filter state
-    private val _filterState = mutableStateOf("Upcoming") // Default filter
-    val filterState = _filterState
-
-    // Prescriptions
-    private val _prescriptions = mutableStateOf(emptyList<Prescription>())
-    val prescriptions = _prescriptions
-
-    // Selected prescription for viewing
-    private val _selectedPrescription = mutableStateOf<Prescription?>(null)
-    val selectedPrescription = _selectedPrescription
-
-    // Loading state
-    private val _isLoading = mutableStateOf(false)
-    val isLoading = _isLoading
-
-    // Error message
-    private val _errorMessage = mutableStateOf<String?>(null)
 
     // Availability (State kept separately for the UI)
     val availability = mutableStateMapOf<String, MutableList<TimeSlot>>()
@@ -51,11 +27,13 @@ class DoctorViewModel : ViewModel() {
     private val _hasRated = mutableStateOf(false)
     val hasRated = _hasRated
 
-    private val _currentUserRating = mutableStateOf(0)
+    private val _currentUserRating = mutableIntStateOf(0)
     val currentUserRating = _currentUserRating
 
     private val _isRatingLoading = mutableStateOf(false)
     val isRatingLoading = _isRatingLoading
+
+    override fun getCurrentUserId(): String? = _doctor.value?.id
 
     // -------------------------------------------------------------
     // Load Doctor Profile
@@ -63,7 +41,7 @@ class DoctorViewModel : ViewModel() {
     fun loadCurrentDoctorProfile() {
         _isLoading.value = true
         viewModelScope.launch {
-            profileRepository.getCurrentDoctor { doctor ->
+            repo.getCurrentDoctor { doctor ->
                 _doctor.value = doctor
                 if (doctor != null) {
                     loadAvailability()
@@ -78,7 +56,7 @@ class DoctorViewModel : ViewModel() {
     fun loadDoctorProfileById(doctorId: String) {
         _isLoading.value = true
         viewModelScope.launch {
-            profileRepository.getDoctorById(doctorId) { doctor ->
+            repo.getDoctorById(doctorId) { doctor ->
                 _doctor.value = doctor
                 if (doctor != null) {
                     loadAvailability()
@@ -90,32 +68,20 @@ class DoctorViewModel : ViewModel() {
         }
     }
 
-    // -------------------------------------------------------------
-    // Filter Functions
-    // -------------------------------------------------------------
-    fun setFilter(filter: String) {
-        _filterState.value = filter
-        applyFilter(filter)
-    }
 
-    private fun applyFilter(filter: String) {
-        _appointments.value = when (filter) {
-            "Upcoming" -> _allAppointments.value.filter { it.status == "Upcoming" }
-            "Completed" -> _allAppointments.value.filter { it.status == "Completed" }
-            "Cancelled" -> _allAppointments.value.filter { it.status == "Cancelled" }
-            else -> _allAppointments.value
-        }.sortedBy { it.dateTime }
-    }
 
     // -------------------------------------------------------------
-    // Load Appointments
+    // Load Appointments WITH PROFILE IMAGES
     // -------------------------------------------------------------
     private fun loadDoctorAppointments() {
         _doctor.value?.id?.let { doctorId ->
             viewModelScope.launch {
-                profileRepository.getDoctorAppointments(doctorId) { appointments ->
-                    _allAppointments.value = appointments
-                    applyFilter(_filterState.value) // Apply the current filter
+                repo.getDoctorAppointments(doctorId) { appointments ->
+                    // Enrich appointments with profile images
+                    enrichAppointmentsWithProfileImages(appointments) { enrichedAppointments ->
+                        _allAppointments.value = enrichedAppointments
+                        applyFilter(_filterState.value) // Apply the current filter
+                    }
                 }
             }
         }
@@ -126,7 +92,7 @@ class DoctorViewModel : ViewModel() {
     // -------------------------------------------------------------
     fun markAsCompleted(appointmentId: String) {
         viewModelScope.launch {
-            profileRepository.updateAppointmentStatus(appointmentId, "Completed") { success ->
+            repo.updateAppointmentStatus(appointmentId, "Completed") { success ->
                 if (success) {
                     // Update local state
                     _allAppointments.value = _allAppointments.value.map { appointment ->
@@ -138,7 +104,7 @@ class DoctorViewModel : ViewModel() {
                     }
                     applyFilter(_filterState.value) // Reapply filter
                 } else {
-                    _errorMessage.value = "Failed to mark appointment as completed"
+                    errorMessage.value = "Failed to mark appointment as completed"
                 }
             }
         }
@@ -151,37 +117,23 @@ class DoctorViewModel : ViewModel() {
         _doctor.value?.id?.let { doctorId ->
             _isLoading.value = true
             viewModelScope.launch {
-                profileRepository.getPrescriptionsByDoctor(doctorId) { prescriptions ->
+                repo.getPrescriptionsByDoctor(doctorId) { prescriptions ->
                     _prescriptions.value = prescriptions
                     _isLoading.value = false
                     if (prescriptions.isEmpty()) {
-                        _errorMessage.value = "No prescriptions found"
+                        errorMessage.value = "No prescriptions found"
                     }
                 }
             }
         } ?: run {
-            _errorMessage.value = "Doctor ID not available"
+            errorMessage.value = "Doctor ID not available"
             _isLoading.value = false
         }
     }
 
-    fun loadPrescriptionById(prescriptionId: String) {
-        _isLoading.value = true
-        viewModelScope.launch {
-            profileRepository.getPrescriptionById(prescriptionId) { prescription ->
-                _selectedPrescription.value = prescription
-                _isLoading.value = false
-                if (prescription == null) {
-                    _errorMessage.value = "Prescription not found"
-                }
-            }
-        }
-    }
-
-
     fun deletePrescription(prescriptionId: String, onDone: (Boolean) -> Unit) {
         viewModelScope.launch {
-            profileRepository.deletePrescription(prescriptionId) { success ->
+            repo.deletePrescription(prescriptionId) { success ->
                 if (success) {
                     // Remove from local state
                     _prescriptions.value = _prescriptions.value.filter { it.id != prescriptionId }
@@ -200,7 +152,6 @@ class DoctorViewModel : ViewModel() {
     // -------------------------------------------------------------
     private fun loadAvailability() {
         availability.clear()
-
         _doctor.value?.availability?.forEach { (day, slots) ->
             availability[day] = slots.toMutableList()
         }
@@ -209,7 +160,6 @@ class DoctorViewModel : ViewModel() {
     // -------------------------------------------------------------
     // Availability Editing Functions
     // -------------------------------------------------------------
-
     fun addSlot(day: String) {
         // Only add if no slot exists for this day
         if (availability[day].isNullOrEmpty()) {
@@ -230,7 +180,6 @@ class DoctorViewModel : ViewModel() {
         availability[day]?.let { slots ->
             if (index in slots.indices) {
                 slots.removeAt(index)
-
                 // Delete day if empty
                 if (slots.isEmpty()) {
                     availability.remove(day)
@@ -244,11 +193,10 @@ class DoctorViewModel : ViewModel() {
     // -------------------------------------------------------------
     fun saveAvailability(onDone: (Boolean) -> Unit) {
         val cleanMap = availability.mapValues { it.value.toList() }
-
         val data = mapOf("availability" to cleanMap)
 
         viewModelScope.launch {
-            profileRepository.updateCurrentDoctor(data) { success ->
+            repo.updateCurrentDoctor(data) { success ->
                 if (success) {
                     _doctor.value = _doctor.value?.copy(availability = cleanMap)
                 }
@@ -262,7 +210,7 @@ class DoctorViewModel : ViewModel() {
     // -------------------------------------------------------------
     fun updateDoctorProfile(data: Map<String, Any>, onDone: (Boolean) -> Unit) {
         viewModelScope.launch {
-            profileRepository.updateCurrentDoctor(data) { success ->
+            repo.updateCurrentDoctor(data) { success ->
                 if (success) {
                     _doctor.value = _doctor.value?.copy(
                         name = data["name"] as? String ?: _doctor.value!!.name,
@@ -276,7 +224,9 @@ class DoctorViewModel : ViewModel() {
                         sessionPrice = data["sessionPrice"] as? Double
                             ?: _doctor.value!!.sessionPrice,
                         availability = (data["availability"] as? Map<String, List<TimeSlot>>)
-                            ?: _doctor.value!!.availability
+                            ?: _doctor.value!!.availability,
+                        profileImageBase64 = data["profileImageBase64"] as? String
+                            ?: _doctor.value!!.profileImageBase64
                     )
                 }
                 onDone(success)
@@ -284,49 +234,29 @@ class DoctorViewModel : ViewModel() {
         }
     }
 
-    // -------------------------------------------------------------
-    // cancel Appointment
-    // -------------------------------------------------------------
-    fun cancelAppointment(appointmentId: String) {
-        viewModelScope.launch {
-            profileRepository.updateAppointmentStatus(appointmentId, "Cancelled") { success ->
-                if (success) {
-                    // Update local state
-                    _allAppointments.value = _allAppointments.value.map { appointment ->
-                        if (appointment.id == appointmentId) {
-                            appointment.copy(status = "Cancelled")
-                        } else {
-                            appointment
-                        }
-                    }
-                    applyFilter(_filterState.value) // Reapply filter
-                } else {
-                    _errorMessage.value = "Failed to cancel appointment"
-                }
-            }
-        }
-    }
 
     // -------------------------------------------------------------
     // Rating Functions
     // -------------------------------------------------------------
-
-    // Function to check if current user has rated
     fun checkIfUserHasRated(doctorId: String, userId: String) {
         _isRatingLoading.value = true
         viewModelScope.launch {
-            profileRepository.hasUserRatedDoctor(doctorId, userId) { hasRated ->
+            repo.hasUserRatedDoctor(doctorId, userId) { hasRated ->
                 _hasRated.value = hasRated
                 _isRatingLoading.value = false
             }
         }
     }
 
-    // Function to submit rating
-    fun submitRating(doctorId: String, patientId: String, rating: Int, onResult: (Boolean) -> Unit) {
+    fun submitRating(
+        doctorId: String,
+        patientId: String,
+        rating: Int,
+        onResult: (Boolean) -> Unit
+    ) {
         _isRatingLoading.value = true
         viewModelScope.launch {
-            profileRepository.rateDoctor(doctorId, patientId, rating) { success ->
+            repo.rateDoctor(doctorId, patientId, rating) { success ->
                 if (success) {
                     // Update local doctor state
                     _doctor.value?.let { currentDoctor ->
@@ -341,7 +271,7 @@ class DoctorViewModel : ViewModel() {
                             ratedByUsers = currentDoctor.ratedByUsers + patientId
                         )
                         _hasRated.value = true
-                        _currentUserRating.value = rating
+                        _currentUserRating.intValue = rating
                     }
                 }
                 _isRatingLoading.value = false
@@ -349,4 +279,24 @@ class DoctorViewModel : ViewModel() {
             }
         }
     }
+
+    // -------------------------------------------------------------
+    // Profile Image Wrapper Methods
+    // -------------------------------------------------------------
+    fun uploadProfileImage(base64Image: String, callback: (Boolean, String?) -> Unit) {
+        doctorId?.let { id ->
+            super.uploadProfileImage(id, base64Image, callback)
+        } ?: run {
+            callback(false, "Doctor ID not available")
+        }
+    }
+
+    fun deleteProfileImage(callback: (Boolean, String?) -> Unit) {
+        doctorId?.let { id ->
+            super.deleteProfileImage(id, callback)
+        } ?: run {
+            callback(false, "Doctor ID not available")
+        }
+    }
+
 }

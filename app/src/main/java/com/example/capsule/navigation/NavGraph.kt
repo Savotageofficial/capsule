@@ -9,6 +9,10 @@ import com.example.capsule.data.model.TimeSlot
 import com.example.capsule.ui.screens.doctor.*
 import com.example.capsule.ui.screens.booking.BookingConfirmationScreen
 import com.example.capsule.ui.chat.ChatSelectionScreen
+import com.example.capsule.ui.screens.appointments.DoctorScheduleScreen
+import com.example.capsule.ui.screens.appointments.PatientAppointmentsScreen
+import com.example.capsule.ui.screens.dashboards.DoctorDashboardScreen
+import com.example.capsule.ui.screens.dashboards.HomePage
 import com.example.capsule.ui.screens.search.SearchScreen
 import com.example.capsule.ui.screens.search.SearchResultsScreen
 import com.example.capsule.ui.screens.settings.SettingsScreen
@@ -45,8 +49,7 @@ fun NavGraph(
 
         composable("editPatientProfile") {
             PatientEditProfileScreen(
-                onBackClick = { navController.popBackStack() },
-                onSaveClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() }
             )
         }
 
@@ -98,8 +101,7 @@ fun NavGraph(
 
         composable("editDoctorProfile") {
             DoctorEditProfileScreen(
-                onBackClick = { navController.popBackStack() },
-                onSaveClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() }
             )
         }
 

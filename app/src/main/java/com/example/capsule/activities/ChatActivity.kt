@@ -1,6 +1,5 @@
 package com.example.capsule.activities
 
-
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -45,7 +44,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.capsule.data.model.Message
@@ -64,16 +62,14 @@ class ChatActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val ReceiverName = intent.getStringExtra("Name")
-        val RecieverID = intent.getStringExtra("Id")
+        val receiverName = intent.getStringExtra("Name")
+        val recieverID = intent.getStringExtra("Id")
 
-        //unused variables (delete)
-        val auth = FirebaseAuth.getInstance()
-        val db = FirebaseFirestore.getInstance()
+
         setContent {
             ChatApp(
-                name = ReceiverName,
-                RecId = RecieverID,
+                name = receiverName,
+                RecId = recieverID,
                 onBackClick = { finish() }
             )
         }

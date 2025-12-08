@@ -1,12 +1,10 @@
-package com.example.capsule.ui.screens.patient
+package com.example.capsule.ui.screens.appointments
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -21,9 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -33,9 +29,12 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.R
 import com.example.capsule.data.model.Appointment
+import com.example.capsule.ui.components.FilterChipsRow
+import com.example.capsule.ui.screens.patient.PatientViewModel
 import com.example.capsule.ui.theme.Cyan
 import com.example.capsule.ui.theme.Teal
 import com.example.capsule.ui.theme.WhiteSmoke
+import com.example.capsule.util.ProfileImage
 import com.example.capsule.util.formatAppointmentDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -51,7 +50,7 @@ fun PatientAppointmentsScreen(
 
     LaunchedEffect(Unit) {
         viewModel.loadPatientAppointments()
-        // Load patient profile first to ensure we have patient ID
+        // Load patient profile first to get patient ID, then load appointments
         viewModel.loadCurrentPatientProfile()
     }
 
@@ -152,51 +151,6 @@ private fun EmptyAppointmentsState() {
 }
 
 @Composable
-private fun FilterChipsRow(
-    selectedFilter: String,
-    onFilterSelected: (String) -> Unit
-) {
-    val filters = listOf("Upcoming", "Completed", "Cancelled")
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        filters.forEach { filter ->
-            FilterChip(
-                selected = selectedFilter == filter,
-                onClick = { onFilterSelected(filter) },
-                label = {
-                    Text(
-                        text = filter,
-                        fontSize = 14.sp,
-                        fontWeight = if (selectedFilter == filter) FontWeight.Bold else FontWeight.Normal
-                    )
-                },
-                colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = when (filter) {
-                        "Upcoming" -> Color(0x3328B463)
-                        "Completed" -> Color(0x334195F4)
-                        "Cancelled" -> Color(0x33E53935)
-                        else -> Color(0x33CCCCCC)
-                    },
-                    containerColor = Color.White,
-                    selectedLabelColor = when (filter) {
-                        "Upcoming" -> Color(0xFF2E7D32)
-                        "Completed" -> Color(0xFF1E88E5)
-                        "Cancelled" -> Color(0xFFD32F2F)
-                        else -> Color.Gray
-                    },
-                    labelColor = Color.Gray
-                )
-            )
-        }
-    }
-}
-
-@Composable
 private fun AppointmentsList(
     appointments: List<Appointment>,
     onDoctorClick: (String) -> Unit,
@@ -242,16 +196,14 @@ private fun AppointmentCard(
         ) {
             // ---------------- Left Side: Profile + Info ----------------
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // Doctor Picture
-                Image(
-                    painter = painterResource(R.drawable.doc_prof_unloaded),
-                    contentDescription = "Doctor Profile",
+                // Doctor Picture - NOW USING appointment.doctorProfileImage
+                ProfileImage(
+                    base64Image = appointment.doctorProfileImage,
+                    defaultImageRes = R.drawable.doc_prof_unloaded,
                     modifier = Modifier
                         .size(52.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFEFEFEF), CircleShape)
                         .clickable { onDoctorClick() },
-                    contentScale = ContentScale.Crop
+                    onImageClick = { onDoctorClick() }
                 )
 
                 Spacer(modifier = Modifier.width(14.dp))

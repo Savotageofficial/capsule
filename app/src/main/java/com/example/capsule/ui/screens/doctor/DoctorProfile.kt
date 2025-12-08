@@ -7,7 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -18,9 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -38,6 +35,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.ui.theme.Cyan
 import com.example.capsule.ui.theme.Teal
 import com.example.capsule.ui.theme.WhiteSmoke
+import com.example.capsule.util.ProfileImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -126,26 +124,12 @@ fun DoctorProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Profile Image
-            doctor.profileImageRes?.let {
-                Image(
-                    painter = painterResource(id = it),
-                    contentDescription = "Doctor Image",
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop
-                )
-            } ?: run {
-                // Fallback image if profileImageRes is null
-                Image(
-                    painter = painterResource(id = R.drawable.doc_prof_unloaded),
-                    contentDescription = "Doctor Image",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape)
-                )
-            }
+            ProfileImage(
+                base64Image = doctor.profileImageBase64,
+                defaultImageRes = R.drawable.doc_prof_unloaded,
+                modifier = Modifier.size(120.dp),
+                onImageClick = null
+            )
 
             Spacer(modifier = Modifier.height(12.dp))
 

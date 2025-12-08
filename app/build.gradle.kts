@@ -64,4 +64,6 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.5.0"))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore-ktx:24.7.1")
+    implementation("androidx.activity:activity-compose:1.8.0")
+
 }

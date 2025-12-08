@@ -1,4 +1,4 @@
-package com.example.capsule.ui.screens.patient
+package com.example.capsule.ui.screens.dashboards
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
@@ -40,8 +39,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -53,11 +50,13 @@ import com.example.capsule.R
 import com.example.capsule.data.model.OfferItem
 import com.example.capsule.data.model.Tip
 import com.example.capsule.ui.components.DashboardCard
+import com.example.capsule.ui.screens.patient.PatientViewModel
 import com.example.capsule.ui.theme.Blue
 import com.example.capsule.ui.theme.CapsuleTheme
 import com.example.capsule.ui.theme.Green
 import com.example.capsule.ui.theme.White
 import com.example.capsule.ui.theme.WhiteSmoke
+import com.example.capsule.util.ProfileImage
 
 @Composable
 fun HomePage(
@@ -110,16 +109,11 @@ fun HomePage(
 
                 // User avatar
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Image(
-                        painter = painterResource(
-                            id = patient.profileImageRes ?: R.drawable.patient_profile
-                        ),
-                        contentDescription = "",
-                        modifier = Modifier
-                            .size(55.dp)
-                            .clip(CircleShape)
-                            .shadow(4.dp, CircleShape),
-                        contentScale = ContentScale.Crop
+                    ProfileImage(
+                        base64Image = patient.profileImageBase64,
+                        defaultImageRes = R.drawable.doc_prof_unloaded,
+                        modifier = Modifier.size(50.dp),
+                        onImageClick = null
                     )
 
                     Spacer(modifier = Modifier.width(12.dp))
@@ -232,8 +226,8 @@ fun HomePage(
 
                 items(offers) { item ->
                     SliderItem(
-                        Title = item.title,
-                        Description = "Limited Time Offer",
+                        title = item.title,
+                        description = "Limited Time Offer",
                         backgroundColor = item.color
                     )
                 }
@@ -321,8 +315,8 @@ fun SearchBar(
 @Composable
 fun SliderItem(
     modifier: Modifier = Modifier,
-    Title: String,
-    Description: String,
+    title: String,
+    description: String,
     backgroundColor: Color
 ) {
     Card(
@@ -342,7 +336,7 @@ fun SliderItem(
                 .fillMaxSize()
         ) {
             Text(
-                text = Title,
+                text = title,
                 fontSize = 21.sp,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.height(50.dp),
@@ -350,7 +344,7 @@ fun SliderItem(
                 lineHeight = 20.sp
             )
 
-            Text(text = Description, fontSize = 15.sp, color = Color(0xffffffff))
+            Text(text = description, fontSize = 15.sp, color = Color(0xffffffff))
             Spacer(modifier = Modifier.height(12.dp))
             Button(
                 onClick = {},

@@ -9,5 +9,7 @@ data class Appointment(
     val dateTime: Long = 0L, // timestamp
     val timeSlot: TimeSlot = TimeSlot(),
     val type: String = "", // "In-Person", "Chat"
-    val status: String = "" // "Upcoming", "Completed", "Cancelled"
+    val status: String = "", // "Upcoming", "Completed", "Cancelled"
+    val doctorProfileImage: String? = null,
+    val patientProfileImage: String? = null
 )

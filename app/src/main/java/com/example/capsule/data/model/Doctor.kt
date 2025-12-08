@@ -7,6 +7,7 @@ data class Doctor(
     override var name: String = "",
     override var email: String = "",
     override var userType: String = "Doctor",
+    override var profileImageBase64: String? = null, // Add this
 
     var specialty: String = "",
     val bio: String = "",
@@ -18,14 +19,13 @@ data class Doctor(
     val clinicName: String = "",
     val clinicAddress: String = "",
     val locationUrl: String = "",
-    override val msgHistory : List<String> = listOf<String>(),
+    override val msgHistory: List<String> = listOf(),
     val sessionPrice: Double = 0.0,
-
-    // Store real availability as: { "Monday": [ {start,end}, {start,end} ], ... }
     val availability: Map<String, List<TimeSlot>> = emptyMap(),
-
-    val profileImageRes: Int? = null
-) : UserProfile(id = id, name = name, email = email, userType = userType , msgHistory = msgHistory) {
+) : UserProfile(
+    id = id, name = name, email = email, userType = userType,
+    msgHistory = msgHistory, profileImageBase64 = profileImageBase64
+) {
 
     // Formatted availability string for display
     val availabilityDisplay: String
@@ -33,15 +33,12 @@ data class Doctor(
 
     // Formatted session price for display
     val formattedSessionPrice: String
-        get() = "EGP ${sessionPrice.toInt()}" // Or use currency formatting
-
-
+        get() = "EGP ${sessionPrice.toInt()}"
 }
 
 data class TimeSlot(
     val start: String = "",
     val end: String = ""
 ) {
-    // Helper methods for TimeSlot
     fun toDisplayString(): String = "$start - $end"
 }

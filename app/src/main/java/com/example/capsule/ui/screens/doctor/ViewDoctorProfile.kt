@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -29,25 +28,26 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.R
 import com.example.capsule.activities.ChatActivity
+import com.example.capsule.data.model.Doctor
 import com.example.capsule.data.model.TimeSlot
 import com.example.capsule.ui.components.InfoCard
 import com.example.capsule.ui.screens.booking.BookingBottomSheet
@@ -56,6 +56,7 @@ import com.example.capsule.ui.theme.Blue
 import com.example.capsule.ui.theme.Gold
 import com.example.capsule.ui.theme.Green
 import com.example.capsule.ui.theme.WhiteSmoke
+import com.example.capsule.util.ProfileImage
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -208,15 +209,11 @@ fun ViewDoctorProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Profile Image
-            Image(
-                painter = painterResource(
-                    id = doctor.profileImageRes ?: R.drawable.doc_prof_unloaded
-                ),
-                contentDescription = "Doctor Image",
-                modifier = Modifier
-                    .size(120.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop
+            ProfileImage(
+                base64Image = doctor.profileImageBase64,
+                defaultImageRes = R.drawable.doc_prof_unloaded,
+                modifier = Modifier.size(120.dp),
+                onImageClick = null
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -431,16 +428,16 @@ fun ViewDoctorProfileScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RatingBottomSheet(
-    doctor: com.example.capsule.data.model.Doctor,
+    doctor: Doctor,
     onRatingSubmitted: (Boolean) -> Unit,
     onDismiss: () -> Unit
 ) {
     val auth = FirebaseAuth.getInstance()
     val currentUser = auth.currentUser
     val context = LocalContext.current
-    var selectedRating by remember { mutableStateOf(0) }
-    var isSubmitting by remember { mutableStateOf(false) }
     val doctorViewModel: DoctorViewModel = viewModel()
+    var selectedRating by remember { mutableIntStateOf(doctorViewModel.currentUserRating.intValue) }
+    var isSubmitting by remember { mutableStateOf(false) }
 
     // Check if user has already rated this doctor
     LaunchedEffect(doctor.id, currentUser?.uid) {
@@ -626,7 +623,7 @@ fun RatingBar(
     currentRating: Int,
     onRatingSelected: (Int) -> Unit,
     enabled: Boolean = true,
-    starSize: androidx.compose.ui.unit.Dp = 32.dp,
+    starSize: Dp = 32.dp,
     modifier: Modifier = Modifier
 ) {
     Row(
