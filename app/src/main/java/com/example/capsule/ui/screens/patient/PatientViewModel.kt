@@ -16,6 +16,7 @@ class PatientViewModel : UserViewModel("Patient") {
         get() = _patient.value?.id
 
     override fun getCurrentUserId(): String? = _patient.value?.id
+
     // -------------------------------------------------------------
     // Load Patient Profile
     // -------------------------------------------------------------
@@ -71,7 +72,6 @@ class PatientViewModel : UserViewModel("Patient") {
                         profileImageBase64 = data["profileImageBase64"] as? String
                             ?: _patient.value?.profileImageBase64
                     )
-
                 }
                 onDone(success)
             }
@@ -83,24 +83,9 @@ class PatientViewModel : UserViewModel("Patient") {
     // -------------------------------------------------------------
     fun loadPatientAppointments() {
         _patient.value?.id?.let { patientId ->
-            _isLoading.value = true
-            viewModelScope.launch {
-                repo.getPatientAppointments(patientId) { appointments ->
-                    // Enrich appointments with profile images
-                    enrichAppointmentsWithProfileImages(appointments) { enrichedAppointments ->
-                        _allAppointments.value = enrichedAppointments
-                        applyFilter(_filterState.value)
-                        _isLoading.value = false
-
-                        if (enrichedAppointments.isEmpty()) {
-                            errorMessage.value = "No appointments found"
-                        }
-                    }
-                }
+            loadAndEnrichAppointments { callback ->
+                repo.getPatientAppointments(patientId, callback)
             }
-        } ?: run {
-            errorMessage.value = "Patient ID not available"
-            _isLoading.value = false
         }
     }
 
@@ -144,9 +129,8 @@ class PatientViewModel : UserViewModel("Patient") {
         }
     }
 
-
     // -------------------------------------------------------------
-    // Refresh Appointments (for when profile images might have changed)
+    // Refresh Appointments
     // -------------------------------------------------------------
     fun refreshAppointments() {
         loadPatientAppointments()

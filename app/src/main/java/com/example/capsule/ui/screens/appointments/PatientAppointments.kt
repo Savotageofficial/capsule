@@ -208,13 +208,20 @@ private fun AppointmentCard(
 
                 Spacer(modifier = Modifier.width(14.dp))
 
-                Column(modifier = Modifier.clickable { onDoctorClick() }) {
+                Column(modifier = Modifier
+                    .clickable { onDoctorClick() }
+                ) {
                     // Doctor Name
+                    val shortName = if (appointment.doctorName.length > 10)
+                        appointment.doctorName.take(10) + "..."
+                    else
+                        appointment.doctorName
+
                     Text(
-                        text = "Dr. ${appointment.doctorName}",
+                        text = "Dr. $shortName",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1C1C1C)
+                        color = Color(0xFF1C1C1C),
                     )
 
                     Spacer(modifier = Modifier.height(4.dp))

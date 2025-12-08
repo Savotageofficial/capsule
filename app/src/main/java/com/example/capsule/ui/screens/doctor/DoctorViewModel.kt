@@ -19,8 +19,7 @@ class DoctorViewModel : UserViewModel(userType = "Doctor") {
     private val doctorId: String?
         get() = _doctor.value?.id
 
-
-    // Availability (State kept separately for the UI)
+    // Availability
     val availability = mutableStateMapOf<String, MutableList<TimeSlot>>()
 
     // Rating state
@@ -68,21 +67,13 @@ class DoctorViewModel : UserViewModel(userType = "Doctor") {
         }
     }
 
-
-
     // -------------------------------------------------------------
     // Load Appointments WITH PROFILE IMAGES
     // -------------------------------------------------------------
     private fun loadDoctorAppointments() {
         _doctor.value?.id?.let { doctorId ->
-            viewModelScope.launch {
-                repo.getDoctorAppointments(doctorId) { appointments ->
-                    // Enrich appointments with profile images
-                    enrichAppointmentsWithProfileImages(appointments) { enrichedAppointments ->
-                        _allAppointments.value = enrichedAppointments
-                        applyFilter(_filterState.value) // Apply the current filter
-                    }
-                }
+            loadAndEnrichAppointments { callback ->
+                repo.getDoctorAppointments(doctorId, callback)
             }
         }
     }
@@ -94,7 +85,7 @@ class DoctorViewModel : UserViewModel(userType = "Doctor") {
         viewModelScope.launch {
             repo.updateAppointmentStatus(appointmentId, "Completed") { success ->
                 if (success) {
-                    // Update local state
+                    // Update all appointments
                     _allAppointments.value = _allAppointments.value.map { appointment ->
                         if (appointment.id == appointmentId) {
                             appointment.copy(status = "Completed")
@@ -102,7 +93,8 @@ class DoctorViewModel : UserViewModel(userType = "Doctor") {
                             appointment
                         }
                     }
-                    applyFilter(_filterState.value) // Reapply filter
+                    // Reapply current filter
+                    applyFilter(_filterState.value)
                 } else {
                     errorMessage.value = "Failed to mark appointment as completed"
                 }
@@ -234,7 +226,6 @@ class DoctorViewModel : UserViewModel(userType = "Doctor") {
         }
     }
 
-
     // -------------------------------------------------------------
     // Rating Functions
     // -------------------------------------------------------------
@@ -298,5 +289,4 @@ class DoctorViewModel : UserViewModel(userType = "Doctor") {
             callback(false, "Doctor ID not available")
         }
     }
-
 }
