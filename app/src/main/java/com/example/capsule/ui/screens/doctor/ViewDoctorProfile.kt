@@ -1,6 +1,7 @@
 package com.example.capsule.ui.screens.doctor
 
 import android.content.Intent
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

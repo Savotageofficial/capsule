@@ -1,7 +1,10 @@
 package com.example.capsule.data.model
 
+import android.os.Parcelable
 import com.example.capsule.util.formatAvailabilityForDisplay
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 data class Doctor(
     override var id: String = "",
     override var name: String = "",
@@ -35,10 +38,10 @@ data class Doctor(
     val formattedSessionPrice: String
         get() = "EGP ${sessionPrice.toInt()}"
 }
-
+@Parcelize
 data class TimeSlot(
     val start: String = "",
     val end: String = ""
-) {
+): Parcelable {
     fun toDisplayString(): String = "$start - $end"
 }
