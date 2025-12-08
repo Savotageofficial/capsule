@@ -8,8 +8,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 class SearchRepository {
 
     private val db = FirebaseFirestore.getInstance()
-    private val auth = FirebaseAuth.getInstance()
-
     fun getDoctorByName(name: String, speciality: String, callback: (List<Doctor>) -> Unit) {
         db.collection("doctors")
             .get()
@@ -28,7 +26,12 @@ class SearchRepository {
                                     doctor.specialty.contains(speciality, ignoreCase = true)
 
                             if (nameMatch && specialtyMatch) {
-                                doctorList.add(doctor)
+                                // Ensure profile image is included
+                                val finalDoctor = doctor.copy(
+                                    id = document.id,
+                                    profileImageBase64 = doctor.profileImageBase64
+                                )
+                                doctorList.add(finalDoctor)
                             }
                         }
                     } catch (e: Exception) {

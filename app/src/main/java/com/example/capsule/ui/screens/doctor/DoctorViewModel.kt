@@ -71,14 +71,17 @@ class DoctorViewModel : UserViewModel(userType = "Doctor") {
 
 
     // -------------------------------------------------------------
-    // Load Appointments
+    // Load Appointments WITH PROFILE IMAGES
     // -------------------------------------------------------------
     private fun loadDoctorAppointments() {
         _doctor.value?.id?.let { doctorId ->
             viewModelScope.launch {
                 repo.getDoctorAppointments(doctorId) { appointments ->
-                    _allAppointments.value = appointments
-                    applyFilter(_filterState.value) // Apply the current filter
+                    // Enrich appointments with profile images
+                    enrichAppointmentsWithProfileImages(appointments) { enrichedAppointments ->
+                        _allAppointments.value = enrichedAppointments
+                        applyFilter(_filterState.value) // Apply the current filter
+                    }
                 }
             }
         }
@@ -221,7 +224,9 @@ class DoctorViewModel : UserViewModel(userType = "Doctor") {
                         sessionPrice = data["sessionPrice"] as? Double
                             ?: _doctor.value!!.sessionPrice,
                         availability = (data["availability"] as? Map<String, List<TimeSlot>>)
-                            ?: _doctor.value!!.availability
+                            ?: _doctor.value!!.availability,
+                        profileImageBase64 = data["profileImageBase64"] as? String
+                            ?: _doctor.value!!.profileImageBase64
                     )
                 }
                 onDone(success)

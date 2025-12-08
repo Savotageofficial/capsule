@@ -46,4 +46,5 @@
     <string name="egp">EGP</string>
     <string name="consultation_fee">Consultation Fee</string>
     <string name="session_price">Session Price</string>
+    <string name="select_date_of_birth">Select Date of Birth</string>
 </resources>

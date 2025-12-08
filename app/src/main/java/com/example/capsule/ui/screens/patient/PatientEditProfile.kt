@@ -31,6 +31,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.capsule.R
 import com.example.capsule.ui.components.DatePickerDialog
 import com.example.capsule.ui.components.ImagePicker
+import com.example.capsule.ui.components.PhoneNumberField
 import com.example.capsule.ui.theme.Cyan
 import com.example.capsule.ui.theme.Teal
 import com.example.capsule.ui.theme.WhiteSmoke
@@ -111,7 +112,7 @@ fun PatientEditProfileScreen(
 
             Spacer(Modifier.height(10.dp))
 
-            // --- Profile Image Picker (same UI as doctor) ---
+            // Profile Image Picker
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
@@ -156,7 +157,7 @@ fun PatientEditProfileScreen(
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(Modifier.width(8.dp))
-                        Text(if (dob > 0) formatDateOfBirth(dob) else "Select Date of Birth")
+                        Text(if (dob > 0) formatDateOfBirth(dob) else stringResource(R.string.select_date_of_birth))
                     }
 
                     Spacer(Modifier.height(14.dp))
@@ -203,12 +204,13 @@ fun PatientEditProfileScreen(
                     Spacer(Modifier.height(14.dp))
 
                     // Contact
-                    FormTextField(
+                    PhoneNumberField(
                         label = stringResource(R.string.contact),
-                        value = contact,
-                        onValueChange = { contact = it },
-                        keyboardType = KeyboardType.Phone
+                        phone = contact,
+                        onPhoneChange = { contact = it }
                     )
+
+
                 }
             }
 
@@ -274,7 +276,7 @@ fun PatientEditProfileScreen(
                 if (isLoading)
                     CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp)
                 else
-                    Text("Save Changes", fontSize = 17.sp)
+                    Text(stringResource(R.string.save_changes), fontSize = 17.sp)
             }
         }
     }
@@ -284,10 +286,10 @@ fun PatientEditProfileScreen(
         AlertDialog(
             onDismissRequest = { showErrorDialog = false },
             confirmButton = {
-                TextButton(onClick = { showErrorDialog = false }) { Text("OK") }
+                TextButton(onClick = { showErrorDialog = false }) { Text(stringResource(R.string.ok)) }
             },
-            title = { Text("Update Failed") },
-            text = { Text("Failed to update your profile. Please try again.") }
+            title = { Text(stringResource(R.string.update_failed)) },
+            text = { Text(stringResource(R.string.failed_to_update_your_profile_please_try_again)) }
         )
     }
 
@@ -303,8 +305,8 @@ fun PatientEditProfileScreen(
                     onBackClick()
                 }) { Text("OK") }
             },
-            title = { Text("Profile Updated") },
-            text = { Text("Your profile has been successfully updated.") }
+            title = { Text(stringResource(R.string.profile_updated)) },
+            text = { Text(stringResource(R.string.your_profile_has_been_successfully_updated)) }
         )
     }
 
@@ -336,6 +338,7 @@ fun FormTextField(
         label = { Text(label) }
     )
 }
+
 
 @Preview(showBackground = true)
 @Composable

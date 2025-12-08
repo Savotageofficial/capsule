@@ -128,3 +128,14 @@ fun formatAppointmentDateTime(appointment: Appointment): String {
         "Date not available"
     }
 }
+
+fun formatPhoneNumber(raw: String): String {
+    val digits = raw.filter { it.isDigit() }
+
+    return when {
+        digits.length <= 3 -> digits
+        digits.length <= 7 -> digits.substring(0, 3) + " " + digits.substring(3)
+        digits.length <= 11 -> digits.substring(0, 3) + " " + digits.substring(3, 7) + " " + digits.substring(7)
+        else -> digits.take(11)
+    }
+}

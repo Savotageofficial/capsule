@@ -23,28 +23,11 @@ open class UserViewModel(
     protected val _isLoading = mutableStateOf(false)
     val isLoading = _isLoading
 
-    protected val appointmentsLoading = mutableStateOf(false)
-
-    protected val prescriptionsLoading = mutableStateOf(false)
-
     protected val errorMessage = mutableStateOf<String?>(null)
 
 
     // Add this helper method
     protected open fun getCurrentUserId(): String? = null
-
-    protected fun launchSafely(block: suspend () -> Unit) {
-        viewModelScope.launch {
-            try {
-                _isLoading.value = true
-                block()
-            } catch (e: Exception) {
-                errorMessage.value = e.message
-            } finally {
-                _isLoading.value = false
-            }
-        }
-    }
 
     // ------------------------------
     // Profile Image Logic
@@ -99,9 +82,27 @@ open class UserViewModel(
         }
     }
 
+    // ------------------------------
+    // Helper methods for fetching profile images
+    // ------------------------------
+    protected fun getDoctorProfileImage(doctorId: String, onResult: (String?) -> Unit) {
+        viewModelScope.launch {
+            repo.getDoctorProfileImage(doctorId) { image ->
+                onResult(image)
+            }
+        }
+    }
 
+    protected fun getPatientProfileImage(patientId: String, onResult: (String?) -> Unit) {
+        viewModelScope.launch {
+            repo.getPatientProfileImage(patientId) { image ->
+                onResult(image)
+            }
+        }
+    }
 
-    // Appointments Logic
+    // ------------------------------
+    // Appointments Logic with Profile Images
     // ------------------------------
     protected val _allAppointments = mutableStateOf(emptyList<Appointment>())
     protected val _appointments = mutableStateOf(emptyList<Appointment>())
@@ -134,6 +135,71 @@ open class UserViewModel(
                     applyFilter(_filterState.value)
                 } else {
                     errorMessage.value = "Failed to cancel appointment"
+                }
+            }
+        }
+    }
+
+    // ------------------------------
+    // Method to enrich appointments with profile images
+    // ------------------------------
+    protected fun enrichAppointmentsWithProfileImages(
+        appointments: List<Appointment>,
+        onComplete: (List<Appointment>) -> Unit
+    ) {
+        val enrichedAppointments = mutableListOf<Appointment>()
+
+        if (appointments.isEmpty()) {
+            onComplete(emptyList())
+            return
+        }
+
+        // Create a copy to avoid concurrent modification
+        val appointmentsCopy = appointments.toList()
+
+        appointmentsCopy.forEachIndexed { index, appointment ->
+            // Fetch both images in parallel using coroutines
+            viewModelScope.launch {
+                // Use suspend functions if available, or use callbacks
+                var doctorImage: String? = null
+                var patientImage: String? = null
+
+                // Fetch doctor image
+                repo.getDoctorProfileImage(appointment.doctorId) { image ->
+                    doctorImage = image
+
+                    // Check if both images are fetched
+                    if (patientImage != null) {
+                        val enriched = appointment.copy(
+                            doctorProfileImage = doctorImage,
+                            patientProfileImage = patientImage
+                        )
+                        enrichedAppointments.add(enriched)
+
+                        // Check if all appointments are processed
+                        if (enrichedAppointments.size == appointmentsCopy.size) {
+                            onComplete(enrichedAppointments)
+                        }
+                    }
+                }
+
+                // Fetch patient image
+                repo.getPatientProfileImage(appointment.patientId) { image ->
+                    patientImage = image
+
+                    // Check if both images are fetched
+                    if (doctorImage != null) {
+                        val enriched = appointment.copy(
+                            doctorProfileImage = doctorImage,
+                            patientProfileImage = patientImage
+                        )
+                        enrichedAppointments.add(enriched)
+
+                        // Check if all appointments are processed
+                        if (enrichedAppointments.size == appointmentsCopy.size) {
+                            onComplete(enrichedAppointments)
+                        }
+                    }
                 }
             }
         }

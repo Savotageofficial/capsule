@@ -5,15 +5,54 @@ import com.example.capsule.data.model.Doctor
 import com.example.capsule.data.model.Medication
 import com.example.capsule.data.model.Patient
 import com.example.capsule.data.model.Prescription
+import com.example.capsule.data.model.TimeSlot
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import kotlin.collections.emptyList
+import kotlin.collections.sortedBy
 
 class ProfileRepository {
 
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()  // For UID
+
+    private fun parseAppointmentFromDocument(doc: DocumentSnapshot): Appointment? {
+        val data = doc.data ?: return null
+
+        return try {
+            // Parse timeSlot
+            val timeSlotData = data["timeSlot"] as? Map<String, String>
+            val timeSlot = if (timeSlotData != null) {
+                TimeSlot(
+                    start = timeSlotData["start"] ?: "",
+                    end = timeSlotData["end"] ?: ""
+                )
+            } else {
+                TimeSlot()
+            }
+
+            // Parse appointment with profile images
+            Appointment(
+                id = doc.id,
+                doctorId = data["doctorId"] as? String ?: "",
+                patientId = data["patientId"] as? String ?: "",
+                doctorName = data["doctorName"] as? String ?: "",
+                patientName = data["patientName"] as? String ?: "",
+                dateTime = (data["dateTime"] as? Long) ?: 0L,
+                timeSlot = timeSlot,
+                type = data["type"] as? String ?: "",
+                status = data["status"] as? String ?: "",
+                doctorProfileImage = data["doctorProfileImage"] as? String,  // This should be stored
+                patientProfileImage = data["patientProfileImage"] as? String  // This should be stored
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
 
     // CREATE PROFILES with Firebase ID
     fun createDoctor(doctor: Doctor, onDone: (Boolean) -> Unit) {
@@ -135,20 +174,43 @@ class ProfileRepository {
     }
 
     // Book appointment with conflict check
+    // In ProfileRepository.kt
     fun bookAppointment(appointment: Appointment, onDone: (Boolean) -> Unit) {
 
-        db.collection("appointments")
-            .add(appointment)
-            .addOnSuccessListener { onDone(true) }
-            .addOnFailureListener { onDone(false) }
-        db.collection("messages").add(
-            mapOf(
-                "message" to "${appointment.patientName} has reserved an appointment , please check your schedule",
-                "senderId" to appointment.patientId,
-                "timestamp" to Timestamp.now(),
-                "receiverId" to appointment.doctorId
-            )
+        val appointmentData = mapOf(
+            "doctorId" to appointment.doctorId,
+            "patientId" to appointment.patientId,
+            "doctorName" to appointment.doctorName,
+            "patientName" to appointment.patientName,
+            "dateTime" to appointment.dateTime,
+            "timeSlot" to mapOf(
+                "start" to appointment.timeSlot.start,
+                "end" to appointment.timeSlot.end
+            ),
+            "type" to appointment.type,
+            "status" to appointment.status,
+            "doctorProfileImage" to (appointment.doctorProfileImage ?: ""),
+            "patientProfileImage" to (appointment.patientProfileImage ?: ""),
+            "createdAt" to Timestamp.now()
         )
+
+        db.collection("appointments")
+            .add(appointmentData)
+            .addOnSuccessListener {
+                onDone(true)
+                // Send notification message
+                db.collection("messages").add(
+                    mapOf(
+                        "message" to "${appointment.patientName} has reserved an appointment, please check your schedule",
+                        "senderId" to appointment.patientId,
+                        "timestamp" to Timestamp.now(),
+                        "receiverId" to appointment.doctorId
+                    )
+                )
+            }
+            .addOnFailureListener {
+                onDone(false)
+            }
     }
 
 
@@ -170,7 +232,7 @@ class ProfileRepository {
                 }
 
                 val appointments = querySnapshot?.documents?.mapNotNull { doc ->
-                    doc.toObject(Appointment::class.java)?.copy(id = doc.id)
+                    parseAppointmentFromDocument(doc)
                 }?.sortedBy { it.dateTime } ?: emptyList()
 
                 onResult(appointments)
@@ -187,7 +249,7 @@ class ProfileRepository {
                 }
 
                 val appointments = querySnapshot?.documents?.mapNotNull { doc ->
-                    doc.toObject(Appointment::class.java)?.copy(id = doc.id)
+                    parseAppointmentFromDocument(doc)
                 } ?: emptyList()
 
                 onResult(appointments)
@@ -219,15 +281,16 @@ class ProfileRepository {
                 val prescriptions = querySnapshot?.documents?.mapNotNull { doc ->
                     val data = doc.data ?: return@mapNotNull null
                     try {
-                        val medsMap = (data["medications"] as? Map<String, Map<String, Any>>)?.mapValues { entry ->
-                            Medication(
-                                name = entry.value["name"] as? String ?: "",
-                                dosage = entry.value["dosage"] as? String ?: "",
-                                frequency = entry.value["frequency"] as? String ?: "",
-                                duration = entry.value["duration"] as? String ?: "",
-                                instructions = entry.value["instructions"] as? String ?: ""
-                            )
-                        } ?: emptyMap()
+                        val medsMap =
+                            (data["medications"] as? Map<String, Map<String, Any>>)?.mapValues { entry ->
+                                Medication(
+                                    name = entry.value["name"] as? String ?: "",
+                                    dosage = entry.value["dosage"] as? String ?: "",
+                                    frequency = entry.value["frequency"] as? String ?: "",
+                                    duration = entry.value["duration"] as? String ?: "",
+                                    instructions = entry.value["instructions"] as? String ?: ""
+                                )
+                            } ?: emptyMap()
 
                         Prescription(
                             id = doc.id,
@@ -235,7 +298,8 @@ class ProfileRepository {
                             patientName = data["patientName"] as? String ?: "",
                             doctorId = data["doctorId"] as? String ?: "",
                             doctorName = data["doctorName"] as? String ?: "",
-                            date = (data["date"] as? Long) ?: (data["date"] as? Double)?.toLong() ?: 0L,
+                            date = (data["date"] as? Long) ?: (data["date"] as? Double)?.toLong()
+                            ?: 0L,
                             medications = medsMap,
                             notes = data["notes"] as? String ?: "",
                             qrCodeUrl = data["qrCodeUrl"] as? String ?: ""
@@ -249,6 +313,7 @@ class ProfileRepository {
                 onResult(prescriptions)
             }
     }
+
     fun getPrescriptionsByDoctor(doctorId: String, onResult: (List<Prescription>) -> Unit) {
         db.collection("prescriptions")
             .whereEqualTo("doctorId", doctorId)
@@ -366,18 +431,20 @@ class ProfileRepository {
             // Calculate new rating
             val newTotalRating = doctor.totalRating + rating
             val newReviewsCount = doctor.reviewsCount + 1
-            val newRating = newTotalRating.toDouble() / newReviewsCount.toDouble()
+            val newRating = newTotalRating / newReviewsCount.toDouble()
 
             // Update ratedByUsers list
             val updatedRatedByUsers = doctor.ratedByUsers + patientId
 
             // Update the doctor document
-            transaction.update(doctorRef, mapOf(
-                "totalRating" to newTotalRating,
-                "reviewsCount" to newReviewsCount,
-                "rating" to newRating,
-                "ratedByUsers" to updatedRatedByUsers
-            ))
+            transaction.update(
+                doctorRef, mapOf(
+                    "totalRating" to newTotalRating,
+                    "reviewsCount" to newReviewsCount,
+                    "rating" to newRating,
+                    "ratedByUsers" to updatedRatedByUsers
+                )
+            )
 
             return@runTransaction true
         }.addOnSuccessListener { success ->
@@ -445,6 +512,65 @@ class ProfileRepository {
                 onFailure(e.message ?: "Failed to delete image")
             }
     }
+
+    fun getDoctorProfileImage(doctorId: String, onResult: (String?) -> Unit) {
+        db.collection("doctors")
+            .document(doctorId)
+            .get()
+            .addOnSuccessListener { document ->
+                val doctor = document.toObject(Doctor::class.java)
+                onResult(doctor?.profileImageBase64)
+            }
+            .addOnFailureListener {
+                onResult(null)
+            }
+    }
+
+    fun getPatientProfileImage(patientId: String, onResult: (String?) -> Unit) {
+        db.collection("patients")
+            .document(patientId)
+            .get()
+            .addOnSuccessListener { document ->
+                val patient = document.toObject(Patient::class.java)
+                onResult(patient?.profileImageBase64)
+            }
+            .addOnFailureListener {
+                onResult(null)
+            }
+    }
+
+
+//    private fun parseAppointmentFromDocument(doc: DocumentSnapshot): Appointment? {
+//        val data = doc.data ?: return null
+//
+//        return try {
+//            val timeSlotData = data["timeSlot"] as? Map<String, String>
+//            val timeSlot = if (timeSlotData != null) {
+//                TimeSlot(
+//                    start = timeSlotData["start"] ?: "",
+//                    end = timeSlotData["end"] ?: ""
+//                )
+//            } else {
+//                TimeSlot()
+//            }
+//            Appointment(
+//                id = doc.id,
+//                doctorId = data["doctorId"] as? String ?: "",
+//                patientId = data["patientId"] as? String ?: "",
+//                doctorName = data["doctorName"] as? String ?: "",
+//                patientName = data["patientName"] as? String ?: "",
+//                dateTime = (data["dateTime"] as? Long) ?: 0L,
+//                timeSlot = timeSlot,
+//                type = data["type"] as? String ?: "",
+//                status = data["status"] as? String ?: "",
+//                doctorProfileImage = data["doctorProfileImage"] as? String,
+//                patientProfileImage = data["patientProfileImage"] as? String
+//            )
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//            null
+//        }
+//    }
 
     companion object {
         // Singleton instance
