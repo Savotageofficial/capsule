@@ -25,8 +25,6 @@ open class UserViewModel(
 
     protected val errorMessage = mutableStateOf<String?>(null)
 
-
-    // Add this helper method
     protected open fun getCurrentUserId(): String? = null
 
     // ------------------------------
@@ -83,26 +81,7 @@ open class UserViewModel(
     }
 
     // ------------------------------
-    // Helper methods for fetching profile images
-    // ------------------------------
-    protected fun getDoctorProfileImage(doctorId: String, onResult: (String?) -> Unit) {
-        viewModelScope.launch {
-            repo.getDoctorProfileImage(doctorId) { image ->
-                onResult(image)
-            }
-        }
-    }
-
-    protected fun getPatientProfileImage(patientId: String, onResult: (String?) -> Unit) {
-        viewModelScope.launch {
-            repo.getPatientProfileImage(patientId) { image ->
-                onResult(image)
-            }
-        }
-    }
-
-    // ------------------------------
-    // Appointments Logic with Profile Images
+    // Appointments Logic
     // ------------------------------
     protected val _allAppointments = mutableStateOf(emptyList<Appointment>())
     protected val _appointments = mutableStateOf(emptyList<Appointment>())
@@ -129,9 +108,11 @@ open class UserViewModel(
         viewModelScope.launch {
             repo.updateAppointmentStatus(appointmentId, "Cancelled") { success ->
                 if (success) {
+                    // Update all appointments
                     _allAppointments.value = _allAppointments.value.map { a ->
                         if (a.id == appointmentId) a.copy(status = "Cancelled") else a
                     }
+                    // Reapply current filter
                     applyFilter(_filterState.value)
                 } else {
                     errorMessage.value = "Failed to cancel appointment"
@@ -141,63 +122,53 @@ open class UserViewModel(
     }
 
     // ------------------------------
-    // Method to enrich appointments with profile images
+    // Enrich appointments with profile images (SIMPLIFIED)
     // ------------------------------
-    protected fun enrichAppointmentsWithProfileImages(
-        appointments: List<Appointment>,
-        onComplete: (List<Appointment>) -> Unit
+    protected fun loadAndEnrichAppointments(
+        fetchAppointments: (callback: (List<Appointment>) -> Unit) -> Unit
     ) {
-        val enrichedAppointments = mutableListOf<Appointment>()
-
-        if (appointments.isEmpty()) {
-            onComplete(emptyList())
-            return
-        }
-
-        // Create a copy to avoid concurrent modification
-        val appointmentsCopy = appointments.toList()
-
-        appointmentsCopy.forEachIndexed { index, appointment ->
-            // Fetch both images in parallel using coroutines
-            viewModelScope.launch {
-                // Use suspend functions if available, or use callbacks
-                var doctorImage: String? = null
-                var patientImage: String? = null
-
-                // Fetch doctor image
-                repo.getDoctorProfileImage(appointment.doctorId) { image ->
-                    doctorImage = image
-
-                    // Check if both images are fetched
-                    if (patientImage != null) {
-                        val enriched = appointment.copy(
-                            doctorProfileImage = doctorImage,
-                            patientProfileImage = patientImage
-                        )
-                        enrichedAppointments.add(enriched)
-
-                        // Check if all appointments are processed
-                        if (enrichedAppointments.size == appointmentsCopy.size) {
-                            onComplete(enrichedAppointments)
-                        }
-                    }
+        _isLoading.value = true
+        viewModelScope.launch {
+            fetchAppointments { appointments ->
+                if (appointments.isEmpty()) {
+                    _allAppointments.value = emptyList()
+                    _appointments.value = emptyList()
+                    _isLoading.value = false
+                    return@fetchAppointments
                 }
 
-                // Fetch patient image
-                repo.getPatientProfileImage(appointment.patientId) { image ->
-                    patientImage = image
+                // Start enriching appointments with profile images
+                val enrichedAppointments = mutableListOf<Appointment>()
+                val total = appointments.size
+                var completed = 0
 
-                    // Check if both images are fetched
-                    if (doctorImage != null) {
-                        val enriched = appointment.copy(
-                            doctorProfileImage = doctorImage,
-                            patientProfileImage = patientImage
-                        )
-                        enrichedAppointments.add(enriched)
+                appointments.forEach { appointment ->
+                    // Fetch doctor profile image
+                    repo.getDoctorProfileImage(appointment.doctorId) { doctorImage ->
+                        // Fetch patient profile image
+                        repo.getPatientProfileImage(appointment.patientId) { patientImage ->
+                            synchronized(enrichedAppointments) {
+                                enrichedAppointments.add(
+                                    appointment.copy(
+                                        doctorProfileImage = doctorImage,
+                                        patientProfileImage = patientImage
+                                    )
+                                )
+                                completed++
 
-                        // Check if all appointments are processed
-                        if (enrichedAppointments.size == appointmentsCopy.size) {
-                            onComplete(enrichedAppointments)
+                                // When all appointments are enriched
+                                if (completed == total) {
+                                    // Sort to maintain original order
+                                    val sorted = enrichedAppointments.sortedBy { app ->
+                                        appointments.indexOfFirst { it.id == app.id }
+                                    }
+
+                                    // Update state
+                                    _allAppointments.value = sorted
+                                    applyFilter(_filterState.value)
+                                    _isLoading.value = false
+                                }
+                            }
                         }
                     }
                 }

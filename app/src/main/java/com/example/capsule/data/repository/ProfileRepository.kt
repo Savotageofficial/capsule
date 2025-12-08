@@ -45,8 +45,8 @@ class ProfileRepository {
                 timeSlot = timeSlot,
                 type = data["type"] as? String ?: "",
                 status = data["status"] as? String ?: "",
-                doctorProfileImage = data["doctorProfileImage"] as? String,  // This should be stored
-                patientProfileImage = data["patientProfileImage"] as? String  // This should be stored
+                doctorProfileImage = data["doctorProfileImage"] as? String,
+                patientProfileImage = data["patientProfileImage"] as? String
             )
         } catch (e: Exception) {
             e.printStackTrace()
@@ -173,44 +173,21 @@ class ProfileRepository {
             .addOnFailureListener { onDone(false) }
     }
 
-    // Book appointment with conflict check
-    // In ProfileRepository.kt
+    // Book appointment
     fun bookAppointment(appointment: Appointment, onDone: (Boolean) -> Unit) {
 
-        val appointmentData = mapOf(
-            "doctorId" to appointment.doctorId,
-            "patientId" to appointment.patientId,
-            "doctorName" to appointment.doctorName,
-            "patientName" to appointment.patientName,
-            "dateTime" to appointment.dateTime,
-            "timeSlot" to mapOf(
-                "start" to appointment.timeSlot.start,
-                "end" to appointment.timeSlot.end
-            ),
-            "type" to appointment.type,
-            "status" to appointment.status,
-            "doctorProfileImage" to (appointment.doctorProfileImage ?: ""),
-            "patientProfileImage" to (appointment.patientProfileImage ?: ""),
-            "createdAt" to Timestamp.now()
-        )
-
         db.collection("appointments")
-            .add(appointmentData)
-            .addOnSuccessListener {
-                onDone(true)
-                // Send notification message
-                db.collection("messages").add(
-                    mapOf(
-                        "message" to "${appointment.patientName} has reserved an appointment, please check your schedule",
-                        "senderId" to appointment.patientId,
-                        "timestamp" to Timestamp.now(),
-                        "receiverId" to appointment.doctorId
-                    )
-                )
-            }
-            .addOnFailureListener {
-                onDone(false)
-            }
+            .add(appointment)
+            .addOnSuccessListener { onDone(true) }
+            .addOnFailureListener { onDone(false) }
+        db.collection("messages").add(
+            mapOf(
+                "message" to "${appointment.patientName} has reserved an appointment , please check your schedule",
+                "senderId" to appointment.patientId,
+                "timestamp" to Timestamp.now(),
+                "receiverId" to appointment.doctorId
+            )
+        )
     }
 
 
@@ -538,39 +515,6 @@ class ProfileRepository {
                 onResult(null)
             }
     }
-
-
-//    private fun parseAppointmentFromDocument(doc: DocumentSnapshot): Appointment? {
-//        val data = doc.data ?: return null
-//
-//        return try {
-//            val timeSlotData = data["timeSlot"] as? Map<String, String>
-//            val timeSlot = if (timeSlotData != null) {
-//                TimeSlot(
-//                    start = timeSlotData["start"] ?: "",
-//                    end = timeSlotData["end"] ?: ""
-//                )
-//            } else {
-//                TimeSlot()
-//            }
-//            Appointment(
-//                id = doc.id,
-//                doctorId = data["doctorId"] as? String ?: "",
-//                patientId = data["patientId"] as? String ?: "",
-//                doctorName = data["doctorName"] as? String ?: "",
-//                patientName = data["patientName"] as? String ?: "",
-//                dateTime = (data["dateTime"] as? Long) ?: 0L,
-//                timeSlot = timeSlot,
-//                type = data["type"] as? String ?: "",
-//                status = data["status"] as? String ?: "",
-//                doctorProfileImage = data["doctorProfileImage"] as? String,
-//                patientProfileImage = data["patientProfileImage"] as? String
-//            )
-//        } catch (e: Exception) {
-//            e.printStackTrace()
-//            null
-//        }
-//    }
 
     companion object {
         // Singleton instance
