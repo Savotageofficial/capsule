@@ -22,11 +22,11 @@ import com.example.capsule.util.formatDate
 
 @Composable
 fun UpcomingCard(
+    patientPic: String?,
     name: String,
     appointmentType: String,
     timeSlot: TimeSlot,
     date: Long,
-    profileImage: String? = null, // Add this parameter
     showMoreIcon: Boolean = false,
     onClick: () -> Unit = {},
     onDeleteClick: () -> Unit = {}
@@ -55,9 +55,9 @@ fun UpcomingCard(
 
                 // Profile Picture - NOW USING profileImage parameter
                 ProfileImage(
-                    base64Image = profileImage,
-                    defaultImageRes = R.drawable.patient_profile,
-                    modifier = Modifier.size(52.dp),
+                    base64Image = patientPic,
+                    defaultImageRes = R.drawable.doc_prof_unloaded,
+                    modifier = Modifier.size(60.dp),
                     onImageClick = null
                 )
 
