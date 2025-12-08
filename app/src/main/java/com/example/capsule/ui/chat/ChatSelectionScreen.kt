@@ -3,11 +3,10 @@ package com.example.capsule.ui.chat
 import ChatHistoryViewModel
 import android.content.Intent
 import android.util.Log
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -15,10 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -33,6 +29,7 @@ import com.example.capsule.data.model.Patient
 import com.example.capsule.ui.theme.Cyan
 import com.example.capsule.ui.theme.Teal
 import com.example.capsule.ui.theme.WhiteSmoke
+import com.example.capsule.util.ProfileImage
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -75,7 +72,9 @@ fun ChatSelectionScreen(
         }
     ) { paddingValues ->
         ChatSelectionContent(
-            modifier = Modifier.padding(paddingValues),
+            modifier = Modifier
+                .background(WhiteSmoke)
+                .padding(paddingValues),
             viewModel = viewModel,
             onChatSelected = { name, id ->
                 // Start ChatActivity
@@ -204,13 +203,11 @@ fun DoctorResultCard(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = painterResource(R.drawable.doc_prof_unloaded),
-                contentDescription = "Doctor profile",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(60.dp)
-                    .clip(CircleShape)
+            ProfileImage(
+                base64Image = doctor.profileImageBase64,
+                defaultImageRes = R.drawable.doc_prof_unloaded,
+                modifier = Modifier.size(60.dp),
+                onImageClick = null
             )
 
             Column(
@@ -271,13 +268,12 @@ fun PatientResultCard(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = painterResource(R.drawable.patient_profile),
-                contentDescription = "Patient profile",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(60.dp)
-                    .clip(CircleShape)
+
+            ProfileImage(
+                base64Image = patient.profileImageBase64,
+                defaultImageRes = R.drawable.patient_profile,
+                modifier = Modifier.size(60.dp),
+                onImageClick = null
             )
 
             Column(
